@@ -89,6 +89,7 @@ function render() {
   const next = complete ? nextSection(game) : null;
   const sectionLabel = next?.golden ? 'startGolden' : next?.ended ? 'confirmResult' : 'startPeriod';
   app.style.colorScheme = theme;
+  document.documentElement.style.colorScheme = theme;
   setText('format', game.periods === -1 ? t('setFormat', { sets: game.setsToWin, points: game.targetPoints }) : game.periods === 0 ? t('freeFormat') : t('limitedFormat', { periods: game.periods, limit: game.limit }));
   setText('phase', phase());
   setText('status', t(game.ended ? 'statusEnded' : countdown >= 0 ? 'counting' : running ? 'statusRunning' : 'statusPaused'));

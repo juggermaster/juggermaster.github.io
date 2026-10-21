@@ -23,6 +23,14 @@ const path = require('node:path');
         try {
           const page = await context.newPage(); await page.goto('http://localhost:4178/');
           await page.locator('.jm-app[data-ready=true]').waitFor();
+          assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').count(), 0);
+          assert.equal(await page.locator('.jm-statusbar').isHidden(), true, 'Kein Statusleisten-Overlay im normalen Browser');
+          await page.emulateMedia({ colorScheme: 'light' });
+          for (const scheme of ['dark', 'light', 'dark']) {
+            await page.locator('[data-action=theme]').click();
+            assert.equal(await page.locator('html').evaluate(element => element.style.colorScheme), scheme);
+            assert.equal(await page.locator('.jm-app').evaluate(element => element.style.colorScheme), scheme);
+          }
           assert.equal(await page.locator('.jm-scroll>.jm-alert, .jm-home-hint').count(), 0, 'Keine Hinweiszeile unter dem Header');
           assert.equal(await page.locator('html').getAttribute('lang'), language);
           for (const view of ['setup', 'sound', 'info']) {
@@ -51,6 +59,7 @@ const path = require('node:path');
           await guide.locator('summary').click(); assert.equal(await guide.locator('li:visible').count(), 5);
           await page.locator('a[href="./lizenzen.html"]').click();
           await page.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
+          await page.waitForFunction(() => document.documentElement.style.colorScheme === 'dark');
           const licence = await page.locator(`[data-locale="${language}"] a`).first().getAttribute('href');
           assert.equal(licence, './LICENSE.txt');
           assert.deepEqual(errors, []);
