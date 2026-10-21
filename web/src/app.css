@@ -27,7 +27,7 @@
 #jm-arena .jm-locale-code:after { content:'⌄'; margin-left:3px; }
 #jm-arena .jm-flag { display:block; width:24px; height:16px; object-fit:contain; border-radius:2px; box-shadow:0 0 0 1px #0002; }
 #jm-arena .jm-flag[data-language=en] { width:28px; height:14px; }
-@container(max-width:360px) { #jm-arena .jm-brand { font-size:21px; } #jm-arena .jm-head { gap:8px; padding-left:12px; padding-right:12px; } #jm-arena .jm-crest { width:38px; } }
+@container(max-width:360px) { #jm-arena .jm-brand { font-size:18px; } #jm-arena .jm-head { gap:8px; padding-left:12px; padding-right:12px; } #jm-arena .jm-crest { width:38px; } }
 @container(max-width:310px) { #jm-arena .jm-brand { font-size:18px; } #jm-arena .jm-head { gap:7px; } #jm-arena .jm-crest { width:34px; height:56px; } }
 #jm-arena .jm-icon-button svg { width:19px; height:19px; }
 #jm-arena .jm-stripe { height:4px; background:repeating-linear-gradient(120deg,var(--jm-accent),var(--jm-accent) 10px,var(--jm-bg) 10px,var(--jm-bg) 14px); }
@@ -113,6 +113,9 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-app { max-width:none; min-height:100dvh; border:0; border-radius:0; box-shadow:none; overflow:visible; padding-top:env(safe-area-inset-top); }
 #jm-arena .jm-head { padding-top:16px; padding-bottom:16px; }
 #jm-arena .jm-body { min-height:0; }
+#jm-arena .jm-stage>.jm-app { display:flex; flex-direction:column; height:100dvh!important; min-height:0; overflow:hidden; }
+#jm-arena .jm-stage>.jm-app>:not(.jm-body) { flex-shrink:0; }
+#jm-arena .jm-stage>.jm-app>.jm-body { flex:1; overflow-y:auto; overscroll-behavior:contain; }
 #jm-arena .jm-language-picker { position:relative; }
 #jm-arena .jm-language-select { gap:1px; }
 #jm-arena .jm-select-arrow { font-size:10px; line-height:1; }
@@ -138,7 +141,6 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-info-links a { display:block; padding:16px; min-height:48px; border:1px solid var(--jm-line); color:var(--jm-ink); background:var(--jm-panel); border-radius:var(--jm-radius); font-weight:600; text-decoration:none; }
 #jm-arena .jm-info-version { color:var(--jm-soft); margin:0 0 24px; }
 #jm-arena .jm-head, #jm-arena .jm-nav, #jm-arena .jm-counter, #jm-arena .jm-score, #jm-arena .jm-timing strong { direction:ltr; }
-#jm-arena [data-action=fullscreen] { margin-bottom:16px; }
 #jm-arena .jm-legal { max-width:900px; padding:20px; line-height:1.7; }
 #jm-arena .jm-legal header { display:flex; align-items:center; justify-content:space-between; gap:20px; direction:ltr; }
 #jm-arena .jm-legal h1 { font:700 42px/1.1 var(--jm-title); margin-top:28px; }

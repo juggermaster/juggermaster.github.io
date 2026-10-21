@@ -40,10 +40,10 @@ function persist() {
   try { localStorage.setItem(storageKey, json); lastSave = json; storageError = false; }
   catch { storageError = true; noticeKey = 'storageFailed'; }
 }
-async function enterFullscreen(manual = false) {
+async function enterFullscreen() {
   if (document.fullscreenElement || document.webkitFullscreenElement || matchMedia('(display-mode: fullscreen)').matches) return;
   try { await fullscreenRequest.call(document.documentElement, { navigationUI: 'hide' }); }
-  catch { if (manual) { noticeKey = 'fullscreenFailed'; render(); } }
+  catch { noticeKey = 'fullscreenFailed'; render(); }
 }
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
 function setText(name, value) { $(`[data-read="${name}"]`).textContent = value; }
@@ -194,7 +194,7 @@ function dialog(title, text, label, action) {
 }
 function showView(next) {
   if (running || countdown >= 0 || starting) pause();
-  view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render();
+  view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-body').scrollTop = 0;
   globalThis.history.replaceState(null, '', next === 'match' ? location.pathname + location.search : `#${next}`);
   ranges.forEach(range => { range.calcSize(); range.layout(); });
 }
@@ -207,8 +207,6 @@ function openLanguages() {
   $('[data-action=language-menu]').setAttribute('aria-expanded', String(!menu.hidden));
   if (!menu.hidden) $(`[data-language-option=${language}]`).focus();
 }
-// Browser tabs require a gesture; request once per visit, respecting a later manual exit.
-root.addEventListener('click', event => { if (!event.target.closest('[data-action=fullscreen]') && fullscreenAvailable) enterFullscreen(); }, { once: true, capture: true });
 root.addEventListener('click', async event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
@@ -216,7 +214,7 @@ root.addEventListener('click', async event => {
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
   const action = button.dataset.action;
   if (action === 'language-menu') openLanguages();
-  else if (action === 'fullscreen') await enterFullscreen(true);
+  else if (action === 'fullscreen') await enterFullscreen();
   else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
   else if (action === 'toggle') { if (running || countdown >= 0 || starting) pause(); else await start(); }
   else if (action === 'beat-preview') await togglePreview();

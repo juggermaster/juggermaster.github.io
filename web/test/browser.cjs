@@ -74,27 +74,30 @@ async function main() {
     assert.equal(await page.locator('.jm-offline').isHidden(), true, 'Kein dauerhafter Offline-Hinweis unter der Navigation');
     assert.equal(await page.locator('.jm-offline').evaluate(element => element.getBoundingClientRect().height), 0, 'Kein Platzverbrauch durch den ausgeblendeten Hinweis');
     assert.equal(await page.locator('#jm-arena').getAttribute('lang'), 'de');
-    assert.equal(await read('[data-read=stones]'), '100'); assert.equal(await read('[data-read=score-a]'), '0');
+    assert.equal(await read('[data-read=stones]'), '0'); assert.equal(await read('[data-read=score-a]'), '0');
+    assert.equal(await read('[data-read=phase]'), '1. Satz');
+    await tab('setup'); assert.equal(await page.locator('[data-setting=periods]').inputValue(), '-1'); await tab('match');
     assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
     assert.equal(await page.locator('.jm-feedback').count(), 0, 'Keine Toast-Oberfläche');
-    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Browser-Vollbild wartet auf Berührung');
-    assert.equal((await (await context.request.get(url + 'manifest.webmanifest')).json()).display, 'fullscreen');
+    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Tabwechsel aktiviert kein Vollbild');
+    assert.equal((await (await context.request.get(url + 'manifest.webmanifest')).json()).display, 'standalone');
     await click('language-menu');
-    assert.deepEqual(await page.evaluate(() => window.__fullscreenRequests), [{ element: 'HTML', options: { navigationUI: 'hide' } }]);
+    assert.deepEqual(await page.evaluate(() => window.__fullscreenRequests), [], 'Flaggenmenü aktiviert kein Vollbild');
     assert.equal((await page.locator('#jm-languages').textContent()).trim(), '', 'Sprachmenü enthält ausschließlich Flaggen');
     assert.equal((await page.locator('[data-action=language-menu]').textContent()).replace('⌄', '').trim(), '', 'Keine Sprachkürzel in der Anzeige');
     await page.locator('[data-language-option=en]').click();
     assert.equal(await read('[data-read=start-label]'), 'Start match'); await chooseLanguage('de');
-    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 1, 'Keine erneute Vollbildanforderung bei weiteren Klicks');
-    await tab('info'); await click('fullscreen');
-    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 2, 'Vollbild lässt sich über Info erneut öffnen');
+    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Weitere Klicks aktivieren kein Vollbild');
+    assert.equal(await page.locator('.jm-head [data-action=fullscreen]').count(), 1);
+    await click('fullscreen');
+    assert.deepEqual(await page.evaluate(() => window.__fullscreenRequests), [{ element: 'HTML', options: { navigationUI: 'hide' } }], 'Nur der Kopfzeilenknopf fordert Vollbild an');
     await page.evaluate(() => { window.__fullscreenRejected = true; });
     await click('fullscreen'); assert.match(await read('[data-read=notice]'), /Vollbild/);
     await page.evaluate(() => { window.__fullscreenRejected = false; });
     await tab('match');
     await resetAudio(); await click('score-a-plus'); await page.waitForFunction(() => window.__starts.length === 21);
     assert.ok((await audio()).ends[0] > (await audio()).starts[7], 'Endschläge überlagern sich');
-    await click('score-a-plus'); assert.equal((await audio()).cancelled, 0); assert.equal(await read('[data-read=stones]'), '100');
+    await click('score-a-plus'); assert.equal((await audio()).cancelled, 0); assert.equal(await read('[data-read=stones]'), '0');
     await click('undo'); await click('undo');
     await newMatch({ periods: 2, limit: 4, pace: .5 });
     await tab('sound'); await resetAudio(); await click('beat-preview');
@@ -136,6 +139,13 @@ async function main() {
         await tab(view);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${view}: ${width}px ohne Überbreite`);
         assert.ok(await page.evaluate(() => { const brand = document.querySelector('.jm-brand'), box = brand.getBoundingClientRect(), actions = document.querySelector('.jm-head-actions').getBoundingClientRect(); return brand.scrollWidth <= brand.clientWidth && box.right <= actions.left; }), `Kopfzeile ${width}px`);
+        const navBefore = await page.locator('.jm-nav').boundingBox();
+        assert.ok(Math.abs(navBefore.y + navBefore.height - 1000) <= 1, `Tabs am unteren Rand: ${view}/${width}`);
+        await page.locator('.jm-body').evaluate(element => { element.scrollTop = element.scrollHeight; });
+        const navAfter = await page.locator('.jm-nav').boundingBox();
+        assert.equal(navAfter.y, navBefore.y, `Tabs bleiben beim Scrollen sichtbar: ${view}/${width}`);
+        assert.ok(await page.locator('.jm-body').evaluate(element => element.getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top + 1), 'Inhalt überlappt keine Tabs');
+        if (view === 'sound') await page.locator('[data-action=signal-preview]').click({ trial: true });
       }
     }
     await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = ''; });
@@ -256,7 +266,7 @@ async function main() {
     } finally { await preferred.close(); }
     assert.deepEqual(external, [], 'Keine externen Laufzeit-Abhängigkeiten');
     assert.deepEqual(errors, [], 'Keine JavaScript-Fehler');
-    console.log('OK: Vollbild nach Berührung, erneutes Vollbild, Ablehnung/fehlender Unterstützung, keine Toasts, Spielabläufe, Audio, Flaggen, Wake Lock, vier Breiten, Offline-Neustart und kontrolliertes Update.');
+    console.log('OK: Sätze als Standard, manuelles Vollbild, feste Tabs beim Scrollen, Spielabläufe, Audio, Flaggen, Wake Lock, vier Breiten, Offline-Neustart und kontrolliertes Update.');
   } catch (error) {
     console.error('Browserdiagnose:', { errors, url: page.url(), state: await page.evaluate(() => ({ lang: document.documentElement.lang, preference: localStorage.getItem('juggermaster:language'), sections: [...document.querySelectorAll('[data-locale]')].map(section => ({ locale: section.dataset.locale, hidden: section.hidden, height: section.getBoundingClientRect().height })) })).catch(() => null) });
     throw error;

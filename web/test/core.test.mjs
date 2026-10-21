@@ -9,7 +9,7 @@ import { translatedHelp } from '../help-content.mjs';
 import { translatedLegal } from '../legal-content.mjs';
 
 test('Halbzeiten, Golden Jugg und Korrekturen', () => {
-  let game = newGame(defaults);
+  let game = newGame({ ...defaults, periods: 2 });
   assert.equal(game.consumed, 0);
   game = adjustStones(game, -1, 'down');
   assert.equal(game.consumed, 1);
@@ -22,7 +22,8 @@ test('Halbzeiten, Golden Jugg und Korrekturen', () => {
   assert.equal(awardPoint(game, 'b', 1), game, 'Beendetes Spiel erhält keine weiteren Punkte');
 });
 test('Satzspiel mit fünf Punkten und zwei Gewinnsätzen', () => {
-  const config = { ...defaults, periods: -1 };
+  assert.equal(defaults.periods, -1, 'Neue Spiele verwenden standardmäßig Sätze');
+  const config = defaults;
   let game = newGame(config);
   for (let i = 0; i < 5; i++) game = awardPoint(game, 'a', 1);
   assert.equal(game.setsA, 1); assert.equal(game.setComplete, true); assert.equal(game.ended, false);

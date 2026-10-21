@@ -2,7 +2,7 @@ import { locales } from './locale.mjs';
 
 export const defaults = Object.freeze({
   teamA: 'Raben', teamB: 'Wölfe', colorA: '#c9724f', colorB: '#76a38b',
-  periods: 2, limit: 100, direction: 'down', pace: 1.5,
+  periods: -1, limit: 100, direction: 'down', pace: 1.5,
   pausePoint: true, beatEnabled: true, signalCount: 3, countdown: false,
   targetPoints: 5, setsToWin: 2
 });

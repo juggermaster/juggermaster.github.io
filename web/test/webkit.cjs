@@ -27,6 +27,11 @@ const path = require('node:path');
           for (const view of ['setup', 'sound', 'info']) {
             await page.locator(`[data-tab=${view}]`).click();
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${device}/${language}/${view}`);
+            const navBefore = await page.locator('.jm-nav').boundingBox();
+            assert.ok(Math.abs(navBefore.y + navBefore.height - await page.evaluate(() => innerHeight)) <= 1, 'Tabs am Bildschirmrand');
+            await page.locator('.jm-body').evaluate(element => { element.scrollTop = element.scrollHeight; });
+            assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
+            if (view === 'sound') await page.locator('[data-action=signal-preview]').click({ trial: true });
           }
           await page.locator('a[href="./lizenzen.html"]').click();
           await page.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
