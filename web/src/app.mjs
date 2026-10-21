@@ -52,13 +52,15 @@ async function enterFullscreen() {
 }
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
 function rememberTeam(side) {
-  const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'];
+  const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'], defaultName = config[`${side}Default`];
   if (!name) return;
   const saved = teams.find(team => team.name.toLowerCase() === name.toLowerCase());
-  if (saved) Object.assign(saved, { name, color }); else teams.push({ name, color });
+  if (saved) Object.assign(saved, { name, color, defaultName }); else teams.push({ name, color, defaultName });
 }
 function setText(name, value) { $(`[data-read="${name}"]`).textContent = value; }
-function teamName(side) { return config[side] || t(side); }
+function configuredTeamName(side) { return config[`${side}Default`] ? t(config[`${side}Default`]) : config[side]; }
+function savedTeamName(team) { return team.defaultName ? t(team.defaultName) : team.name; }
+function teamName(side) { return configuredTeamName(side) || t(side); }
 
 function renderLanguage() {
   root.lang = language; document.documentElement.lang = language; document.documentElement.dir = locales[language].dir || 'ltr';
@@ -117,10 +119,10 @@ function render() {
     element.classList.toggle('tab-link-active', element.dataset.tab === view);
     if (element.dataset.tab === view) element.setAttribute('aria-current', 'page'); else element.removeAttribute('aria-current');
   });
-  $$('[data-setting]').forEach(input => { if (input === document.activeElement) return; const value = config[input.dataset.setting]; if (input.type === 'checkbox') input.checked = value; else input.value = value; });
+  $$('[data-setting]').forEach(input => { if (input === document.activeElement) return; const key = input.dataset.setting, value = ['teamA', 'teamB'].includes(key) ? configuredTeamName(key) : config[key]; if (input.type === 'checkbox') input.checked = value; else input.value = value; });
   $$('[data-team-choice]').forEach(select => {
     if (view !== 'setup' || select === document.activeElement) return;
-    select.replaceChildren(new Option(t('chooseTeam'), ''), ...teams.map(team => new Option(team.name, team.name)));
+    select.replaceChildren(new Option(t('chooseTeam'), ''), ...teams.map(team => new Option(savedTeamName(team), team.name)));
     const saved = teams.find(team => team.name === config[select.dataset.teamChoice] && team.color.toLowerCase() === config[select.dataset.teamChoice === 'teamA' ? 'colorA' : 'colorB'].toLowerCase());
     select.value = saved?.name || '';
   });
@@ -283,6 +285,7 @@ root.addEventListener('click', async event => {
     const [removed] = teams.splice(index, 1), next = teams[index] || teams[0];
     for (const side of ['teamA', 'teamB']) if (config[side].toLowerCase() === removed.name.toLowerCase()) {
       config[side] = next?.name || '';
+      config[`${side}Default`] = next?.defaultName || '';
       if (next) config[side === 'teamA' ? 'colorA' : 'colorB'] = next.color;
     }
     render(); persist(); return;
@@ -338,10 +341,12 @@ root.addEventListener('change', event => {
   const input = event.target, key = input.dataset.setting;
   const side = input.dataset.teamChoice || (['teamA', 'colorA'].includes(key) ? 'teamA' : ['teamB', 'colorB'].includes(key) ? 'teamB' : null);
   if (!side) return;
-  const saved = teams.find(team => team.name.toLowerCase() === (input.dataset.teamChoice ? input.value : config[side]).toLowerCase());
+  const name = (input.dataset.teamChoice ? input.value : config[side]).toLowerCase();
+  const saved = teams.find(team => team.name.toLowerCase() === name) || (!input.dataset.teamChoice && teams.find(team => savedTeamName(team).toLowerCase() === name));
   if (input.dataset.teamChoice && !saved) return;
   if (saved && (input.dataset.teamChoice || key === side)) {
     config[side] = saved.name; config[side === 'teamA' ? 'colorA' : 'colorB'] = saved.color;
+    config[`${side}Default`] = saved.defaultName || '';
   }
   rememberTeam(side); render(); persist();
 });
@@ -350,7 +355,7 @@ root.addEventListener('input', event => {
   if (input.dataset.sound) { const value = Number(input.value); if (!Number.isFinite(value)) return; sound[input.dataset.sound] = clamp(value, Number(input.min), Number(input.max)); render(); persist(); }
   if (input.dataset.setting) {
     const key = input.dataset.setting;
-    if (['teamA', 'teamB'].includes(key)) config[key] = input.value.trim().slice(0, 22);
+    if (['teamA', 'teamB'].includes(key)) { config[key] = input.value.trim().slice(0, 22); config[`${key}Default`] = ''; }
     else if (['colorA', 'colorB'].includes(key)) { if (/^#[0-9a-f]{6}$/i.test(input.value)) config[key] = input.value; }
     else if (input.type === 'checkbox') config[key] = input.checked;
     else if (key === 'direction') config[key] = input.value;

@@ -211,8 +211,8 @@ async function main() {
       assert.equal(await page.locator(`[data-setting=color${side}]`).inputValue(), color);
     }
     const savedTeams = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).teams);
-    assert.deepEqual(savedTeams.find(team => team.name === 'Falken'), { name: 'Falken', color: '#123456' });
-    assert.deepEqual(savedTeams.find(team => team.name === 'Ritter'), { name: 'Ritter', color: '#654321' });
+    assert.deepEqual(savedTeams.find(team => team.name === 'Falken'), { name: 'Falken', color: '#123456', defaultName: '' });
+    assert.deepEqual(savedTeams.find(team => team.name === 'Ritter'), { name: 'Ritter', color: '#654321', defaultName: '' });
     await page.locator('[data-team-choice=teamA]').selectOption('Raben');
     await page.locator('[data-setting=colorA]').evaluate(input => { input.value = '#abcdef'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
     await click('defaults'); await page.reload(); await ready();
@@ -228,7 +228,7 @@ async function main() {
     assert.equal(await page.locator('[data-team-choice=teamB] option[value=Raben]').count(), 0, 'Löschen entfernt das Team aus beiden Listen');
     const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     assert.deepEqual(afterDelete.game, beforeDelete.game, 'Team löschen erhält das aktuelle Spiel');
-    assert.deepEqual(afterDelete.config, { ...beforeDelete.config, teamA: nextTeam.name, colorA: nextTeam.color }, 'Team löschen übernimmt das nächste Team samt Farbe');
+    assert.deepEqual(afterDelete.config, { ...beforeDelete.config, teamA: nextTeam.name, colorA: nextTeam.color, teamADefault: nextTeam.defaultName }, 'Team löschen übernimmt das nächste Team samt Farbe');
     await page.reload(); await ready();
     assert.equal(await page.locator('[data-team-choice=teamA] option[value=Raben]').count(), 0, 'Gelöschte aktuelle Teams bleiben nach Neustart gelöscht');
     await page.locator('[data-setting=teamA]').fill('falken'); await page.locator('[data-setting=teamA]').press('Tab');
@@ -352,11 +352,17 @@ async function main() {
         assert.equal(await sample.locator('html').getAttribute('lang'), language, `Browsersprache ${locale.tag}`);
         assert.equal(await sample.locator('html').getAttribute('dir'), locale.dir || 'ltr');
         assert.equal(await sample.locator('[data-read=start-label]').textContent(), texts[language].startMatch);
+        assert.equal(await sample.locator('[data-read=team-a]').textContent(), texts[language].defaultTeamA.toLocaleUpperCase(language));
+        assert.equal(await sample.locator('[data-read=team-b]').textContent(), texts[language].defaultTeamB.toLocaleUpperCase(language));
         assert.deepEqual(await sample.locator('.jm-nav [data-i18n]').allTextContents(), [texts[language].match, texts[language].setupTab, texts[language].sound, texts[language].info]);
         for (const view of ['setup', 'sound', 'info']) {
           await sample.locator(`[data-tab=${view}]`).click();
           await sample.locator(`[data-view=${view}]`).waitFor({ state: 'visible' });
           if (view === 'setup') {
+            assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), texts[language].defaultTeamA);
+            assert.equal(await sample.locator('[data-setting=teamB]').inputValue(), texts[language].defaultTeamB);
+            assert.equal(await sample.locator('[data-team-choice=teamA] option[value=Raben]').textContent(), texts[language].defaultTeamA);
+            assert.equal(await sample.locator('[data-setting=colorA]').evaluate(input => input.closest('.jm-team-card').querySelector('[data-setting=teamA]') !== null), true, 'Teamfarbe gehört zur selben Karte wie der Name');
             assert.equal(await sample.locator('[data-action=defaults]').textContent(), texts[language].loadDefaults);
             assert.equal(await sample.locator('[data-team-choice=teamA] option').first().textContent(), texts[language].chooseTeam);
             assert.equal(await sample.locator('[data-team-delete=teamA]').getAttribute('aria-label'), texts[language].deleteTeam);
@@ -387,10 +393,27 @@ async function main() {
     try {
       let sample = await preferred.newPage(); await sample.goto(url); await sample.locator('.jm-app[data-ready=true]').waitFor();
       assert.equal(await sample.locator('html').getAttribute('lang'), 'es');
+      await sample.locator('[data-tab=setup]').click();
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'Cuervos');
+      await sample.locator('[data-action=language-menu]').click(); await sample.locator('[data-language-option=fr]').click();
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'Corbeaux');
+      await sample.locator('[data-setting=teamA]').fill('HLU'); await sample.locator('[data-setting=teamA]').press('Tab');
+      await sample.locator('[data-setting=colorA]').evaluate(input => { input.value = '#123456'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
+      await sample.locator('[data-action=language-menu]').click(); await sample.locator('[data-language-option=en]').click();
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'HLU');
+      assert.equal(await sample.locator('[data-setting=colorA]').inputValue(), '#123456');
+      assert.equal(await sample.locator('[data-setting=teamB]').inputValue(), 'Wolves');
       await sample.locator('[data-action=language-menu]').click(); await sample.locator('[data-language-option=fr]').click();
       await preferred.addInitScript(() => { Object.defineProperty(navigator, 'languages', { value: ['pt-BR'], configurable: true }); });
       await sample.close(); sample = await preferred.newPage(); await sample.goto(url); await sample.locator('.jm-app[data-ready=true]').waitFor();
       assert.equal(await sample.locator('html').getAttribute('lang'), 'fr', 'Bewusste Auswahl gewinnt auch nach geändertem Browserstandard');
+      await sample.locator('[data-tab=setup]').click();
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'HLU');
+      assert.equal(await sample.locator('[data-setting=colorA]').inputValue(), '#123456');
+      await sample.locator('[data-action=defaults]').click();
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'Corbeaux');
+      await sample.locator('[data-team-choice=teamA]').selectOption('Wölfe');
+      assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'Loups', 'Standardteam behält seine Übersetzung auf der anderen Seite');
       await sample.setViewportSize({ width: 1440, height: 1000 });
       assert.ok((await sample.locator('.jm-app').boundingBox()).width > 1400, 'Desktop nutzt die verfügbare Breite');
       for (const view of ['setup', 'sound']) {

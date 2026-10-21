@@ -87,6 +87,8 @@
 #jm-arena .jm-fields-pair { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
 #jm-arena .jm-fields-pair .jm-field { margin-top:0; }
 #jm-arena .jm-field { min-width:0; }
+#jm-arena .jm-team-card { padding:12px; border:1px solid var(--jm-line); border-radius:var(--jm-radius); }
+#jm-arena .jm-team-color { display:block; margin-top:12px; }
 #jm-arena .jm-team-entry { display:flex; gap:8px; align-items:center; min-width:0; direction:ltr; }
 #jm-arena .jm-team-combo { position:relative; flex:1; min-width:0; }
 [dir=rtl] #jm-arena .jm-team-combo { direction:rtl; }
@@ -172,6 +174,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
   #jm-arena .jm-head { padding-left:30px; padding-right:30px; }
 }
 @media(min-width:1000px) {
+  #jm-arena [data-view=setup]>.jm-team-fields { grid-column:1/-1; }
   #jm-arena [data-view=sound], #jm-arena [data-view=setup] { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:36px; align-content:start; max-width:none; }
   #jm-arena [data-view=sound]>.jm-eyebrow, #jm-arena [data-view=sound]>.jm-page-title, #jm-arena [data-view=sound]>.jm-label, #jm-arena [data-view=sound]>.jm-segment, #jm-arena [data-view=sound]>.jm-wave, #jm-arena [data-view=sound]>.jm-actions { grid-column:1/-1; }
   #jm-arena [data-view=setup]>.jm-eyebrow, #jm-arena [data-view=setup]>.jm-page-title, #jm-arena [data-view=setup]>.jm-divider, #jm-arena [data-view=setup]>.jm-check, #jm-arena [data-view=setup]>.jm-primary, #jm-arena [data-view=setup]>.jm-actions, #jm-arena [data-view=setup]>.jm-note { grid-column:1/-1; }

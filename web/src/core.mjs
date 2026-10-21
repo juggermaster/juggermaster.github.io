@@ -2,6 +2,7 @@ import { locales } from './locale.mjs';
 
 export const defaults = Object.freeze({
   teamA: 'Raben', teamB: 'Wölfe', colorA: '#c9724f', colorB: '#76a38b',
+  teamADefault: 'defaultTeamA', teamBDefault: 'defaultTeamB',
   periods: -1, limit: 100, direction: 'down', pace: 1.5,
   pausePoint: true, beatEnabled: true, signalCount: 3, countdown: false,
   targetPoints: 5, setsToWin: 2
@@ -16,12 +17,17 @@ export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const finiteMatch = game => game.periods > 0 && !game.golden;
 const number = (value, min, max) => Number.isFinite(value) && value >= min && value <= max;
 const integer = (value, min, max) => Number.isInteger(value) && number(value, min, max);
+function teamDefault(name, color, key) {
+  const side = ['teamA', 'teamB'].find(side => name === defaults[side] && (key === defaults[`${side}Default`] || key === undefined && color === defaults[side === 'teamA' ? 'colorA' : 'colorB']));
+  return side ? defaults[`${side}Default`] : '';
+}
 
 export function cleanConfig(raw = {}) {
   if (!raw || typeof raw !== 'object') raw = {};
   const result = { ...defaults };
   for (const key of ['teamA', 'teamB']) if (typeof raw[key] === 'string') result[key] = raw[key].trim().slice(0, 22);
   for (const key of ['colorA', 'colorB']) if (/^#[0-9a-f]{6}$/i.test(raw[key])) result[key] = raw[key];
+  for (const side of ['teamA', 'teamB']) result[`${side}Default`] = teamDefault(result[side], result[side === 'teamA' ? 'colorA' : 'colorB'], raw[`${side}Default`]);
   if ([-1, 0, 2, 3].includes(raw.periods)) result.periods = raw.periods;
   for (const [key, min, max] of [['limit', 1, 9999], ['signalCount', 1, 10], ['targetPoints', 1, 99], ['setsToWin', 1, 5]]) if (integer(raw[key], min, max)) result[key] = raw[key];
   if (['up', 'down'].includes(raw.direction)) result.direction = raw.direction;
@@ -64,7 +70,7 @@ export function restoreSnapshot(value) {
   for (const team of Array.isArray(value.teams) ? value.teams : []) {
     if (typeof team?.name !== 'string' || !team.name.trim() || team.name.trim().length > 22 || !/^#[0-9a-f]{6}$/i.test(team.color)) continue;
     const name = team.name.trim();
-    teams.set(name.toLowerCase(), { name, color: team.color });
+    teams.set(name.toLowerCase(), { name, color: team.color, defaultName: teamDefault(name, team.color, team.defaultName) });
   }
   return { version: 1, language: Object.hasOwn(locales, value.language) ? value.language : 'de',
     theme: ['light', 'dark'].includes(value.theme) ? value.theme : '',

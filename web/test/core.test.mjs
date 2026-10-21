@@ -50,11 +50,25 @@ test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
     { name: '', color: '#123456' }, { name: 'x'.repeat(23), color: '#123456' },
     { name: 'Ungültig', color: 'red' }, null
   ] });
-  assert.deepEqual(restored.teams, [{ name: 'raben', color: '#ABCDEF' }]);
+  assert.deepEqual(restored.teams, [{ name: 'raben', color: '#ABCDEF', defaultName: '' }]);
   assert.deepEqual(restored.game, saved.game);
   const empty = restoreSnapshot({ ...saved, teams: [], config: { teamA: '', teamB: '  ' } });
   assert.equal(empty.config.teamA, ''); assert.equal(empty.config.teamB, '');
   assert.deepEqual(empty.teams, [], 'Leere Teamfelder werden beim Wiederherstellen nicht neu befüllt');
+});
+
+test('Standardnamen markieren, alte Vorgaben übernehmen und eigene Namen erhalten', () => {
+  const saved = { version: 1, game: newGame(defaults) };
+  const legacy = restoreSnapshot({ ...saved, config: { teamA: 'Raben', teamB: 'HLU' }, teams: [{ name: 'Raben', color: defaults.colorA }, { name: 'HLU', color: '#123456' }] });
+  assert.equal(legacy.config.teamADefault, 'defaultTeamA');
+  assert.equal(legacy.config.teamBDefault, '');
+  assert.deepEqual(legacy.teams.map(team => team.defaultName), ['defaultTeamA', '']);
+  assert.equal(cleanConfig({ ...defaults, teamA: 'HLU' }).teamADefault, '', 'Fremde Namen können keine Standardmarkierung behalten');
+  assert.equal(cleanConfig({ ...defaults, colorA: '#123456' }).teamADefault, 'defaultTeamA', 'Markierte Vorgaben behalten ihre eigene Farbe');
+  assert.equal(cleanConfig({ teamA: 'Raben', colorA: '#123456' }).teamADefault, '', 'Vorhandene eigene Farbprofile unverändert lassen');
+  assert.equal(cleanConfig({ ...defaults, teamADefault: '' }).teamADefault, '', 'Bewusst eigene Namen beim Neustart erhalten');
+  assert.equal(cleanConfig({ ...defaults, teamA: 'Wölfe', teamADefault: 'defaultTeamB' }).teamADefault, 'defaultTeamB', 'Standardteam kann die Seite wechseln');
+  assert.equal(cleanConfig({ ...defaults, teamADefault: 'unknown' }).teamADefault, '');
 });
 
 test('Alle Sprachfassungen, Platzhalter und lokale SVG-Flaggen sind vollständig', () => {
