@@ -186,7 +186,6 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
   #jm-arena [data-view=match]>.jm-topline, #jm-arena [data-view=match]>.jm-timing, #jm-arena [data-view=match]>.jm-primary, #jm-arena [data-view=match]>.jm-actions, #jm-arena [data-view=match]>.jm-result, #jm-arena [data-view=match]>.jm-sets, #jm-arena [data-view=match]>.jm-countdown { grid-column:1/-1; }
   #jm-arena .jm-teams { margin-top:0; align-content:center; }
   #jm-arena [data-action=toggle] { margin-top:0; }
-  #jm-arena [data-view=sound], #jm-arena [data-view=setup] { max-width:560px; margin:auto; }
   #jm-arena .jm-head { padding-left:30px; padding-right:30px; }
 }
 @media(min-width:1000px) {
