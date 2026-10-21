@@ -52,6 +52,9 @@ test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
   ] });
   assert.deepEqual(restored.teams, [{ name: 'raben', color: '#ABCDEF' }]);
   assert.deepEqual(restored.game, saved.game);
+  const empty = restoreSnapshot({ ...saved, teams: [], config: { teamA: '', teamB: '  ' } });
+  assert.equal(empty.config.teamA, ''); assert.equal(empty.config.teamB, '');
+  assert.deepEqual(empty.teams, [], 'Leere Teamfelder werden beim Wiederherstellen nicht neu befüllt');
 });
 
 test('Alle Sprachfassungen, Platzhalter und lokale SVG-Flaggen sind vollständig', () => {

@@ -20,7 +20,7 @@ const integer = (value, min, max) => Number.isInteger(value) && number(value, mi
 export function cleanConfig(raw = {}) {
   if (!raw || typeof raw !== 'object') raw = {};
   const result = { ...defaults };
-  for (const key of ['teamA', 'teamB']) if (typeof raw[key] === 'string' && raw[key].trim()) result[key] = raw[key].trim().slice(0, 22);
+  for (const key of ['teamA', 'teamB']) if (typeof raw[key] === 'string') result[key] = raw[key].trim().slice(0, 22);
   for (const key of ['colorA', 'colorB']) if (/^#[0-9a-f]{6}$/i.test(raw[key])) result[key] = raw[key];
   if ([-1, 0, 2, 3].includes(raw.periods)) result.periods = raw.periods;
   for (const [key, min, max] of [['limit', 1, 9999], ['signalCount', 1, 10], ['targetPoints', 1, 99], ['setsToWin', 1, 5]]) if (integer(raw[key], min, max)) result[key] = raw[key];

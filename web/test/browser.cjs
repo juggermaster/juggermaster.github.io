@@ -220,12 +220,15 @@ async function main() {
     await page.locator('[data-team-choice=teamA]').selectOption('Raben');
     assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#abcdef', 'Voreinstellungen und Neustart überschreiben keine gespeicherte Teamfarbe');
     const beforeDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    const nextTeam = beforeDelete.teams[beforeDelete.teams.findIndex(team => team.name === 'Raben') + 1];
     await page.locator('[data-team-delete=teamA]').click();
-    assert.equal(await page.locator('[data-team-delete=teamA]').isDisabled(), true);
+    assert.equal(await page.locator('[data-setting=teamA]').inputValue(), nextTeam.name);
+    assert.equal(await page.locator('[data-team-choice=teamA]').inputValue(), nextTeam.name);
+    assert.equal(await page.locator('[data-setting=colorA]').inputValue(), nextTeam.color);
     assert.equal(await page.locator('[data-team-choice=teamB] option[value=Raben]').count(), 0, 'Löschen entfernt das Team aus beiden Listen');
     const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     assert.deepEqual(afterDelete.game, beforeDelete.game, 'Team löschen erhält das aktuelle Spiel');
-    assert.deepEqual(afterDelete.config, beforeDelete.config, 'Team löschen erhält die aktuellen Mannschaften');
+    assert.deepEqual(afterDelete.config, { ...beforeDelete.config, teamA: nextTeam.name, colorA: nextTeam.color }, 'Team löschen übernimmt das nächste Team samt Farbe');
     await page.reload(); await ready();
     assert.equal(await page.locator('[data-team-choice=teamA] option[value=Raben]').count(), 0, 'Gelöschte aktuelle Teams bleiben nach Neustart gelöscht');
     await page.locator('[data-setting=teamA]').fill('falken'); await page.locator('[data-setting=teamA]').press('Tab');
@@ -253,7 +256,7 @@ async function main() {
         assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth), `${view}: ${width}px ohne seitliches Scrollen im Inhalt`);
         if (view === 'setup') for (const side of ['A', 'B']) {
           const combo = await page.locator(`[data-setting=team${side}]`).boundingBox(), remove = await page.locator(`[data-team-delete=team${side}]`).boundingBox();
-          assert.ok(width < 700 ? remove.y >= combo.y + combo.height : remove.x >= combo.x + combo.width && Math.abs(remove.y + remove.height / 2 - combo.y - combo.height / 2) <= 1, 'Löschbutton mobil unter dem Feld, sonst daneben');
+          assert.ok(remove.x >= combo.x + combo.width && Math.abs(remove.y + remove.height / 2 - combo.y - combo.height / 2) <= 1, 'Löschbutton auf jeder Breite rechts neben dem Feld');
         }
         assert.ok(await page.evaluate(() => { const brand = document.querySelector('.jm-brand'), box = brand.getBoundingClientRect(), actions = document.querySelector('.jm-head-actions').getBoundingClientRect(); return brand.scrollWidth <= brand.clientWidth && box.right <= actions.left; }), `Kopfzeile ${width}px`);
         const navBefore = await page.locator('.jm-nav').boundingBox();
@@ -357,6 +360,8 @@ async function main() {
             assert.equal(await sample.locator('[data-action=defaults]').textContent(), texts[language].loadDefaults);
             assert.equal(await sample.locator('[data-team-choice=teamA] option').first().textContent(), texts[language].chooseTeam);
             assert.equal(await sample.locator('[data-team-delete=teamA]').getAttribute('aria-label'), texts[language].deleteTeam);
+            const field = await sample.locator('[data-setting=teamA]').boundingBox(), remove = await sample.locator('[data-team-delete=teamA]').boundingBox();
+            assert.ok(remove.x >= field.x + field.width, `${language}: Löschbutton rechts vom Feld`);
           }
           if (view === 'sound') assert.equal(await sample.locator('[data-action=sound-defaults]').textContent(), texts[language].loadDefaults);
           assert.ok(await sample.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${language}/${view}: kein horizontaler Überlauf`);

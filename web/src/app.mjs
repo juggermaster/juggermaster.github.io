@@ -53,10 +53,12 @@ async function enterFullscreen() {
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
 function rememberTeam(side) {
   const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'];
+  if (!name) return;
   const saved = teams.find(team => team.name.toLowerCase() === name.toLowerCase());
   if (saved) Object.assign(saved, { name, color }); else teams.push({ name, color });
 }
 function setText(name, value) { $(`[data-read="${name}"]`).textContent = value; }
+function teamName(side) { return config[side] || t(side); }
 
 function renderLanguage() {
   root.lang = language; document.documentElement.lang = language; document.documentElement.dir = locales[language].dir || 'ltr';
@@ -88,7 +90,7 @@ function render() {
   const track = $('.jm-track'); track.hidden = !finite;
   track.setAttribute('aria-valuemax', game.limit); track.setAttribute('aria-valuenow', remaining);
   track.firstElementChild.style.width = `${remaining / game.limit * 100}%`;
-  setText('team-a', config.teamA.toLocaleUpperCase(language)); setText('team-b', config.teamB.toLocaleUpperCase(language));
+  setText('team-a', teamName('teamA').toLocaleUpperCase(language)); setText('team-b', teamName('teamB').toLocaleUpperCase(language));
   setText('score-a', game.a); setText('score-b', game.b);
   $$('.jm-team').forEach((team, index) => team.style.setProperty('--jm-team-color', index ? config.colorB : config.colorA));
   setText('elapsed', time(game.elapsed)); setText('period-time', time(game.periodTime)); setText('playtime', time(game.playtime)); setText('pace', `${decimal(config.pace)} s`);
@@ -106,7 +108,7 @@ function render() {
   $('[data-read=countdown]').hidden = countdown < 0;
   if (countdown >= 0) setText('countdown', [t('attention'), '3', '2', '1', t('jugg')][countdown]);
   $('[data-read=result]').hidden = !game.ended && !game.setComplete;
-  if (game.ended) setText('result', t('matchResult', { team: (game.periods === -1 ? game.setsA > game.setsB : game.a > game.b) ? config.teamA : config.teamB, a: game.periods === -1 ? game.setsA : game.a, b: game.periods === -1 ? game.setsB : game.b }));
+  if (game.ended) setText('result', t('matchResult', { team: teamName((game.periods === -1 ? game.setsA > game.setsB : game.a > game.b) ? 'teamA' : 'teamB'), a: game.periods === -1 ? game.setsA : game.a, b: game.periods === -1 ? game.setsB : game.b }));
   else if (game.setComplete) setText('result', t('setEnded'));
   $('[data-read=sets]').hidden = game.periods !== -1;
   setText('sets', t('setsScore', { a: game.setsA, b: game.setsB }));
@@ -275,7 +277,16 @@ root.addEventListener('click', async event => {
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
-  if (button.dataset.teamDelete) { teams = teams.filter(team => team.name.toLowerCase() !== config[button.dataset.teamDelete].toLowerCase()); render(); persist(); return; }
+  if (button.dataset.teamDelete) {
+    const index = teams.findIndex(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase());
+    if (index < 0) return;
+    const [removed] = teams.splice(index, 1), next = teams[index] || teams[0];
+    for (const side of ['teamA', 'teamB']) if (config[side].toLowerCase() === removed.name.toLowerCase()) {
+      config[side] = next?.name || '';
+      if (next) config[side === 'teamA' ? 'colorA' : 'colorB'] = next.color;
+    }
+    render(); persist(); return;
+  }
   let action = button.dataset.action;
   if (action === 'toggle') action = game.ended ? 'new' : game.setComplete || (finiteMatch(game) && game.consumed >= game.limit) ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
@@ -296,7 +307,7 @@ root.addEventListener('click', async event => {
     const sets = game.periods === -1, next = nextSection(game);
     if (next === game) return;
     const title = sets ? 'nextSetQuestion' : next.golden ? 'tieQuestion' : next.ended ? 'finishQuestion' : 'nextPeriodQuestion';
-    const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${config.teamA} ${game.a} : ${game.b} ${config.teamB}` : t('nextPeriodDescription');
+    const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${teamName('teamA')} ${game.a} : ${game.b} ${teamName('teamB')}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       remember(); game = next; persist(); render();
       currentDialog.once('closed', focusMatchButton);
@@ -339,7 +350,7 @@ root.addEventListener('input', event => {
   if (input.dataset.sound) { const value = Number(input.value); if (!Number.isFinite(value)) return; sound[input.dataset.sound] = clamp(value, Number(input.min), Number(input.max)); render(); persist(); }
   if (input.dataset.setting) {
     const key = input.dataset.setting;
-    if (['teamA', 'teamB'].includes(key)) config[key] = input.value.trim().slice(0, 22) || defaults[key];
+    if (['teamA', 'teamB'].includes(key)) config[key] = input.value.trim().slice(0, 22);
     else if (['colorA', 'colorB'].includes(key)) { if (/^#[0-9a-f]{6}$/i.test(input.value)) config[key] = input.value; }
     else if (input.type === 'checkbox') config[key] = input.checked;
     else if (key === 'direction') config[key] = input.value;
