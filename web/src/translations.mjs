@@ -7,7 +7,8 @@ const groups = [
   'cancel|newMatchQuestion|newMatchDescription|startNewMatch|nextPeriodQuestion|nextPeriodDescription|startPeriod|tieQuestion|goldenDescription|startGolden|finishQuestion|confirmResult|audioFailed',
   'signalCount|stopBeat|periodTime|colorA|colorB|setMatch|targetPoints|setsToWin|setNumber|setFormat|setsScore|setEnded|nextSet|nextSetQuestion|nextSetDescription|matchResult|startCountdown|counting|attention|jugg|cancelCountdown',
   'storageFailed|restoreFailed|restored|wakeFailed|offlineLoading|offlineReady|offlineUsing|offlineFailed|offlineUnsupported|retry|updateReady|updateNow|updatePaused|updateFailed',
-  'info|version|privacy|imprint|help|fullscreen|fullscreenFailed|backApp|sourceCode|licenses'
+  'info|version|privacy|imprint|help|fullscreen|fullscreenFailed|backApp|sourceCode|licenses',
+  'loadDefaults|chooseTeam'
 ].map(row => row.split('|'));
 
 const rows = {
@@ -19,7 +20,8 @@ const rows = {
     "ביטול|משחק חדש?|התוצאה תאופס. הגדרות הקבוצות והצליל יישמרו.|התחלת משחק חדש|הפרק הבא?|הנקודות נשמרות. ספירת האבנים מתחילה מחדש.|התחלת פרק|תיקו. Golden Jugg?|הנקודה הבאה תכריע את המשחק.|התחלת Golden Jugg|לסיים את המשחק?|אישור התוצאה|לא ניתן להפעיל את הצליל. הקישו שוב.",
     "מכות ב־Jugg / בסוף פרק|עצירת הקצב|פרק|צבע קבוצה A|צבע קבוצה B|משחק במערכות|נקודות למערכה|מערכות לניצחון|מערכה {number}|{sets} מערכות לניצחון · {points} נקודות|מערכות {a} : {b}|המערכה הסתיימה|המערכה הבאה|להתחיל את המערכה הבאה?|נקודות המערכה יאופסו. מערכות שנוצחו יישמרו.|{team} ניצחה · {a} : {b}|ספירה לאחור בהתחלה|התחלה|היכון|Jugger|ביטול ההתחלה",
     "לא ניתן לשמור. התוצאה תישמר רק עד סגירת הלשונית.|לא ניתן לקרוא את המשחק השמור. בדקו לפני התחלת משחק חדש.|המשחק הקודם שוחזר. לחצו על התחלה כדי להמשיך.|לא ניתן להשאיר את המסך ער. כבו נעילה אוטומטית בזמן המשחק.|שמירת קבצים לשימוש ללא רשת …|מוכן ללא רשת|ללא רשת · הכול זמין|הקבצים לשימוש ללא רשת אינם מלאים.|אחסון ללא רשת אינו זמין. פתחו את דף ה־HTTPS בדפדפן.|ניסיון נוסף|גרסה חדשה מוכנה. השהו לפני עדכון.|עדכון|השהו את ההשמעה לפני עדכון.|העדכון נכשל. הגרסה הקודמת עדיין זמינה.",
-    "מידע|גרסה|פרטיות|מידע משפטי|עזרה|מסך מלא|הדפדפן אינו מאפשר מסך מלא. נסו לפתוח דרך הסמל במסך הבית.|← חזרה לאפליקציה|קוד מקור|רישיונות"
+    "מידע|גרסה|פרטיות|מידע משפטי|עזרה|מסך מלא|הדפדפן אינו מאפשר מסך מלא. נסו לפתוח דרך הסמל במסך הבית.|← חזרה לאפליקציה|קוד מקור|רישיונות",
+    "טעינת ברירות המחדל|בחירת קבוצה שמורה"
   ],
   "ja": [
     "試合|音|設定|設定|メインナビゲーション|表示を切り替え|言語を選択|石を1つ減らす|石を1つ増やす|残りの石|得点 +|チームA：得点を追加|チームA：得点を減らす|チームB：得点を追加|チームB：得点を減らす",
@@ -29,7 +31,8 @@ const rows = {
     "キャンセル|新しい試合？|得点をリセットします。チームと音の設定は保持されます。|新しい試合を開始|次のピリオド？|得点は保持されます。石のカウントは最初から始まります。|ピリオド開始|同点。Golden Jugg？|次の得点で勝敗が決まります。|Golden Jugg開始|試合を終了？|結果を確定|音を有効にできませんでした。もう一度タップしてください。",
     "Jugg・ピリオド終了時の打音回数|拍子を止める|ピリオド|チームAの色|チームBの色|セット制|セットの目標得点|勝利に必要なセット数|第{number}セット|{sets}セット先取 · {points}点|セット {a} : {b}|セット終了|次のセット|次のセットを開始？|セットの得点をリセットします。獲得セット数は保持されます。|{team}の勝利 · {a} : {b}|開始前にカウントダウン|開始|用意|Jugger|開始をキャンセル",
     "保存できません。得点はこのタブを閉じるまで保持されます。|保存した試合を読み込めませんでした。新しい試合を始める前に確認してください。|前の試合を復元しました。開始を押して再開してください。|画面を点灯したままにできません。試合中は自動ロックを無効にしてください。|オフライン用ファイルを保存中 …|オフライン準備完了|オフライン · すべて利用可能|オフライン用ファイルが不足しています。|オフライン保存は利用できません。ブラウザーでHTTPSページを開いてください。|再試行|新しいバージョンの準備ができました。一時停止して更新してください。|更新|更新する前に再生を一時停止してください。|更新に失敗しました。以前のバージョンを引き続き利用できます。",
-    "情報|バージョン|プライバシー|法的情報|ヘルプ|全画面表示|このブラウザーでは全画面表示を使用できません。ホーム画面のアイコンから開いてください。|← アプリへ戻る|ソースコード|ライセンス"
+    "情報|バージョン|プライバシー|法的情報|ヘルプ|全画面表示|このブラウザーでは全画面表示を使用できません。ホーム画面のアイコンから開いてください。|← アプリへ戻る|ソースコード|ライセンス",
+    "初期設定を読み込む|保存したチームを選択"
   ],
   "ko": [
     "경기|소리|설정|설정|주 메뉴|화면 모드 변경|언어 선택|스톤 하나 줄이기|스톤 하나 늘리기|남은 스톤|득점 +|팀 A: 득점 추가|팀 A: 득점 취소|팀 B: 득점 추가|팀 B: 득점 취소",
@@ -39,7 +42,8 @@ const rows = {
     "취소|새 경기?|점수를 초기화합니다. 팀과 소리 설정은 유지됩니다.|새 경기 시작|다음 피리어드?|점수는 유지됩니다. 스톤 계수는 다시 시작합니다.|피리어드 시작|동점. Golden Jugg?|다음 득점으로 승패가 결정됩니다.|Golden Jugg 시작|경기를 종료할까요?|결과 확인|소리를 켤 수 없습니다. 다시 누르세요.",
     "Jugg / 피리어드 종료 타격 횟수|박자 중지|피리어드|팀 A 색상|팀 B 색상|세트 경기|세트 목표 점수|승리에 필요한 세트|{number}세트|{sets}세트 선승 · {points}점|세트 {a} : {b}|세트 종료|다음 세트|다음 세트를 시작할까요?|세트 점수를 초기화합니다. 획득한 세트는 유지됩니다.|{team} 승리 · {a} : {b}|시작 카운트다운 사용|시작|준비|Jugger|시작 취소",
     "저장할 수 없습니다. 이 탭을 닫을 때까지만 점수가 유지됩니다.|저장된 경기를 읽을 수 없습니다. 새 경기를 시작하기 전에 확인하세요.|이전 경기를 복원했습니다. 시작을 눌러 재개하세요.|화면을 켜진 상태로 유지할 수 없습니다. 경기 중 자동 잠금을 끄세요.|오프라인 파일 저장 중 …|오프라인 준비 완료|오프라인 · 모두 사용 가능|오프라인 파일이 불완전합니다.|오프라인 저장소를 사용할 수 없습니다. 브라우저에서 HTTPS 페이지를 여세요.|다시 시도|새 버전이 준비되었습니다. 일시정지 후 업데이트하세요.|업데이트|업데이트 전에 재생을 일시정지하세요.|업데이트에 실패했습니다. 이전 버전을 계속 사용할 수 있습니다.",
-    "정보|버전|개인정보|법적 고지|도움말|전체 화면|브라우저가 전체 화면을 허용하지 않습니다. 홈 화면 아이콘으로 실행해 보세요.|← 앱으로 돌아가기|소스 코드|라이선스"
+    "정보|버전|개인정보|법적 고지|도움말|전체 화면|브라우저가 전체 화면을 허용하지 않습니다. 홈 화면 아이콘으로 실행해 보세요.|← 앱으로 돌아가기|소스 코드|라이선스",
+    "기본 설정 불러오기|저장된 팀 선택"
   ],
   "zh-Hans": [
     "比赛|声音|设置|设置|主导航|切换外观|选择语言|减少一石|增加一石|剩余石数|得分 +|队伍A：加分|队伍A：减分|队伍B：加分|队伍B：减分",
@@ -49,7 +53,8 @@ const rows = {
     "取消|新比赛？|当前比分将清零。队伍和声音设置会保留。|开始新比赛|下一节？|比分保留，石数重新开始计数。|开始本节|平局。进入Golden Jugg？|下一个得分决定比赛结果。|开始Golden Jugg|结束比赛？|确认结果|无法启用声音，请再次点击。",
     "Jugg／节末击打次数|停止节拍|节次|队伍A颜色|队伍B颜色|按盘比赛|每盘目标分数|获胜所需盘数|第{number}盘|先赢{sets}盘 · {points}分|盘数 {a} : {b}|本盘结束|下一盘|开始下一盘？|本盘比分将清零，已赢盘数保留。|{team}获胜 · {a} : {b}|使用开始倒计时|开始|预备|Jugger|取消开始",
     "无法保存。比分仅保留到关闭此标签页。|无法读取已保存的比赛，开始新比赛前请检查。|已恢复上一场比赛，点击开始以继续。|无法保持屏幕常亮，请在比赛时关闭自动锁屏。|正在保存离线文件 …|离线就绪|离线 · 全部可用|离线文件不完整。|无法使用离线存储，请在浏览器中打开HTTPS页面。|重试|新版本已就绪，请暂停后更新。|更新|请在更新前暂停播放。|更新失败，原版本仍可使用。",
-    "信息|版本|隐私|法律声明|帮助|全屏显示|此浏览器不允许全屏，请尝试通过主屏幕图标打开。|← 返回应用|源代码|许可证"
+    "信息|版本|隐私|法律声明|帮助|全屏显示|此浏览器不允许全屏，请尝试通过主屏幕图标打开。|← 返回应用|源代码|许可证",
+    "加载默认设置|选择已保存的队伍"
   ],
   "zh-Hant": [
     "比賽|聲音|設定|設定|主導覽|切換外觀|選擇語言|減少一石|增加一石|剩餘石數|得分 +|隊伍A：加分|隊伍A：減分|隊伍B：加分|隊伍B：減分",
@@ -59,7 +64,8 @@ const rows = {
     "取消|新比賽？|目前比分將歸零，隊伍和聲音設定會保留。|開始新比賽|下一節？|比分保留，石數重新開始計數。|開始本節|平手。進入Golden Jugg？|下一個得分決定比賽結果。|開始Golden Jugg|結束比賽？|確認結果|無法啟用聲音，請再次點選。",
     "Jugg／節末擊打次數|停止節拍|節次|隊伍A顏色|隊伍B顏色|按盤比賽|每盤目標分數|獲勝所需盤數|第{number}盤|先贏{sets}盤 · {points}分|盤數 {a} : {b}|本盤結束|下一盤|開始下一盤？|本盤比分將歸零，已贏盤數保留。|{team}獲勝 · {a} : {b}|使用開始倒數計時|開始|預備|Jugger|取消開始",
     "無法儲存。比分僅保留到關閉此分頁。|無法讀取已儲存的比賽，開始新比賽前請檢查。|已還原上一場比賽，點選開始以繼續。|無法保持螢幕常亮，請在比賽時關閉自動鎖定。|正在儲存離線檔案 …|離線就緒|離線 · 全部可用|離線檔案不完整。|無法使用離線儲存，請在瀏覽器中開啟HTTPS頁面。|重試|新版本已就緒，請暫停後更新。|更新|請在更新前暫停播放。|更新失敗，原版本仍可使用。",
-    "資訊|版本|隱私權|法律聲明|說明|全螢幕顯示|此瀏覽器不允許全螢幕，請嘗試透過主畫面圖示開啟。|← 返回應用程式|原始碼|授權條款"
+    "資訊|版本|隱私權|法律聲明|說明|全螢幕顯示|此瀏覽器不允許全螢幕，請嘗試透過主畫面圖示開啟。|← 返回應用程式|原始碼|授權條款",
+    "載入預設設定|選擇已儲存的隊伍"
   ],
   "ro": [
     "Meci|Sunet|Configurare|Setări|Navigare principală|Schimbă aspectul|Alege limba|O piatră mai puțin|O piatră în plus|Pietre rămase|Punct +|Echipa A: adaugă punct|Echipa A: scade punct|Echipa B: adaugă punct|Echipa B: scade punct",
@@ -69,7 +75,8 @@ const rows = {
     "Anulează|Meci nou?|Scorul va fi resetat. Echipele și setările de sunet rămân.|Începe un meci nou|Perioada următoare?|Punctele rămân. Numărătoarea pietrelor reîncepe.|Începe perioada|Egalitate. Golden Jugg?|Următorul punct decide meciul.|Începe Golden Jugg|Închei meciul?|Confirmă rezultatul|Sunetul nu a putut fi activat. Atinge din nou.",
     "Bătăi la Jugg / sfârșit de perioadă|Oprește ritmul|Perioadă|Culoarea echipei A|Culoarea echipei B|Joc pe seturi|Puncte pe set|Seturi pentru victorie|Setul {number}|{sets} seturi pentru victorie · {points} puncte|Seturi {a} : {b}|Set încheiat|Setul următor|Începi setul următor?|Punctele setului se resetează. Seturile câștigate rămân.|{team} câștigă · {a} : {b}|Folosește numărătoare inversă|START|Atenție|Jugger|Anulează pornirea",
     "Nu se poate salva. Scorul rămâne doar până închizi această filă.|Meciul salvat nu poate fi citit. Verifică înainte de un meci nou.|Meciul anterior a fost restaurat. Pornește pentru a continua.|Ecranul nu poate fi menținut activ. Dezactivează blocarea automată în timpul meciului.|Se salvează fișierele offline …|Pregătit offline|Offline · Totul disponibil|Fișierele offline sunt incomplete.|Stocarea offline nu este disponibilă. Deschide pagina HTTPS în browser.|Reîncearcă|Versiune nouă pregătită. Pune pauză înainte de actualizare.|Actualizează|Oprește redarea înainte de actualizare.|Actualizarea a eșuat. Versiunea anterioară rămâne disponibilă.",
-    "Info|Versiune|Confidențialitate|Informații legale|Ajutor|Ecran complet|Browserul nu permite ecranul complet. Încearcă pictograma de pe ecranul principal.|← Înapoi la aplicație|Cod sursă|Licențe"
+    "Info|Versiune|Confidențialitate|Informații legale|Ajutor|Ecran complet|Browserul nu permite ecranul complet. Încearcă pictograma de pe ecranul principal.|← Înapoi la aplicație|Cod sursă|Licențe",
+    "Încarcă setările implicite|Alege o echipă salvată"
   ],
   "lv": [
     "Spēle|Skaņa|Iestatījumi|Iestatījumi|Galvenā navigācija|Mainīt izskatu|Izvēlēties valodu|Par vienu akmeni mazāk|Par vienu akmeni vairāk|Atlikušie akmeņi|Punkts +|Komanda A: pievienot punktu|Komanda A: atņemt punktu|Komanda B: pievienot punktu|Komanda B: atņemt punktu",
@@ -79,7 +86,8 @@ const rows = {
     "Atcelt|Jauna spēle?|Rezultāts tiks atiestatīts. Komandas un skaņas iestatījumi paliks.|Sākt jaunu spēli|Nākamais periods?|Punkti paliek. Akmeņu skaitītājs sāk no jauna.|Sākt periodu|Neizšķirts. Golden Jugg?|Nākamais punkts izšķir spēli.|Sākt Golden Jugg|Beigt spēli?|Apstiprināt rezultātu|Skaņu neizdevās ieslēgt. Pieskaries vēlreiz.",
     "Sitieni pie Jugg / perioda beigās|Apturēt ritmu|Periods|Komandas A krāsa|Komandas B krāsa|Spēlēt setos|Punkti setā|Seti uzvarai|Sets {number}|{sets} seti uzvarai · {points} punkti|Seti {a} : {b}|Sets beidzies|Nākamais sets|Sākt nākamo setu?|Seta punkti tiek atiestatīti. Uzvarētie seti paliek.|{team} uzvar · {a} : {b}|Lietot laika atskaiti|STARTS|Uzmanību|Jugger|Atcelt sākšanu",
     "Nevar saglabāt. Rezultāts paliks tikai līdz šīs cilnes aizvēršanai.|Saglabāto spēli nevar nolasīt. Pārbaudi pirms jaunas spēles.|Iepriekšējā spēle atjaunota. Nospied sākt, lai turpinātu.|Ekrānu nevar uzturēt ieslēgtu. Spēles laikā izslēdz automātisko bloķēšanu.|Saglabā bezsaistes failus …|Gatavs bezsaistei|Bezsaistē · Viss pieejams|Bezsaistes faili nav pilnīgi.|Bezsaistes krātuve nav pieejama. Atver HTTPS lapu pārlūkā.|Mēģināt vēlreiz|Jauna versija gatava. Pirms atjaunināšanas pauzē.|Atjaunināt|Pirms atjaunināšanas apturi atskaņošanu.|Atjaunināšana neizdevās. Iepriekšējā versija paliek pieejama.",
-    "Info|Versija|Privātums|Juridiskā informācija|Palīdzība|Pilnekrāna režīms|Pārlūks neļauj pilnekrāna režīmu. Izmēģini sākuma ekrāna ikonu.|← Atpakaļ uz lietotni|Pirmkods|Licences"
+    "Info|Versija|Privātums|Juridiskā informācija|Palīdzība|Pilnekrāna režīms|Pārlūks neļauj pilnekrāna režīmu. Izmēģini sākuma ekrāna ikonu.|← Atpakaļ uz lietotni|Pirmkods|Licences",
+    "Ielādēt noklusējumus|Izvēlēties saglabātu komandu"
   ],
   "lt": [
     "Rungtynės|Garsas|Nustatymai|Nustatymai|Pagrindinis meniu|Keisti išvaizdą|Pasirinkti kalbą|Vienu akmeniu mažiau|Vienu akmeniu daugiau|Likę akmenys|Taškas +|Komanda A: pridėti tašką|Komanda A: atimti tašką|Komanda B: pridėti tašką|Komanda B: atimti tašką",
@@ -89,7 +97,8 @@ const rows = {
     "Atšaukti|Naujos rungtynės?|Rezultatas bus išvalytas. Komandų ir garso nustatymai išliks.|Pradėti naujas rungtynes|Kitas kėlinys?|Taškai lieka. Akmenų skaitiklis pradeda iš naujo.|Pradėti kėlinį|Lygiosios. Golden Jugg?|Kitas taškas nulems rungtynes.|Pradėti Golden Jugg|Baigti rungtynes?|Patvirtinti rezultatą|Nepavyko įjungti garso. Bakstelėk dar kartą.",
     "Dūžiai po Jugg / kėlinio pabaigoje|Stabdyti ritmą|Kėlinys|Komandos A spalva|Komandos B spalva|Žaisti setais|Taškai per setą|Setai pergalei|Setas {number}|{sets} setai pergalei · {points} taškų|Setai {a} : {b}|Setas baigtas|Kitas setas|Pradėti kitą setą?|Seto taškai išvalomi. Laimėti setai lieka.|Laimi {team} · {a} : {b}|Naudoti atgalinį skaičiavimą|PRADŽIA|Dėmesio|Jugger|Atšaukti pradžią",
     "Nepavyksta išsaugoti. Rezultatas liks tik iki šio skirtuko uždarymo.|Nepavyko perskaityti išsaugotų rungtynių. Patikrink prieš naujas.|Ankstesnės rungtynės atkurtos. Paspausk pradėti, kad tęstum.|Nepavyksta išlaikyti ekrano įjungto. Rungtynėms išjunk automatinį užrakinimą.|Saugomi failai darbui be ryšio …|Paruošta darbui be ryšio|Be ryšio · Viskas pasiekiama|Ne visi failai išsaugoti darbui be ryšio.|Saugykla be ryšio nepasiekiama. Atverk HTTPS puslapį naršyklėje.|Bandyti dar kartą|Nauja versija paruošta. Pristabdyk prieš atnaujindamas.|Atnaujinti|Pristabdyk atkūrimą prieš atnaujindamas.|Atnaujinti nepavyko. Ankstesnė versija vis dar pasiekiama.",
-    "Informacija|Versija|Privatumas|Teisinė informacija|Pagalba|Visas ekranas|Naršyklė neleidžia viso ekrano. Bandyk pradžios ekrano piktogramą.|← Grįžti į programėlę|Pirminis kodas|Licencijos"
+    "Informacija|Versija|Privatumas|Teisinė informacija|Pagalba|Visas ekranas|Naršyklė neleidžia viso ekrano. Bandyk pradžios ekrano piktogramą.|← Grįžti į programėlę|Pirminis kodas|Licencijos",
+    "Įkelti numatytuosius nustatymus|Pasirinkti išsaugotą komandą"
   ],
   "ru": [
     "Матч|Звук|Настройки|Настройки|Главная навигация|Изменить оформление|Выбрать язык|На один камень меньше|На один камень больше|Осталось камней|Очко +|Команда A: добавить очко|Команда A: убрать очко|Команда B: добавить очко|Команда B: убрать очко",
@@ -99,7 +108,8 @@ const rows = {
     "Отмена|Новый матч?|Счёт будет сброшен. Команды и настройки звука сохранятся.|Начать новый матч|Следующий период?|Очки сохраняются. Счётчик камней начнётся заново.|Начать период|Ничья. Golden Jugg?|Следующее очко решит исход матча.|Начать Golden Jugg|Завершить матч?|Подтвердить результат|Не удалось включить звук. Нажмите ещё раз.",
     "Удары при Jugg / конце периода|Остановить ритм|Период|Цвет команды A|Цвет команды B|Игра по сетам|Очков за сет|Сетов для победы|Сет {number}|{sets} победных сетов · {points} очков|Сеты {a} : {b}|Сет окончен|Следующий сет|Начать следующий сет?|Очки сета будут сброшены. Выигранные сеты сохранятся.|Побеждает {team} · {a} : {b}|Обратный отсчёт перед стартом|СТАРТ|Внимание|Jugger|Отменить старт",
     "Не удалось сохранить. Счёт останется только до закрытия этой вкладки.|Не удалось прочитать сохранённый матч. Проверьте перед началом нового.|Предыдущий матч восстановлен. Нажмите старт для продолжения.|Не удалось удержать экран включённым. Отключите автоблокировку на время матча.|Сохранение офлайн-файлов …|Готово к работе офлайн|Офлайн · Всё доступно|Офлайн-файлы загружены не полностью.|Офлайн-хранилище недоступно. Откройте HTTPS-страницу в браузере.|Повторить|Новая версия готова. Приостановите игру перед обновлением.|Обновить|Приостановите воспроизведение перед обновлением.|Обновление не удалось. Предыдущая версия остаётся доступной.",
-    "Информация|Версия|Конфиденциальность|Правовая информация|Помощь|Полный экран|Браузер не разрешает полный экран. Попробуйте значок на главном экране.|← Назад в приложение|Исходный код|Лицензии"
+    "Информация|Версия|Конфиденциальность|Правовая информация|Помощь|Полный экран|Браузер не разрешает полный экран. Попробуйте значок на главном экране.|← Назад в приложение|Исходный код|Лицензии",
+    "Загрузить настройки по умолчанию|Выбрать сохранённую команду"
   ],
   "uk": [
     "Матч|Звук|Налаштування|Параметри|Головна навігація|Змінити оформлення|Вибрати мову|На один камінь менше|На один камінь більше|Залишилося каменів|Очко +|Команда A: додати очко|Команда A: зняти очко|Команда B: додати очко|Команда B: зняти очко",
@@ -109,7 +119,8 @@ const rows = {
     "Скасувати|Новий матч?|Рахунок буде скинуто. Команди й налаштування звуку залишаться.|Почати новий матч|Наступний період?|Очки залишаться. Лічильник каменів почнеться знову.|Почати період|Нічия. Golden Jugg?|Наступне очко вирішить матч.|Почати Golden Jugg|Завершити матч?|Підтвердити результат|Не вдалося увімкнути звук. Торкніться ще раз.",
     "Удари при Jugg / кінці періоду|Зупинити ритм|Період|Колір команди A|Колір команди B|Гра за сетами|Очок у сеті|Сетів для перемоги|Сет {number}|{sets} переможних сетів · {points} очок|Сети {a} : {b}|Сет завершено|Наступний сет|Почати наступний сет?|Очки сету буде скинуто. Виграні сети залишаться.|Перемагає {team} · {a} : {b}|Зворотний відлік перед стартом|СТАРТ|Увага|Jugger|Скасувати старт",
     "Не вдалося зберегти. Рахунок залишиться лише до закриття вкладки.|Не вдалося прочитати збережений матч. Перевірте перед початком нового.|Попередній матч відновлено. Натисніть старт, щоб продовжити.|Не вдалося тримати екран увімкненим. Вимкніть автоблокування на час матчу.|Збереження офлайн-файлів …|Готово до роботи офлайн|Офлайн · Усе доступно|Офлайн-файли неповні.|Офлайн-сховище недоступне. Відкрийте HTTPS-сторінку в браузері.|Спробувати ще раз|Нова версія готова. Призупиніть гру перед оновленням.|Оновити|Призупиніть відтворення перед оновленням.|Оновлення не вдалося. Попередня версія залишається доступною.",
-    "Інформація|Версія|Конфіденційність|Правова інформація|Допомога|Повний екран|Браузер не дозволяє повний екран. Спробуйте значок на головному екрані.|← Назад до застосунку|Вихідний код|Ліцензії"
+    "Інформація|Версія|Конфіденційність|Правова інформація|Допомога|Повний екран|Браузер не дозволяє повний екран. Спробуйте значок на головному екрані.|← Назад до застосунку|Вихідний код|Ліцензії",
+    "Завантажити типові налаштування|Вибрати збережену команду"
   ],
   "fi": [
     "Ottelu|Ääni|Asetukset|Asetukset|Päänavigointi|Vaihda ulkoasua|Valitse kieli|Yksi kivi vähemmän|Yksi kivi lisää|Kiviä jäljellä|Piste +|Joukkue A: lisää piste|Joukkue A: poista piste|Joukkue B: lisää piste|Joukkue B: poista piste",
@@ -119,7 +130,8 @@ const rows = {
     "Peruuta|Uusi ottelu?|Pisteet nollataan. Joukkue- ja ääniasetukset säilyvät.|Aloita uusi ottelu|Seuraava jakso?|Pisteet säilyvät. Kivilaskuri alkaa alusta.|Aloita jakso|Tasapeli. Golden Jugg?|Seuraava piste ratkaisee ottelun.|Aloita Golden Jugg|Päätetäänkö ottelu?|Vahvista tulos|Ääntä ei voitu ottaa käyttöön. Napauta uudelleen.",
     "Iskuja Juggissa / jakson lopussa|Pysäytä tahti|Jakso|Joukkueen A väri|Joukkueen B väri|Pelaa erissä|Pisteitä erässä|Voittoon tarvittavat erät|Erä {number}|{sets} voittoerää · {points} pistettä|Erät {a} : {b}|Erä päättynyt|Seuraava erä|Aloitetaanko seuraava erä?|Erän pisteet nollataan. Voitetut erät säilyvät.|{team} voittaa · {a} : {b}|Käytä lähtölaskentaa|ALKU|Valmiina|Jugger|Peruuta aloitus",
     "Tallennus ei onnistu. Pisteet säilyvät vain välilehden sulkemiseen asti.|Tallennettua ottelua ei voitu lukea. Tarkista ennen uuden aloittamista.|Edellinen ottelu palautettu. Jatka käynnistämällä.|Näyttöä ei voida pitää päällä. Poista automaattinen lukitus ottelun ajaksi.|Tallennetaan offline-tiedostoja …|Valmis offline-käyttöön|Offline · Kaikki käytettävissä|Offline-tiedostot ovat puutteelliset.|Offline-tallennus ei ole käytettävissä. Avaa HTTPS-sivu selaimessa.|Yritä uudelleen|Uusi versio valmis. Keskeytä ennen päivittämistä.|Päivitä|Keskeytä toisto ennen päivittämistä.|Päivitys epäonnistui. Edellinen versio on yhä käytettävissä.",
-    "Tietoa|Versio|Tietosuoja|Julkaisutiedot|Ohje|Avaa koko näyttö|Selain ei salli koko näyttöä. Kokeile aloitusnäytön kuvaketta.|← Takaisin sovellukseen|Lähdekoodi|Lisenssit"
+    "Tietoa|Versio|Tietosuoja|Julkaisutiedot|Ohje|Avaa koko näyttö|Selain ei salli koko näyttöä. Kokeile aloitusnäytön kuvaketta.|← Takaisin sovellukseen|Lähdekoodi|Lisenssit",
+    "Lataa oletusasetukset|Valitse tallennettu joukkue"
   ],
   "pl": [
     "Mecz|Dźwięk|Ustawienia|Ustawienia|Nawigacja główna|Zmień wygląd|Wybierz język|Jeden kamień mniej|Jeden kamień więcej|Pozostałe kamienie|Punkt +|Drużyna A: dodaj punkt|Drużyna A: odejmij punkt|Drużyna B: dodaj punkt|Drużyna B: odejmij punkt",
@@ -129,7 +141,8 @@ const rows = {
     "Anuluj|Nowy mecz?|Wynik zostanie wyzerowany. Drużyny i ustawienia dźwięku pozostaną.|Rozpocznij nowy mecz|Następna część?|Punkty pozostaną. Licznik kamieni zacznie od nowa.|Rozpocznij część|Remis. Golden Jugg?|Następny punkt rozstrzygnie mecz.|Rozpocznij Golden Jugg|Zakończyć mecz?|Potwierdź wynik|Nie udało się włączyć dźwięku. Dotknij ponownie.",
     "Uderzenia przy Jugg / końcu części|Zatrzymaj rytm|Część|Kolor drużyny A|Kolor drużyny B|Gra na sety|Punkty na set|Sety do zwycięstwa|Set {number}|{sets} wygranych setów · {points} punktów|Sety {a} : {b}|Set zakończony|Następny set|Rozpocząć następny set?|Punkty w secie zostaną wyzerowane. Wygrane sety pozostaną.|Wygrywa {team} · {a} : {b}|Odliczanie przed startem|START|Uwaga|Jugger|Anuluj start",
     "Nie można zapisać. Wynik pozostanie tylko do zamknięcia tej karty.|Nie można odczytać zapisanego meczu. Sprawdź przed rozpoczęciem nowego.|Poprzedni mecz przywrócony. Naciśnij start, aby wznowić.|Nie można utrzymać włączonego ekranu. Wyłącz automatyczną blokadę na czas meczu.|Zapisywanie plików offline …|Gotowe offline|Offline · Wszystko dostępne|Pliki offline są niekompletne.|Zapis offline jest niedostępny. Otwórz stronę HTTPS w przeglądarce.|Spróbuj ponownie|Nowa wersja gotowa. Wstrzymaj przed aktualizacją.|Aktualizuj|Wstrzymaj odtwarzanie przed aktualizacją.|Aktualizacja nieudana. Poprzednia wersja jest nadal dostępna.",
-    "Info|Wersja|Prywatność|Nota prawna|Pomoc|Pełny ekran|Przeglądarka nie zezwala na pełny ekran. Spróbuj ikony na ekranie głównym.|← Powrót do aplikacji|Kod źródłowy|Licencje"
+    "Info|Wersja|Prywatność|Nota prawna|Pomoc|Pełny ekran|Przeglądarka nie zezwala na pełny ekran. Spróbuj ikony na ekranie głównym.|← Powrót do aplikacji|Kod źródłowy|Licencje",
+    "Wczytaj ustawienia domyślne|Wybierz zapisany zespół"
   ],
   "cs": [
     "Zápas|Zvuk|Nastavení|Nastavení|Hlavní navigace|Změnit vzhled|Vybrat jazyk|O jeden kámen méně|O jeden kámen více|Zbývající kameny|Bod +|Tým A: přidat bod|Tým A: odebrat bod|Tým B: přidat bod|Tým B: odebrat bod",
@@ -139,7 +152,8 @@ const rows = {
     "Zrušit|Nový zápas?|Skóre se vynuluje. Týmy a nastavení zvuku zůstanou.|Zahájit nový zápas|Další část?|Body zůstanou. Počítadlo kamenů začne znovu.|Zahájit část|Remíza. Golden Jugg?|Další bod rozhodne zápas.|Zahájit Golden Jugg|Ukončit zápas?|Potvrdit výsledek|Zvuk se nepodařilo zapnout. Klepněte znovu.",
     "Údery při Jugg / konci části|Zastavit rytmus|Část|Barva týmu A|Barva týmu B|Hrát na sety|Bodů na set|Vítězné sety|Set {number}|{sets} vítězné sety · {points} bodů|Sety {a} : {b}|Set skončil|Další set|Zahájit další set?|Body v setu se vynulují. Vyhrané sety zůstanou.|Vyhrává {team} · {a} : {b}|Použít odpočet|START|Pozor|Jugger|Zrušit start",
     "Nelze uložit. Skóre zůstane jen do zavření této karty.|Uložený zápas nelze přečíst. Zkontrolujte jej před novým zápasem.|Předchozí zápas obnoven. Pokračujte stisknutím startu.|Nelze udržet obrazovku zapnutou. Během zápasu vypněte automatický zámek.|Ukládání offline souborů …|Připraveno offline|Offline · Vše dostupné|Offline soubory nejsou úplné.|Offline úložiště není dostupné. Otevřete HTTPS stránku v prohlížeči.|Zkusit znovu|Nová verze je připravena. Před aktualizací pozastavte hru.|Aktualizovat|Před aktualizací pozastavte přehrávání.|Aktualizace selhala. Předchozí verze je stále dostupná.",
-    "Info|Verze|Soukromí|Právní informace|Nápověda|Celá obrazovka|Prohlížeč nepovoluje celou obrazovku. Zkuste ikonu na domovské obrazovce.|← Zpět do aplikace|Zdrojový kód|Licence"
+    "Info|Verze|Soukromí|Právní informace|Nápověda|Celá obrazovka|Prohlížeč nepovoluje celou obrazovku. Zkuste ikonu na domovské obrazovce.|← Zpět do aplikace|Zdrojový kód|Licence",
+    "Načíst výchozí nastavení|Vybrat uložený tým"
   ],
   "hu": [
     "Mérkőzés|Hang|Beállítások|Beállítás|Fő navigáció|Megjelenés váltása|Nyelv választása|Eggyel kevesebb kő|Eggyel több kő|Hátralévő kövek|Pont +|A csapat: pont hozzáadása|A csapat: pont levonása|B csapat: pont hozzáadása|B csapat: pont levonása",
@@ -149,7 +163,8 @@ const rows = {
     "Mégse|Új mérkőzés?|Az eredmény nullázódik. A csapatok és a hangbeállítások megmaradnak.|Új mérkőzés indítása|Következő szakasz?|A pontok megmaradnak. A kőszámláló újraindul.|Szakasz indítása|Döntetlen. Golden Jugg?|A következő pont dönt.|Golden Jugg indítása|Mérkőzés befejezése?|Eredmény megerősítése|A hang nem kapcsolható be. Érintsd meg újra.",
     "Ütések Jugg / szakaszvég esetén|Ütem leállítása|Szakasz|A csapat színe|B csapat színe|Játék szettekre|Pontok szettenként|Győzelemhez szükséges szettek|{number}. szett|{sets} nyert szett · {points} pont|Szettek {a} : {b}|Szett vége|Következő szett|Induljon a következő szett?|A szett pontjai nullázódnak. A nyert szettek megmaradnak.|{team} nyer · {a} : {b}|Indítás visszaszámlálással|START|Figyelem|Jugger|Indítás megszakítása",
     "Nem lehet menteni. Az eredmény csak a lap bezárásáig marad meg.|A mentett mérkőzés nem olvasható. Ellenőrizd új mérkőzés előtt.|Korábbi mérkőzés visszaállítva. Indítsd el a folytatáshoz.|A kijelző nem tartható ébren. Kapcsold ki az automatikus zárolást a játék idejére.|Offline fájlok mentése …|Offline használatra kész|Offline · Minden elérhető|Az offline fájlok hiányosak.|Offline tárolás nem elérhető. Nyisd meg a HTTPS-oldalt böngészőben.|Újra|Új verzió kész. Frissítés előtt állítsd meg a játékot.|Frissítés|Frissítés előtt állítsd le a lejátszást.|A frissítés sikertelen. A korábbi verzió továbbra is elérhető.",
-    "Infó|Verzió|Adatvédelem|Impresszum|Súgó|Teljes képernyő|A böngésző nem engedi a teljes képernyőt. Próbáld a kezdőképernyő ikonját.|← Vissza az apphoz|Forráskód|Licencek"
+    "Infó|Verzió|Adatvédelem|Impresszum|Súgó|Teljes képernyő|A böngésző nem engedi a teljes képernyőt. Próbáld a kezdőképernyő ikonját.|← Vissza az apphoz|Forráskód|Licencek",
+    "Alapbeállítások betöltése|Mentett csapat kiválasztása"
   ],
   "es": [
     "Partido|Sonido|Configuración|Ajustes|Navegación principal|Cambiar apariencia|Elegir idioma|Una piedra menos|Una piedra más|Piedras restantes|Punto +|Equipo A: añadir punto|Equipo A: quitar punto|Equipo B: añadir punto|Equipo B: quitar punto",
@@ -159,7 +174,8 @@ const rows = {
     "Cancelar|¿Nuevo partido?|Se reiniciará el marcador. Se mantienen los equipos y el sonido.|Iniciar nuevo partido|¿Siguiente periodo?|Se conservan los puntos. El contador de piedras se reinicia.|Iniciar periodo|Empate. ¿Golden Jugg?|El siguiente punto decide el partido.|Iniciar Golden Jugg|¿Terminar partido?|Confirmar resultado|No se pudo activar el sonido. Pulsa de nuevo.",
     "Golpes en Jugg / fin de periodo|Detener ritmo|Periodo|Color del equipo A|Color del equipo B|Jugar por sets|Puntos por set|Sets para ganar|Set {number}|{sets} sets para ganar · {points} puntos|Sets {a} : {b}|Set terminado|Siguiente set|¿Iniciar el siguiente set?|Se reinician los puntos del set. Se conservan los sets ganados.|Gana {team} · {a} : {b}|Usar cuenta atrás|INICIO|Atención|Jugger|Cancelar inicio",
     "No se puede guardar. El marcador se conservará solo hasta cerrar esta pestaña.|No se pudo leer el partido guardado. Revísalo antes de iniciar otro.|Partido anterior restaurado. Pulsa iniciar para continuar.|No se puede mantener la pantalla encendida. Desactiva el bloqueo automático durante el partido.|Guardando archivos sin conexión …|Disponible sin conexión|Sin conexión · Todo disponible|Faltan archivos sin conexión.|Almacenamiento sin conexión no disponible. Abre la página HTTPS en el navegador.|Reintentar|Nueva versión lista. Pausa antes de actualizar.|Actualizar|Pausa la reproducción antes de actualizar.|Falló la actualización. La versión anterior sigue disponible.",
-    "Info|Versión|Privacidad|Aviso legal|Ayuda|Abrir pantalla completa|Este navegador no permite pantalla completa. Prueba el icono de la pantalla de inicio.|← Volver a la app|Código fuente|Licencias"
+    "Info|Versión|Privacidad|Aviso legal|Ayuda|Abrir pantalla completa|Este navegador no permite pantalla completa. Prueba el icono de la pantalla de inicio.|← Volver a la app|Código fuente|Licencias",
+    "Cargar valores predeterminados|Elegir equipo guardado"
   ],
   "fr": [
     "Match|Son|Configuration|Réglages|Navigation principale|Changer l’apparence|Choisir la langue|Une pierre de moins|Une pierre de plus|Pierres restantes|Point +|Équipe A : ajouter un point|Équipe A : retirer un point|Équipe B : ajouter un point|Équipe B : retirer un point",
@@ -169,7 +185,8 @@ const rows = {
     "Annuler|Nouveau match ?|Le score sera remis à zéro. Les équipes et les réglages sonores sont conservés.|Démarrer un nouveau match|Période suivante ?|Les points sont conservés. Le compteur de pierres repart de zéro.|Démarrer la période|Égalité. Golden Jugg ?|Le prochain point décide du match.|Démarrer le Golden Jugg|Terminer le match ?|Confirmer le résultat|Impossible d’activer le son. Appuyez à nouveau.",
     "Coups au Jugg / en fin de période|Arrêter le rythme|Période|Couleur de l’équipe A|Couleur de l’équipe B|Jouer en sets|Points par set|Sets à gagner|Set {number}|{sets} sets à gagner · {points} points|Sets {a} : {b}|Set terminé|Set suivant|Démarrer le set suivant ?|Les points du set sont remis à zéro. Les sets gagnés sont conservés.|{team} gagne · {a} : {b}|Compte à rebours au départ|DÉPART|Attention|Jugger|Annuler le départ",
     "Enregistrement impossible. Le score sera conservé jusqu’à la fermeture de cet onglet.|Le match sauvegardé est illisible. Vérifiez avant d’en démarrer un autre.|Match précédent restauré. Démarrez pour reprendre.|Impossible de garder l’écran allumé. Désactivez le verrouillage automatique pendant le match.|Enregistrement des fichiers hors ligne …|Prêt hors ligne|Hors ligne · Tout est disponible|Les fichiers hors ligne sont incomplets.|Stockage hors ligne indisponible. Ouvrez la page HTTPS dans le navigateur.|Réessayer|Nouvelle version prête. Mettez en pause avant la mise à jour.|Mettre à jour|Mettez la lecture en pause avant la mise à jour.|Échec de la mise à jour. La version précédente reste disponible.",
-    "Info|Version|Confidentialité|Mentions légales|Aide|Plein écran|Ce navigateur refuse le plein écran. Essayez l’icône sur l’écran d’accueil.|← Retour à l’app|Code source|Licences"
+    "Info|Version|Confidentialité|Mentions légales|Aide|Plein écran|Ce navigateur refuse le plein écran. Essayez l’icône sur l’écran d’accueil.|← Retour à l’app|Code source|Licences",
+    "Charger les valeurs par défaut|Choisir une équipe enregistrée"
   ],
   "it": [
     "Partita|Suono|Configurazione|Impostazioni|Navigazione principale|Cambia aspetto|Scegli lingua|Una pietra in meno|Una pietra in più|Pietre rimanenti|Punto +|Squadra A: aggiungi punto|Squadra A: togli punto|Squadra B: aggiungi punto|Squadra B: togli punto",
@@ -179,7 +196,8 @@ const rows = {
     "Annulla|Nuova partita?|Il punteggio sarà azzerato. Squadre e impostazioni audio restano salvate.|Avvia nuova partita|Periodo successivo?|I punti restano. Il conteggio delle pietre riparte da zero.|Avvia periodo|Pareggio. Golden Jugg?|Il prossimo punto decide la partita.|Avvia Golden Jugg|Terminare la partita?|Conferma risultato|Impossibile attivare l’audio. Tocca di nuovo.",
     "Colpi per Jugg / fine periodo|Ferma ritmo|Periodo|Colore squadra A|Colore squadra B|Gioca a set|Punti per set|Set da vincere|Set {number}|{sets} set da vincere · {points} punti|Set {a} : {b}|Set terminato|Set successivo|Avviare il prossimo set?|I punti del set si azzerano. I set vinti restano.|Vince {team} · {a} : {b}|Usa conto alla rovescia|INIZIO|Attenzione|Jugger|Annulla avvio",
     "Salvataggio impossibile. Il punteggio resta solo fino alla chiusura della scheda.|Impossibile leggere la partita salvata. Controlla prima di iniziarne una nuova.|Partita precedente ripristinata. Avvia per riprendere.|Impossibile tenere acceso lo schermo. Disattiva il blocco automatico durante la partita.|Salvataggio file offline …|Pronto offline|Offline · Tutto disponibile|I file offline sono incompleti.|Archivio offline non disponibile. Apri la pagina HTTPS nel browser.|Riprova|Nuova versione pronta. Metti in pausa prima di aggiornare.|Aggiorna|Metti in pausa la riproduzione prima di aggiornare.|Aggiornamento fallito. La versione precedente resta disponibile.",
-    "Info|Versione|Privacy|Note legali|Aiuto|Schermo intero|Questo browser non consente lo schermo intero. Prova l’icona nella schermata iniziale.|← Torna all’app|Codice sorgente|Licenze"
+    "Info|Versione|Privacy|Note legali|Aiuto|Schermo intero|Questo browser non consente lo schermo intero. Prova l’icona nella schermata iniziale.|← Torna all’app|Codice sorgente|Licenze",
+    "Carica impostazioni predefinite|Scegli una squadra salvata"
   ],
   "pt": [
     "Jogo|Som|Configuração|Ajustes|Navegação principal|Alterar aparência|Escolher idioma|Uma pedra a menos|Uma pedra a mais|Pedras restantes|Ponto +|Equipa A: adicionar ponto|Equipa A: retirar ponto|Equipa B: adicionar ponto|Equipa B: retirar ponto",
@@ -189,7 +207,8 @@ const rows = {
     "Cancelar|Novo jogo?|A pontuação será reposta. Mantêm-se as equipas e as definições de som.|Iniciar novo jogo|Próximo período?|Os pontos mantêm-se. O contador de pedras recomeça.|Iniciar período|Empate. Golden Jugg?|O próximo ponto decide o jogo.|Iniciar Golden Jugg|Terminar jogo?|Confirmar resultado|Não foi possível ativar o som. Toca novamente.",
     "Batidas no Jugg / fim do período|Parar ritmo|Período|Cor da equipa A|Cor da equipa B|Jogar por sets|Pontos por set|Sets para vencer|Set {number}|{sets} sets para vencer · {points} pontos|Sets {a} : {b}|Set terminado|Próximo set|Iniciar o próximo set?|Os pontos do set são repostos. Os sets ganhos mantêm-se.|{team} vence · {a} : {b}|Usar contagem decrescente|INÍCIO|Atenção|Jugger|Cancelar início",
     "Não é possível guardar. A pontuação mantém-se só até fechar este separador.|Não foi possível ler o jogo guardado. Verifica antes de iniciar outro.|Jogo anterior recuperado. Inicia para continuar.|Não é possível manter o ecrã ligado. Desativa o bloqueio automático durante o jogo.|A guardar ficheiros offline …|Pronto offline|Offline · Tudo disponível|Ficheiros offline incompletos.|Armazenamento offline indisponível. Abre a página HTTPS no navegador.|Tentar novamente|Nova versão pronta. Pausa antes de atualizar.|Atualizar|Pausa a reprodução antes de atualizar.|A atualização falhou. A versão anterior continua disponível.",
-    "Info|Versão|Privacidade|Aviso legal|Ajuda|Ecrã inteiro|Este navegador não permite ecrã inteiro. Experimenta o ícone no ecrã inicial.|← Voltar à app|Código-fonte|Licenças"
+    "Info|Versão|Privacidade|Aviso legal|Ajuda|Ecrã inteiro|Este navegador não permite ecrã inteiro. Experimenta o ícone no ecrã inicial.|← Voltar à app|Código-fonte|Licenças",
+    "Carregar predefinições|Escolher equipa guardada"
   ],
   "nl": [
     "Wedstrijd|Geluid|Instellingen|Instellen|Hoofdnavigatie|Weergave wijzigen|Taal kiezen|Eén steen minder|Eén steen meer|Resterende stenen|Punt +|Team A: punt toevoegen|Team A: punt aftrekken|Team B: punt toevoegen|Team B: punt aftrekken",
@@ -199,7 +218,8 @@ const rows = {
     "Annuleren|Nieuwe wedstrijd?|De score wordt gewist. Team- en geluidsinstellingen blijven bewaard.|Nieuwe wedstrijd starten|Volgende periode?|De punten blijven staan. De stenenteller begint opnieuw.|Periode starten|Gelijkspel. Golden Jugg?|Het volgende punt beslist de wedstrijd.|Golden Jugg starten|Wedstrijd beëindigen?|Uitslag bevestigen|Geluid kon niet worden ingeschakeld. Tik opnieuw.",
     "Slagen bij Jugg / einde periode|Ritme stoppen|Periode|Kleur team A|Kleur team B|In sets spelen|Punten per set|Sets om te winnen|Set {number}|{sets} sets om te winnen · {points} punten|Sets {a} : {b}|Set afgelopen|Volgende set|Volgende set starten?|Setpunten worden gewist. Gewonnen sets blijven bewaard.|{team} wint · {a} : {b}|Aftellen bij de start|START|Let op|Jugger|Start annuleren",
     "Opslaan lukt niet. De score blijft alleen bewaard totdat dit tabblad sluit.|De opgeslagen wedstrijd kon niet worden gelezen. Controleer voor een nieuwe wedstrijd.|Vorige wedstrijd hersteld. Start bewust om te hervatten.|Scherm wakker houden lukt niet. Schakel automatisch vergrendelen uit tijdens de wedstrijd.|Offlinebestanden opslaan …|Offline gereed|Offline · Alles beschikbaar|Offlinebestanden zijn onvolledig.|Offlineopslag is niet beschikbaar. Open de HTTPS-pagina in de browser.|Opnieuw proberen|Nieuwe versie gereed. Pauzeer voor het bijwerken.|Bijwerken|Pauzeer het afspelen voor het bijwerken.|Bijwerken mislukt. De vorige versie blijft beschikbaar.",
-    "Info|Versie|Privacy|Colofon|Hulp|Volledig scherm|Deze browser staat volledig scherm niet toe. Probeer het pictogram op je beginscherm.|← Terug naar de app|Broncode|Licenties"
+    "Info|Versie|Privacy|Colofon|Hulp|Volledig scherm|Deze browser staat volledig scherm niet toe. Probeer het pictogram op je beginscherm.|← Terug naar de app|Broncode|Licenties",
+    "Standaardinstellingen laden|Opgeslagen team kiezen"
   ],
   "da": [
     "Kamp|Lyd|Indstillinger|Opsætning|Hovednavigation|Skift udseende|Vælg sprog|En sten mindre|En sten mere|Resterende sten|Point +|Hold A: tilføj point|Hold A: fjern point|Hold B: tilføj point|Hold B: fjern point",
@@ -209,7 +229,8 @@ const rows = {
     "Annuller|Ny kamp?|Stillingen nulstilles. Hold- og lydindstillinger bevares.|Start ny kamp|Næste periode?|Pointene bevares. Stentælleren starter forfra.|Start periode|Uafgjort. Golden Jugg?|Næste point afgør kampen.|Start Golden Jugg|Afslut kampen?|Bekræft resultat|Lyden kunne ikke aktiveres. Tryk igen.",
     "Slag ved Jugg / periodeslut|Stop takt|Periode|Holdfarve A|Holdfarve B|Spil med sæt|Point pr. sæt|Sæt for at vinde|Sæt {number}|{sets} sæt for at vinde · {points} point|Sæt {a} : {b}|Sættet er slut|Næste sæt|Start næste sæt?|Sættets point nulstilles. Vundne sæt bevares.|{team} vinder · {a} : {b}|Brug nedtælling|START|Klar|Jugger|Annuller start",
     "Kan ikke gemme. Stillingen bevares kun, indtil fanen lukkes.|Den gemte kamp kunne ikke læses. Kontrollér før en ny kamp.|Tidligere kamp gendannet. Start for at fortsætte.|Kan ikke holde skærmen tændt. Slå automatisk skærmlås fra under kampen.|Gemmer offlinefiler …|Klar offline|Offline · Alt tilgængeligt|Offlinefilerne er ufuldstændige.|Offlinelagring er ikke tilgængelig. Åbn HTTPS-siden i browseren.|Prøv igen|Ny version klar. Sæt på pause før opdatering.|Opdater|Sæt afspilningen på pause før opdatering.|Opdateringen mislykkedes. Den tidligere version er stadig tilgængelig.",
-    "Info|Version|Privatliv|Juridisk information|Hjælp|Åbn fuld skærm|Browseren tillader ikke fuld skærm. Prøv ikonet på hjemmeskærmen.|← Tilbage til appen|Kildekode|Licenser"
+    "Info|Version|Privatliv|Juridisk information|Hjælp|Åbn fuld skærm|Browseren tillader ikke fuld skærm. Prøv ikonet på hjemmeskærmen.|← Tilbage til appen|Kildekode|Licenser",
+    "Indlæs standardindstillinger|Vælg gemt hold"
   ],
   "sv": [
     "Match|Ljud|Inställningar|Inställning|Huvudnavigering|Byt utseende|Välj språk|En sten mindre|En sten mer|Återstående stenar|Poäng +|Lag A: lägg till poäng|Lag A: ta bort poäng|Lag B: lägg till poäng|Lag B: ta bort poäng",
@@ -219,7 +240,8 @@ const rows = {
     "Avbryt|Ny match?|Poängen nollställs. Lag- och ljudinställningar sparas.|Starta ny match|Nästa period?|Poängen behålls. Stenräknaren börjar om.|Starta period|Oavgjort. Golden Jugg?|Nästa poäng avgör matchen.|Starta Golden Jugg|Avsluta match?|Bekräfta resultat|Ljudet kunde inte aktiveras. Tryck igen.",
     "Slag vid Jugg / periodslut|Stoppa takten|Period|Lagfärg A|Lagfärg B|Spela i set|Poäng per set|Set för att vinna|Set {number}|{sets} set för att vinna · {points} poäng|Set {a} : {b}|Setet är slut|Nästa set|Starta nästa set?|Setpoängen nollställs. Vunna set behålls.|{team} vinner · {a} : {b}|Använd nedräkning|START|Klara|Jugger|Avbryt start",
     "Kan inte spara. Poängen behålls bara tills fliken stängs.|Den sparade matchen kunde inte läsas. Kontrollera före en ny match.|Tidigare match återställd. Starta för att fortsätta.|Kan inte hålla skärmen vaken. Stäng av automatisk skärmlåsning under matchen.|Sparar offlinefiler …|Redo offline|Offline · Allt tillgängligt|Offlinefilerna är ofullständiga.|Offlinelagring är inte tillgänglig. Öppna HTTPS-sidan i webbläsaren.|Försök igen|Ny version klar. Pausa före uppdatering.|Uppdatera|Pausa uppspelningen före uppdatering.|Uppdateringen misslyckades. Föregående version finns kvar.",
-    "Info|Version|Integritet|Juridisk information|Hjälp|Öppna helskärm|Webbläsaren tillåter inte helskärm. Prova ikonen på hemskärmen.|← Tillbaka till appen|Källkod|Licenser"
+    "Info|Version|Integritet|Juridisk information|Hjälp|Öppna helskärm|Webbläsaren tillåter inte helskärm. Prova ikonen på hemskärmen.|← Tillbaka till appen|Källkod|Licenser",
+    "Läs in standardinställningar|Välj sparat lag"
   ]
 };
 

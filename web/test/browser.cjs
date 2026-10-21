@@ -99,6 +99,18 @@ async function main() {
     assert.ok((await audio()).ends[0] > (await audio()).starts[7], 'Endschläge überlagern sich');
     await click('score-a-plus'); assert.equal((await audio()).cancelled, 0); assert.equal(await read('[data-read=stones]'), '0');
     await click('undo'); await click('undo');
+    const plusBox = await page.locator('[data-action=stone-plus]').boundingBox();
+    await page.mouse.move(plusBox.x + plusBox.width / 2, plusBox.y + plusBox.height / 2); await page.mouse.down();
+    await page.waitForTimeout(1000); const slowCount = Number(await read('[data-read=stones]'));
+    await page.waitForTimeout(1000); const fastCount = Number(await read('[data-read=stones]'));
+    assert.ok(slowCount > 0 && fastCount - slowCount > slowCount, 'Gedrückthalten beschleunigt die Wiederholung');
+    await page.mouse.up(); const releasedCount = await read('[data-read=stones]');
+    await page.waitForTimeout(300); assert.equal(await read('[data-read=stones]'), releasedCount, 'Loslassen stoppt ohne Zusatzklick');
+    const minusBox = await page.locator('[data-action=stone-minus]').boundingBox();
+    await page.mouse.move(minusBox.x + minusBox.width / 2, minusBox.y + minusBox.height / 2); await page.mouse.down();
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0'); await page.mouse.up();
+    await page.waitForTimeout(200); assert.equal(await read('[data-read=stones]'), '0', 'Wiederholung bleibt an der Untergrenze stehen');
+    await click('stone-plus'); assert.equal(await read('[data-read=stones]'), '1', 'Kurzes Tippen bleibt ein Schritt');
     await newMatch({ periods: 2, limit: 4, pace: .5 });
     await tab('sound'); await resetAudio(); await click('beat-preview');
     await page.waitForFunction(() => window.__starts.length >= 21);
@@ -113,6 +125,18 @@ async function main() {
     assert.equal((await audio()).starts.length, 3 * 7 + 3 * 7, 'Drei normale Steine und drei Endschläge, kein vierter Endschlag');
     assert.equal(await read('[data-read=status]'), 'PAUSIERT');
     assert.ok(await page.evaluate(() => window.__wakeRequested > 0 && window.__wakeReleased > 0), 'Bildschirm wird angefordert und freigegeben');
+    assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
+    assert.equal(await read('[data-read=start-label]'), 'Abschnitt beginnen');
+    await click('toggle'); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.equal(await read('[data-read=phase]'), '1. Halbzeit'); assert.equal(await read('[data-read=stones]'), '0');
+    await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
+    assert.equal(await read('[data-read=phase]'), '2. Halbzeit'); assert.equal(await read('[data-read=stones]'), '4');
+    await click('score-a-plus'); await click('toggle');
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
+    assert.equal(await read('[data-read=start-label]'), 'Ergebnis bestätigen');
+    await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
     await newMatch({ periods: 2, limit: 20, pace: .5, countdown: true });
     await click('toggle'); assert.equal(await read('[data-read=stones]'), '20');
     await page.waitForTimeout(700); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
@@ -154,12 +178,47 @@ async function main() {
       assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
       assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
     }
-    await newMatch({ periods: 3, limit: 50 });
+    await newMatch({ periods: 3, limit: 1 });
     for (const phase of ['2. Drittel', '3. Drittel', 'Golden Jugg']) {
-      await click('next'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+      await click('stone-minus');
+      assert.equal(await read('[data-read=stones]'), '0');
+      assert.equal(await read('[data-read=start-label]'), phase === 'Golden Jugg' ? 'Golden Jugg beginnen' : 'Abschnitt beginnen');
+      await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
       assert.equal(await read('[data-read=phase]'), phase);
     }
     await click('score-b-plus'); assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); await click('undo');
+    await tab('setup'); await page.locator('[data-setting=teamA]').fill('Testteam'); await range('pace', 2, 'setting');
+    await page.locator('[data-setting=countdown]').setChecked(true);
+    const beforeDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    assert.equal(await read('[data-i18n=loadDefaults]'), 'Voreinstellungen laden');
+    await click('defaults');
+    const afterDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    const { defaults } = await import(pathToFileURL(path.join(root, 'web/src/core.mjs')).href);
+    assert.deepEqual(afterDefaults.config, defaults);
+    assert.deepEqual(afterDefaults.game, beforeDefaults.game, 'Voreinstellungen löschen kein laufendes Spiel');
+    assert.deepEqual(afterDefaults.sound, beforeDefaults.sound, 'Klang bleibt erhalten');
+    assert.equal(await page.locator('[data-setting=periods]').inputValue(), '-1');
+    assert.equal(await page.locator('[data-setting=pace]').inputValue(), '1.5');
+    assert.equal(await page.locator('[data-setting=teamA]').inputValue(), 'Raben');
+    for (const [side, name, color] of [['A', 'Falken', '#123456'], ['B', 'Ritter', '#654321']]) {
+      await page.locator(`[data-setting=team${side}]`).fill(name);
+      await page.locator(`[data-setting=color${side}]`).evaluate((input, value) => { input.value = value; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); }, color);
+    }
+    await click('defaults');
+    for (const [side, name, color] of [['A', 'Falken', '#123456'], ['B', 'Ritter', '#654321']]) {
+      await page.locator(`[data-team-choice=team${side}]`).selectOption(name);
+      assert.equal(await page.locator(`[data-setting=team${side}]`).inputValue(), name);
+      assert.equal(await page.locator(`[data-setting=color${side}]`).inputValue(), color);
+    }
+    const savedTeams = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).teams);
+    assert.deepEqual(savedTeams.find(team => team.name === 'Falken'), { name: 'Falken', color: '#123456' });
+    assert.deepEqual(savedTeams.find(team => team.name === 'Ritter'), { name: 'Ritter', color: '#654321' });
+    await page.locator('[data-team-choice=teamA]').selectOption('Raben');
+    await page.locator('[data-setting=colorA]').evaluate(input => { input.value = '#abcdef'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
+    await click('defaults'); await page.reload(); await ready();
+    assert.equal(await page.locator('[data-team-choice=teamA]').inputValue(), '', 'Abweichende aktuelle Farbe bietet die gespeicherte Teamwahl erneut an');
+    await page.locator('[data-team-choice=teamA]').selectOption('Raben');
+    assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#abcdef', 'Voreinstellungen und Neustart überschreiben keine gespeicherte Teamfarbe');
     await newMatch({ periods: 2, limit: 100, pace: .5 });
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Schakale'); await tab('sound'); await range('pitch', 225); await range('signalVolume', 80); await chooseLanguage('en');
     await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = 'sans-serif'; });
@@ -194,6 +253,8 @@ async function main() {
     assert.equal(await page.locator('#jm-arena').getAttribute('lang'), 'en'); assert.equal(await read('[data-read=status]'), 'PAUSED');
     await page.locator('[data-read=offline]').filter({ hasText: 'fully available' }).waitFor({ state: 'attached' });
     assert.equal(await page.locator('.jm-offline').isHidden(), true, 'Auch nach Offline-Neustart kein Hinweis unter der Navigation');
+    await tab('setup');
+    assert.equal(await page.locator('[data-team-choice=teamA] option[value=Falken]').count(), 1, 'Gespeicherte Teams bleiben offline verfügbar');
     await tab('sound'); assert.equal(await read('[data-output=pitch]'), '225 Hz'); assert.equal(await read('[data-output=signalVolume]'), '80 %');
     await tab('match'); await click('toggle'); await page.waitForTimeout(650); await click('toggle');
     assert.equal(await read('[data-read=stones]'), '99', 'Offline-Spiel läuft nach erneutem URL-Aufruf');
@@ -264,6 +325,10 @@ async function main() {
         for (const view of ['setup', 'sound', 'info']) {
           await sample.locator(`[data-tab=${view}]`).click();
           await sample.locator(`[data-view=${view}]`).waitFor({ state: 'visible' });
+          if (view === 'setup') {
+            assert.equal(await sample.locator('[data-i18n=loadDefaults]').textContent(), texts[language].loadDefaults);
+            assert.equal(await sample.locator('[data-team-choice=teamA] option').first().textContent(), texts[language].chooseTeam);
+          }
           assert.ok(await sample.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${language}/${view}: kein horizontaler Überlauf`);
         }
         await sample.locator('[data-action=language-menu]').click();

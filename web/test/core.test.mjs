@@ -41,6 +41,19 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.deepEqual(Object.keys(texts.de).sort(), Object.keys(texts.en).sort());
 });
 
+test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
+  const saved = { version: 1, game: newGame(defaults) };
+  assert.deepEqual(restoreSnapshot(saved).teams, []);
+  assert.deepEqual(restoreSnapshot({ ...saved, teams: {} }).teams, []);
+  const restored = restoreSnapshot({ ...saved, teams: [
+    { name: 'Raben', color: '#123456' }, { name: ' raben ', color: '#ABCDEF' },
+    { name: '', color: '#123456' }, { name: 'x'.repeat(23), color: '#123456' },
+    { name: 'Ungültig', color: 'red' }, null
+  ] });
+  assert.deepEqual(restored.teams, [{ name: 'raben', color: '#ABCDEF' }]);
+  assert.deepEqual(restored.game, saved.game);
+});
+
 test('Alle Sprachfassungen, Platzhalter und lokale SVG-Flaggen sind vollständig', () => {
   assert.equal(Object.keys(locales).length, 23);
   assert.deepEqual(Object.keys(texts).sort(), Object.keys(locales).sort());

@@ -10,10 +10,11 @@ const fullscreenRequest = document.documentElement.requestFullscreen || document
 const fullscreenAvailable = !!fullscreenRequest && document.fullscreenEnabled !== false && document.webkitFullscreenEnabled !== false;
 const $ = selector => root.querySelector(selector), $$ = selector => [...root.querySelectorAll(selector)];
 const storageKey = 'juggermaster:state:v1';
-let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [];
+let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [], teams = [];
 let language = 'de', theme = '', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
 let countdown = -1, requestId = 0, currentDialog = null, lastFocus = null, wakeLock = null;
 let noticeKey = null, lastSave = '', storageError = false;
+let stoneHold = null, ignoreStoneClick = null;
 const ranges = new Map(), t = (key, values) => translate(language, key, values);
 const decimal = value => Number(value).toLocaleString(locales[language].tag, { maximumFractionDigits: 1 });
 const time = milliseconds => { const seconds = Math.floor(milliseconds / 1000); return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`; };
@@ -22,20 +23,23 @@ try {
   if (saved) {
     const restored = restoreSnapshot(JSON.parse(saved));
     if (!restored) throw Error('Invalid saved match');
-    ({ config, sound, game, history, language, theme } = restored);
+    ({ config, sound, game, history, language, theme, teams } = restored);
     if (game.consumed || game.a || game.b || game.elapsed) noticeKey = 'restored';
   }
   const preferred = localStorage.getItem('juggermaster:language');
   language = resolveLanguage(navigator.languages || [navigator.language], preferred);
 } catch { noticeKey = 'restoreFailed'; }
 if (noticeKey === 'restoreFailed') language = resolveLanguage(navigator.languages || [navigator.language]);
+for (const side of ['teamA', 'teamB']) {
+  if (!teams.some(team => team.name.toLowerCase() === config[side].toLowerCase())) rememberTeam(side);
+}
 
 if (!globalThis.Framework7) throw Error('Framework7 konnte nicht geladen werden.');
 const f7 = new Framework7({ el: app, name: 'JuggerMaster', theme: 'ios', darkMode: false,
   dialog: { closeByBackdropClick: false }, touch: { fastClicks: false, tapHold: false } });
 
 function persist() {
-  const json = JSON.stringify({ version: 1, language, theme, config, sound, game, history });
+  const json = JSON.stringify({ version: 1, language, theme, config, sound, game, history, teams });
   if (json === lastSave) return;
   try { localStorage.setItem(storageKey, json); lastSave = json; storageError = false; }
   catch { storageError = true; noticeKey = 'storageFailed'; }
@@ -46,6 +50,11 @@ async function enterFullscreen() {
   catch { noticeKey = 'fullscreenFailed'; render(); }
 }
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
+function rememberTeam(side) {
+  const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'];
+  const saved = teams.find(team => team.name.toLowerCase() === name.toLowerCase());
+  if (saved) Object.assign(saved, { name, color }); else teams.push({ name, color });
+}
 function setText(name, value) { $(`[data-read="${name}"]`).textContent = value; }
 
 function renderLanguage() {
@@ -66,6 +75,8 @@ function render() {
   $('[data-action=fullscreen]').hidden = !fullscreenAvailable;
   const finite = finiteMatch(game), remaining = Math.max(0, game.limit - game.consumed);
   const complete = finite && remaining === 0;
+  const next = complete ? nextSection(game) : null;
+  const sectionLabel = next?.golden ? 'startGolden' : next?.ended ? 'confirmResult' : 'startPeriod';
   app.style.colorScheme = theme;
   setText('format', game.periods === -1 ? t('setFormat', { sets: game.setsToWin, points: game.targetPoints }) : game.periods === 0 ? t('freeFormat') : t('limitedFormat', { periods: game.periods, limit: game.limit }));
   setText('phase', phase());
@@ -85,8 +96,8 @@ function render() {
   $('[data-action=score-a-minus]').disabled = blocked || !game.a; $('[data-action=score-b-minus]').disabled = blocked || !game.b;
   $('[data-action=stone-minus]').disabled = (config.direction === 'down' && finite ? remaining : game.consumed) === 0 || game.ended;
   $('[data-action=stone-plus]').disabled = game.ended;
-  $('[data-action=toggle]').disabled = !game.ended && ((blocked && !nextSetReady) || complete);
-  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
+  $('[data-action=toggle]').disabled = !game.ended && blocked && !nextSetReady;
+  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : complete ? sectionLabel : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
   $('[data-action=toggle] .jm-symbol').textContent = running || countdown >= 0 ? 'Ⅱ' : '▶';
   $('[data-action=undo]').disabled = !history.length;
   $('[data-action=next]').disabled = game.ended || game.golden || game.periods === 0 || (game.periods === -1 && !game.setComplete);
@@ -104,6 +115,12 @@ function render() {
     if (element.dataset.tab === view) element.setAttribute('aria-current', 'page'); else element.removeAttribute('aria-current');
   });
   $$('[data-setting]').forEach(input => { if (input === document.activeElement) return; const value = config[input.dataset.setting]; if (input.type === 'checkbox') input.checked = value; else input.value = value; });
+  $$('[data-team-choice]').forEach(select => {
+    if (view !== 'setup' || select === document.activeElement) return;
+    select.replaceChildren(new Option(t('chooseTeam'), ''), ...teams.map(team => new Option(team.name, team.name)));
+    const saved = teams.find(team => team.name === config[select.dataset.teamChoice] && team.color.toLowerCase() === config[select.dataset.teamChoice === 'teamA' ? 'colorA' : 'colorB'].toLowerCase());
+    select.value = saved?.name || '';
+  });
   $('[data-read=set-settings]').hidden = config.periods !== -1;
   $('[data-setting=limit]').closest('.jm-fields-pair').hidden = config.periods <= 0;
   $('[data-output=pace]').textContent = `${decimal(config.pace)} s`;
@@ -194,6 +211,7 @@ function focusMatchButton() {
   button.scrollIntoView({ block: 'end', behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
 }
 function dialog(title, text, label, action) {
+  stopStoneHold(true);
   pause(); closeLanguages(); lastFocus = document.activeElement;
   const safe = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   currentDialog = f7.dialog.create({ title: safe(title), text: safe(text), verticalButtons: true, destroyOnClose: true,
@@ -204,6 +222,7 @@ function dialog(title, text, label, action) {
   currentDialog.open();
 }
 function showView(next) {
+  stopStoneHold(true);
   if (running || countdown >= 0 || starting) pause();
   $('.jm-stones').style.removeProperty('--jm-resume-gap');
   view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-scroll').scrollTop = 0;
@@ -219,13 +238,43 @@ function openLanguages() {
   $('[data-action=language-menu]').setAttribute('aria-expanded', String(!menu.hidden));
   if (!menu.hidden) $(`[data-language-option=${language}]`).focus();
 }
+function stopStoneHold(suppressClick = false) {
+  if (!stoneHold) return;
+  clearTimeout(stoneHold.timer);
+  if (suppressClick && stoneHold.repeated) ignoreStoneClick = stoneHold.button;
+  stoneHold = null;
+}
+root.addEventListener('pointerdown', event => {
+  stopStoneHold(); ignoreStoneClick = null;
+  const button = event.target.closest('[data-action=stone-minus], [data-action=stone-plus]');
+  if (!button || button.disabled || event.button !== 0 || !event.isPrimary) return;
+  const hold = stoneHold = { button, pointer: event.pointerId, started: performance.now(), repeated: false };
+  const repeat = () => {
+    if (stoneHold !== hold || button.disabled) { stopStoneHold(true); return; }
+    hold.repeated = true; button.click();
+    if (stoneHold === hold) hold.timer = setTimeout(repeat, Math.max(45, 260 - (performance.now() - hold.started) / 8));
+  };
+  button.setPointerCapture(event.pointerId);
+  hold.timer = setTimeout(repeat, 400);
+});
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) root.addEventListener(type, event => {
+  if (stoneHold?.pointer === event.pointerId) stopStoneHold(true);
+});
+root.addEventListener('contextmenu', event => { if (event.target.closest('[data-action=stone-minus], [data-action=stone-plus]')) event.preventDefault(); });
+root.addEventListener('click', event => {
+  if (ignoreStoneClick && event.detail && event.target.closest('button') === ignoreStoneClick) {
+    ignoreStoneClick = null; event.preventDefault(); event.stopImmediatePropagation();
+  }
+}, true);
+window.addEventListener('blur', () => stopStoneHold(true));
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopStoneHold(true); });
 root.addEventListener('click', async event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
   let action = button.dataset.action;
-  if (action === 'toggle') action = game.ended ? 'new' : game.setComplete ? 'next' : 'toggle';
+  if (action === 'toggle') action = game.ended ? 'new' : game.setComplete || (finiteMatch(game) && game.consumed >= game.limit) ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
   else if (action === 'fullscreen') await enterFullscreen();
   else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
@@ -233,7 +282,9 @@ root.addEventListener('click', async event => {
   else if (action === 'beat-preview') await togglePreview();
   else if (action === 'signal-preview') await endSignal();
   else if (action === 'undo') { pause(); game = history.pop() || game; persist(); render(); }
+  else if (action === 'defaults') { pause(); config = { ...defaults }; render(); persist(); }
   else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), () => {
+    rememberTeam('teamA'); rememberTeam('teamB');
     history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
     currentDialog.once('closed', focusMatchButton);
   });
@@ -244,7 +295,7 @@ root.addEventListener('click', async event => {
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${config.teamA} ${game.a} : ${game.b} ${config.teamB}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       remember(); game = next; persist(); render();
-      if (sets) currentDialog.once('closed', focusMatchButton);
+      currentDialog.once('closed', focusMatchButton);
     });
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
@@ -267,6 +318,17 @@ root.addEventListener('keydown', event => {
   if (!currentDialog?.opened) return;
   if (event.key === 'Escape') { event.preventDefault(); currentDialog.close(); }
   if (event.key === 'Tab') { const a = $('[data-dialog-action=confirm]'), b = $('[data-dialog-action=cancel]'); if (event.shiftKey && document.activeElement === a) { event.preventDefault(); b.focus(); } else if (!event.shiftKey && document.activeElement === b) { event.preventDefault(); a.focus(); } }
+});
+root.addEventListener('change', event => {
+  const input = event.target, key = input.dataset.setting;
+  const side = input.dataset.teamChoice || (['teamA', 'colorA'].includes(key) ? 'teamA' : ['teamB', 'colorB'].includes(key) ? 'teamB' : null);
+  if (!side) return;
+  const saved = teams.find(team => team.name.toLowerCase() === (input.dataset.teamChoice ? input.value : config[side]).toLowerCase());
+  if (input.dataset.teamChoice && !saved) return;
+  if (saved && (input.dataset.teamChoice || key === side)) {
+    config[side] = saved.name; config[side === 'teamA' ? 'colorA' : 'colorB'] = saved.color;
+  }
+  rememberTeam(side); render(); persist();
 });
 root.addEventListener('input', event => {
   const input = event.target;

@@ -63,6 +63,7 @@
 #jm-arena .jm-primary { display:flex; align-items:center; justify-content:center; gap:10px; background:var(--jm-accent); border:0; color:var(--jm-accent-ink); min-height:56px; width:100%; border-radius:var(--jm-radius); font-size:14px; font-weight:800; }
 #jm-arena .jm-primary svg { width:18px; height:18px; }
 #jm-arena [data-action=toggle] { margin-top:14px; }
+#jm-arena [data-action=stone-minus], #jm-arena [data-action=stone-plus] { touch-action:none; user-select:none; -webkit-touch-callout:none; }
 #jm-arena .jm-secondary { border:1px solid var(--jm-line); border-radius:var(--jm-radius); background:transparent; min-height:44px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 12px; }
 #jm-arena .jm-secondary svg { width:15px; height:15px; }
 #jm-arena .jm-secondary[aria-pressed=true] { background:var(--jm-ink); color:var(--jm-bg); }
@@ -163,7 +164,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 @media(min-width:1000px) {
   #jm-arena [data-view=sound], #jm-arena [data-view=setup] { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:36px; align-content:start; max-width:none; }
   #jm-arena [data-view=sound]>.jm-eyebrow, #jm-arena [data-view=sound]>.jm-page-title, #jm-arena [data-view=sound]>.jm-label, #jm-arena [data-view=sound]>.jm-segment, #jm-arena [data-view=sound]>.jm-wave, #jm-arena [data-view=sound]>.jm-actions { grid-column:1/-1; }
-  #jm-arena [data-view=setup]>.jm-eyebrow, #jm-arena [data-view=setup]>.jm-page-title, #jm-arena [data-view=setup]>.jm-divider, #jm-arena [data-view=setup]>.jm-check, #jm-arena [data-view=setup]>.jm-primary, #jm-arena [data-view=setup]>.jm-note { grid-column:1/-1; }
+  #jm-arena [data-view=setup]>.jm-eyebrow, #jm-arena [data-view=setup]>.jm-page-title, #jm-arena [data-view=setup]>.jm-divider, #jm-arena [data-view=setup]>.jm-check, #jm-arena [data-view=setup]>.jm-primary, #jm-arena [data-view=setup]>.jm-actions, #jm-arena [data-view=setup]>.jm-note { grid-column:1/-1; }
 }
 @media(max-width:479px) {
   #jm-arena .jm-nav .tab-link { flex-direction:column; gap:4px; min-width:0; padding:5px 2px; }

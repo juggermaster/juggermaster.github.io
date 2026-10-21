@@ -60,8 +60,15 @@ export function validGame(game) {
 
 export function restoreSnapshot(value) {
   if (!value || value.version !== 1 || !validGame(value.game)) return null;
+  const teams = new Map();
+  for (const team of Array.isArray(value.teams) ? value.teams : []) {
+    if (typeof team?.name !== 'string' || !team.name.trim() || team.name.trim().length > 22 || !/^#[0-9a-f]{6}$/i.test(team.color)) continue;
+    const name = team.name.trim();
+    teams.set(name.toLowerCase(), { name, color: team.color });
+  }
   return { version: 1, language: Object.hasOwn(locales, value.language) ? value.language : 'de',
     theme: ['light', 'dark'].includes(value.theme) ? value.theme : '',
+    teams: [...teams.values()],
     config: cleanConfig(value.config), sound: cleanSound(value.sound), game: { ...value.game },
     history: Array.isArray(value.history) ? value.history.filter(validGame).slice(-30).map(game => ({ ...game })) : [] };
 }
