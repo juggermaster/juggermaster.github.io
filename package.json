@@ -1,0 +1,26 @@
+{
+  "name": "juggermaster",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://juggermaster.github.io/",
+  "repository": { "type": "git", "url": "https://github.com/juggermaster/juggermaster.github.io.git" },
+  "bugs": { "url": "https://github.com/juggermaster/juggermaster.github.io/issues" },
+  "type": "module",
+  "scripts": {
+    "build": "node web/scripts/build.mjs",
+    "start": "node web/scripts/serve.mjs",
+    "test": "node --test web/test/*.test.mjs",
+    "test:browser": "node web/test/browser.cjs",
+    "test:webkit": "node web/test/webkit.cjs",
+    "check:source": "node web/scripts/check.mjs source",
+    "check:build": "node web/scripts/check.mjs build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1",
+    "sharp": "0.35.5"
+  }
+}

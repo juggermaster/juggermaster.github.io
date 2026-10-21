@@ -1,0 +1,33 @@
+dist/
+node_modules/
+screenshots/
+*.log
+
+# Local credentials and machine-specific configuration are never published.
+.env
+.env.*
+.ssh/
+.aws/
+*.pem
+*.key
+*.ppk
+*.pfx
+*.p12
+id_rsa
+id_ed25519
+
+# Private working notes, historical builds and local mockups.
+.hotfix-v5/
+*.md
+!/README.md
+!/THIRD_PARTY_NOTICES.md
+.idea/
+mockup*
+*.tar.gz
+*.zip
+.local/
+framework7-bundle.min.*
+prepare-mockup.cjs
+check-mockup.cjs
+web/scripts/preview.cjs
+web/src/images/icon-*.png
