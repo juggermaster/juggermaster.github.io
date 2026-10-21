@@ -450,6 +450,7 @@ async function main() {
         await sample.keyboard.press('Escape');
         for (const [file, title] of [['hilfe', 'help'], ['impressum', 'imprint'], ['datenschutz', 'privacy']]) {
           await sample.locator(`a[href="./${file}.html"]`).first().click();
+          await sample.waitForFunction(([language, direction]) => document.documentElement.lang === language && document.documentElement.dir === direction, [language, locale.dir || 'ltr']);
           await sample.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
           assert.equal(await sample.locator('[data-locale]:visible').count(), 1);
           assert.equal(await sample.locator(`[data-locale="${language}"] h1`).textContent(), texts[language][title]);
