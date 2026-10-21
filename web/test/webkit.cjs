@@ -28,8 +28,11 @@ const path = require('node:path');
             await page.locator(`[data-tab=${view}]`).click();
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${device}/${language}/${view}`);
             const navBefore = await page.locator('.jm-nav').boundingBox();
+            const headBefore = await page.locator('.jm-head').boundingBox();
             assert.ok(Math.abs(navBefore.y + navBefore.height - await page.evaluate(() => innerHeight)) <= 1, 'Tabs am Bildschirmrand');
-            await page.locator('.jm-body').evaluate(element => { element.scrollTop = element.scrollHeight; });
+            await page.locator('.jm-scroll').evaluate(element => { element.scrollTop = element.scrollHeight; });
+            const scrollTop = await page.locator('.jm-scroll').evaluate(element => element.scrollTop);
+            assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y + scrollTop) <= 1, 'Header scrollt mit');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
             if (view === 'sound') await page.locator('[data-action=signal-preview]').click({ trial: true });
           }

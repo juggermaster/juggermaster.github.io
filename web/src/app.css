@@ -114,8 +114,8 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-head { padding-top:16px; padding-bottom:16px; }
 #jm-arena .jm-body { min-height:0; }
 #jm-arena .jm-stage>.jm-app { display:flex; flex-direction:column; height:100dvh!important; min-height:0; overflow:hidden; }
-#jm-arena .jm-stage>.jm-app>:not(.jm-body) { flex-shrink:0; }
-#jm-arena .jm-stage>.jm-app>.jm-body { flex:1; overflow-y:auto; overscroll-behavior:contain; }
+#jm-arena .jm-stage>.jm-app>.jm-nav { flex-shrink:0; }
+#jm-arena .jm-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
 #jm-arena .jm-language-picker { position:relative; }
 #jm-arena .jm-language-select { gap:1px; }
 #jm-arena .jm-select-arrow { font-size:10px; line-height:1; }

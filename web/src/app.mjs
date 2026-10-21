@@ -194,7 +194,7 @@ function dialog(title, text, label, action) {
 }
 function showView(next) {
   if (running || countdown >= 0 || starting) pause();
-  view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-body').scrollTop = 0;
+  view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-scroll').scrollTop = 0;
   globalThis.history.replaceState(null, '', next === 'match' ? location.pathname + location.search : `#${next}`);
   ranges.forEach(range => { range.calcSize(); range.layout(); });
 }

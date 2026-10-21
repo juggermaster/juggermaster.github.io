@@ -140,8 +140,11 @@ async function main() {
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${view}: ${width}px ohne Überbreite`);
         assert.ok(await page.evaluate(() => { const brand = document.querySelector('.jm-brand'), box = brand.getBoundingClientRect(), actions = document.querySelector('.jm-head-actions').getBoundingClientRect(); return brand.scrollWidth <= brand.clientWidth && box.right <= actions.left; }), `Kopfzeile ${width}px`);
         const navBefore = await page.locator('.jm-nav').boundingBox();
+        const headBefore = await page.locator('.jm-head').boundingBox();
         assert.ok(Math.abs(navBefore.y + navBefore.height - 1000) <= 1, `Tabs am unteren Rand: ${view}/${width}`);
-        await page.locator('.jm-body').evaluate(element => { element.scrollTop = element.scrollHeight; });
+        await page.locator('.jm-scroll').evaluate(element => { element.scrollTop = element.scrollHeight; });
+        const scrollTop = await page.locator('.jm-scroll').evaluate(element => element.scrollTop);
+        assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y + scrollTop) <= 1, 'Header scrollt mit dem Inhalt');
         const navAfter = await page.locator('.jm-nav').boundingBox();
         assert.equal(navAfter.y, navBefore.y, `Tabs bleiben beim Scrollen sichtbar: ${view}/${width}`);
         assert.ok(await page.locator('.jm-body').evaluate(element => element.getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top + 1), 'Inhalt überlappt keine Tabs');
