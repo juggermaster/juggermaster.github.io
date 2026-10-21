@@ -70,13 +70,30 @@ async function main() {
     await click('new'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
   };
   try {
+    await require('./audio.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
+    assert.equal(await page.title(), 'JUGGERMASTER');
+    assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'JUGGERMASTER');
+    assert.equal(await page.locator('.jm-scroll>.jm-alert').count(), 0, 'Keine Statusmeldungen unter dem Header');
+    assert.equal(await page.locator('.jm-home-hint').count(), 0, 'Kein Homescreen-Hinweis unter dem Header');
+    await tab('info');
+    for (const [index, count] of [3, 5, 4].entries()) {
+      const details = page.locator('.jm-home-guide details').nth(index);
+      await details.locator('summary').click();
+      assert.equal(await details.locator('li:visible').count(), count, 'Schrittweise Anleitung aufklappbar');
+    }
+    await tab('match');
     assert.equal(await page.locator('.jm-offline').isHidden(), true, 'Kein dauerhafter Offline-Hinweis unter der Navigation');
     assert.equal(await page.locator('.jm-offline').evaluate(element => element.getBoundingClientRect().height), 0, 'Kein Platzverbrauch durch den ausgeblendeten Hinweis');
     assert.equal(await page.locator('#jm-arena').getAttribute('lang'), 'de');
     assert.equal(await read('[data-read=stones]'), '0'); assert.equal(await read('[data-read=score-a]'), '0');
     assert.equal(await read('[data-read=phase]'), '1. Satz');
     await tab('setup'); assert.equal(await page.locator('[data-setting=periods]').inputValue(), '-1'); await tab('match');
+    await tab('sound');
+    assert.equal(await page.locator('[data-preset=drum]').getAttribute('aria-pressed'), 'true', 'Trommel ist die frische Klangvorgabe');
+    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), true);
+    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true);
+    await page.locator('[data-preset=deep]').click(); await tab('match');
     assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
     assert.equal(await page.locator('.jm-feedback').count(), 0, 'Keine Toast-Oberfläche');
     assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Tabwechsel aktiviert kein Vollbild');
@@ -115,6 +132,14 @@ async function main() {
     await tab('sound'); await resetAudio(); await click('beat-preview');
     await page.waitForFunction(() => window.__starts.length >= 21);
     const times = [...new Set((await audio()).starts)]; assert.ok(Math.abs(times[1] - times[0] - .5) < .001);
+    await resetAudio(); await page.locator('[data-preset=drum]').click();
+    assert.ok((await audio()).cancelled >= 7, 'Klangwechsel beendet die ausklingenden Gong-Takttöne');
+    assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'true');
+    await page.waitForFunction(() => window.__starts.length >= 4);
+    const drumTimes = [...new Set((await audio()).starts)];
+    assert.ok(Math.abs(drumTimes[1] - drumTimes[0] - .5) < .001, 'Hörprobe startet mit dem neuen Klang im eingestellten Takt');
+    assert.equal(await read('[data-read=stones]'), '4', 'Klangwechsel verändert den Spielzähler nicht');
+    await page.locator('[data-preset=deep]').click();
     await range('pitch', 220); await chooseLanguage('en'); assert.equal(await read('[data-i18n=previewBeat]'), 'Stop beat');
     await chooseLanguage('de'); await click('beat-preview');
     const stopped = (await audio()).starts.length; await page.waitForTimeout(700); assert.equal((await audio()).starts.length, stopped);
@@ -131,12 +156,15 @@ async function main() {
     assert.equal(await read('[data-read=phase]'), '1. Halbzeit'); assert.equal(await read('[data-read=stones]'), '0');
     await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
-    assert.equal(await read('[data-read=phase]'), '2. Halbzeit'); assert.equal(await read('[data-read=stones]'), '4');
+    assert.equal(await read('[data-read=phase]'), '2. Halbzeit');
+    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet die Halbzeit direkt');
+    await page.waitForFunction(() => Number(document.querySelector('[data-read=stones]').textContent) < 4);
     await click('score-a-plus'); await click('toggle');
     await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
     assert.equal(await read('[data-read=start-label]'), 'Ergebnis bestätigen');
     await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
+    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Ergebnis bestätigen startet kein beendetes Spiel');
     await newMatch({ periods: 2, limit: 20, pace: .5, countdown: true });
     await click('toggle'); assert.equal(await read('[data-read=stones]'), '20');
     await page.waitForTimeout(700); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
@@ -157,7 +185,8 @@ async function main() {
           assert.equal(await page.locator('.jm-stones').evaluate(element => element.style.getPropertyValue('--jm-resume-gap')), gap, 'Abbrechen verändert die Ansicht nicht');
           await click(advance); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
           await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
-          assert.equal(await read('[data-read=start-label]'), 'Spiel fortsetzen');
+          assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren');
+          assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet den nächsten Satz direkt');
           assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
         }
       }
@@ -178,13 +207,15 @@ async function main() {
       assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
       assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
     }
-    await newMatch({ periods: 3, limit: 1 });
+    await newMatch({ periods: 3, limit: 1, pace: 1.5 });
     for (const phase of ['2. Drittel', '3. Drittel', 'Golden Jugg']) {
       await click('stone-minus');
       assert.equal(await read('[data-read=stones]'), '0');
       assert.equal(await read('[data-read=start-label]'), phase === 'Golden Jugg' ? 'Golden Jugg beginnen' : 'Abschnitt beginnen');
       await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
       assert.equal(await read('[data-read=phase]'), phase);
+      assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Drittel und Golden Jugg starten nach Bestätigung');
+      await click('toggle');
     }
     await click('score-b-plus'); assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); await click('undo');
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Testteam'); await range('pace', 2, 'setting');
@@ -235,12 +266,24 @@ async function main() {
     assert.equal(await page.locator('[data-setting=teamA]').inputValue(), 'Falken', 'Gespeicherten Namen direkt im kombinierten Feld eingeben');
     assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#123456');
     await tab('sound'); await range('pitch', 300); await range('volume', 12); await range('signalVolume', 20);
+    await page.locator('[data-sound=beatNormalize]').uncheck();
+    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true, 'Takt-Schalter verändert das Endsignal nicht');
+    await page.locator('[data-sound=signalNormalize]').uncheck();
+    await page.reload(); await ready(); await tab('sound');
+    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), false);
+    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), false, 'Beide Schalter bleiben nach Neustart gespeichert');
+    await page.locator('[data-preset=stone]').click();
+    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), false, 'Klangwahl setzt die Schalter nicht zurück');
+    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), false);
     await page.locator('[data-setting=signalCount]').fill('7');
     const beforeSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     await click('beat-preview'); await click('sound-defaults');
     const afterSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     const { defaultSound } = await import(pathToFileURL(path.join(root, 'web/src/core.mjs')).href);
     assert.deepEqual(afterSoundDefaults.sound, defaultSound);
+    assert.equal(await page.locator('[data-preset=drum]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), true);
+    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true);
     assert.deepEqual(afterSoundDefaults.config, { ...beforeSoundDefaults.config, signalCount: defaults.signalCount });
     assert.deepEqual(afterSoundDefaults.teams, beforeSoundDefaults.teams);
     assert.deepEqual(afterSoundDefaults.game, beforeSoundDefaults.game);
@@ -281,6 +324,7 @@ async function main() {
     await context.setOffline(true); await page.close(); page = await context.newPage(); page.setDefaultTimeout(10000);
     await page.goto(url); await ready();
     assert.equal(await read('[data-read=score-a]'), '1'); assert.equal(await read('[data-read=team-a]'), 'SCHAKALE');
+    assert.equal(await page.locator('[data-read=notice]').isHidden(), true, 'Wiederhergestellte Spiele erzeugen keine Statusmeldung');
     assert.equal(await page.locator('#jm-arena').getAttribute('lang'), 'en'); assert.equal(await read('[data-read=status]'), 'PAUSED');
     await page.locator('[data-read=offline]').filter({ hasText: 'fully available' }).waitFor({ state: 'attached' });
     assert.equal(await page.locator('.jm-offline').isHidden(), true, 'Auch nach Offline-Neustart kein Hinweis unter der Navigation');
@@ -369,7 +413,19 @@ async function main() {
             const field = await sample.locator('[data-setting=teamA]').boundingBox(), remove = await sample.locator('[data-team-delete=teamA]').boundingBox();
             assert.ok(remove.x >= field.x + field.width, `${language}: Löschbutton rechts vom Feld`);
           }
-          if (view === 'sound') assert.equal(await sample.locator('[data-action=sound-defaults]').textContent(), texts[language].loadDefaults);
+          if (view === 'sound') {
+            assert.equal(await sample.locator('[data-action=sound-defaults]').textContent(), texts[language].loadDefaults);
+            for (const key of ['beatNormalize', 'signalNormalize']) assert.equal(await sample.locator(`[data-sound=${key}]`).evaluate(input => input.labels[0].textContent.trim()), texts[language][key]);
+          }
+          if (view === 'info') {
+            assert.equal(await sample.locator('#jm-home-title').textContent(), texts[language].homeTitle);
+            for (const key of ['homeAndroid', 'homeIos', 'homeDesktop']) assert.deepEqual(await sample.locator(`[data-home-steps=${key}] li`).allTextContents(), texts[language][key].split('\n'));
+            assert.equal(await sample.locator('.jm-home-guide').evaluate(element => {
+              const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT); let node;
+              while (node = walker.nextNode()) if (node.textContent.includes('JUGGERMASTER') && node.parentElement.tagName !== 'STRONG') return false;
+              return true;
+            }), true, `${language}: App-Name in Anleitung immer fett und groß`);
+          }
           assert.ok(await sample.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${language}/${view}: kein horizontaler Überlauf`);
           assert.ok(await sample.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${language}/${view}: Inhalt scrollt nicht seitlich`);
         }

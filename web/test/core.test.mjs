@@ -41,6 +41,17 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.deepEqual(Object.keys(texts.de).sort(), Object.keys(texts.en).sort());
 });
 
+test('Trommel als Vorgabe und unabhängiger Lautstärkeausgleich', () => {
+  assert.equal(defaultSound.kind, 'drum');
+  assert.equal(defaultSound.beatNormalize, true); assert.equal(defaultSound.signalNormalize, true);
+  assert.equal(cleanSound({ beatNormalize: false }).beatNormalize, false);
+  assert.equal(cleanSound({ signalNormalize: false }).signalNormalize, false);
+  assert.equal(cleanSound({ beatNormalize: 'false', signalNormalize: 0 }).beatNormalize, true);
+  assert.equal(cleanSound({ beatNormalize: 'false', signalNormalize: 0 }).signalNormalize, true);
+  const oldGong = { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2, volume: 40, signalVolume: 80 };
+  assert.deepEqual(cleanSound(oldGong), { ...oldGong, beatNormalize: true, signalNormalize: true }, 'Gespeicherte Klangwahl bleibt erhalten');
+});
+
 test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
   const saved = { version: 1, game: newGame(defaults) };
   assert.deepEqual(restoreSnapshot(saved).teams, []);

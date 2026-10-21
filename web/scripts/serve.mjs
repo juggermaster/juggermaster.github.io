@@ -13,4 +13,4 @@ const server = createServer(async (request, response) => {
     response.end(data);
   } catch { response.writeHead(404); response.end('Not found'); }
 });
-server.listen(port, '127.0.0.1', () => console.log(`JuggerMaster: http://127.0.0.1:${port}`));
+server.listen(port, '127.0.0.1', () => console.log(`JUGGERMASTER: http://127.0.0.1:${port}`));

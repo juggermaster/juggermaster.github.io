@@ -12,7 +12,7 @@ export const presets = Object.freeze({
   deep: { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2 },
   drum: { kind: 'drum', pitch: 110, metal: 15, attack: 75, decay: .5 }
 });
-export const defaultSound = Object.freeze({ ...presets.deep, volume: 55, signalVolume: 90 });
+export const defaultSound = Object.freeze({ ...presets.drum, volume: 55, signalVolume: 90, beatNormalize: true, signalNormalize: true });
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const finiteMatch = game => game.periods > 0 && !game.golden;
 const number = (value, min, max) => Number.isFinite(value) && value >= min && value <= max;
@@ -41,6 +41,7 @@ export function cleanSound(raw = {}) {
   const result = { ...defaultSound };
   if (['gong', 'stone', 'drum'].includes(raw.kind)) result.kind = raw.kind;
   for (const [key, min, max] of [['pitch', 70, 400], ['metal', 0, 100], ['attack', 0, 100], ['decay', .4, 6], ['volume', 0, 100], ['signalVolume', 0, 100]]) if (number(raw[key], min, max)) result[key] = raw[key];
+  for (const key of ['beatNormalize', 'signalNormalize']) if (typeof raw[key] === 'boolean') result[key] = raw[key];
   return result;
 }
 

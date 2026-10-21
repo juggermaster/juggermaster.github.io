@@ -153,6 +153,15 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-info-links { display:grid; gap:10px; }
 #jm-arena .jm-info-links a { display:block; padding:16px; min-height:48px; border:1px solid var(--jm-line); color:var(--jm-ink); background:var(--jm-panel); border-radius:var(--jm-radius); font-weight:600; text-decoration:none; }
 #jm-arena .jm-info-version { color:var(--jm-soft); margin:0 0 24px; }
+#jm-arena [data-view=info] .jm-alert { margin:0 0 24px; }
+#jm-arena .jm-home-guide { margin-bottom:24px; line-height:1.6; font-size:14px; overflow-wrap:anywhere; }
+#jm-arena .jm-home-guide h3 { font-size:18px; margin:0 0 10px; }
+#jm-arena .jm-home-guide details { margin:8px 0; padding:0 12px; border:1px solid var(--jm-line); border-radius:var(--jm-radius); background:var(--jm-panel); }
+#jm-arena .jm-home-guide summary { padding:12px 0; min-height:44px; cursor:pointer; font-weight:600; }
+#jm-arena .jm-home-guide ol { padding-inline-start:22px; margin:0 0 12px; }
+#jm-arena .jm-home-guide li+li { margin-top:8px; }
+#jm-arena .jm-volume { margin-bottom:18px; min-width:0; }
+#jm-arena .jm-volume>.jm-field { margin-bottom:0; }
 #jm-arena .jm-head, #jm-arena .jm-nav, #jm-arena .jm-counter, #jm-arena .jm-score, #jm-arena .jm-timing strong { direction:ltr; }
 #jm-arena .jm-legal { max-width:900px; padding:20px; line-height:1.7; }
 #jm-arena .jm-legal header { display:flex; align-items:center; justify-content:space-between; gap:20px; direction:ltr; }
@@ -180,5 +189,6 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
   #jm-arena [data-view=setup]>.jm-eyebrow, #jm-arena [data-view=setup]>.jm-page-title, #jm-arena [data-view=setup]>.jm-divider, #jm-arena [data-view=setup]>.jm-check, #jm-arena [data-view=setup]>.jm-primary, #jm-arena [data-view=setup]>.jm-actions, #jm-arena [data-view=setup]>.jm-note { grid-column:1/-1; }
 }
 @media(max-width:479px) {
+  #jm-arena[lang=de] .jm-nav { grid-template-columns:minmax(0,1fr) minmax(max-content,1fr) minmax(0,1fr) minmax(0,1fr); }
   #jm-arena .jm-nav .tab-link { flex-direction:column; gap:4px; min-width:0; padding:5px 2px; }
 }

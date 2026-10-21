@@ -15,7 +15,7 @@ const rules = [
   ['embedded password', /\b(?:password|passwd|passwort|api[_-]?key|access[_-]?token)\s*[:=]\s*['"][^'"\s]{8,}['"]/i],
   ['credential in URL', /https?:\/\/[^\s/@:]+:[^\s/@]+@/i],
   ['obsolete host', /\b[a-z0-9-]+\.ddns\.net\b/i],
-  ['private workstation path', /\b[A-Z]:[\\/](?:Users|JuggerMaster)[\\/]/i]
+  ['private workstation path', /\b[A-Z]:[\\/](?:Users|JUGGERMASTER)[\\/]/i]
 ];
 function inspect(name, data) {
   if (!textFile(name)) return;
@@ -57,6 +57,7 @@ if (mode === 'source') {
   console.log(`OK: ${commits.length} commits and ${count} committed file versions checked; HEAD ${git(['rev-parse', revision]).trim()}.`);
 } else if (mode === 'build') {
   const manifest = JSON.parse(await readFile('dist/manifest.webmanifest', 'utf8'));
+  assert.equal(manifest.name, 'JUGGERMASTER'); assert.equal(manifest.short_name, 'JUGGERMASTER');
   assert.equal(manifest.scope, './'); assert.equal(manifest.start_url, './');
   for (const size of [180, 192, 512]) {
     const name = size === 180 ? manifest.icons[0].src.replace('192.png', '180.png') : manifest.icons.find(icon => icon.sizes === `${size}x${size}`).src;

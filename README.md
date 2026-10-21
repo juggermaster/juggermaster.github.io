@@ -1,4 +1,4 @@
-# JuggerMaster
+# JUGGERMASTER
 
 [Open the app](https://juggermaster.github.io/) · [Source](https://github.com/juggermaster/juggermaster.github.io) · [MIT licence](LICENSE)
 
@@ -9,10 +9,10 @@ Jugger match timing and scoring in a mobile web app. Open the website online onc
 - Sets by default, plus two halves, three periods, Golden Jugg and continuous beats.
 - Configurable stones, interval, teams, colours, countdown and up/down counting.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
-- Synthesised stone-on-metal, gong and drum sounds. Separate beat and Jugg/period-end volume; one to ten overlapping end beats.
+- Synthesised stone-on-metal, gong and drum sounds, with drum as the default. Separate beat and Jugg/period-end volume and optional volume levelling for each; one to ten overlapping end beats.
 - Continuous sound preview, local match state and 30 undo steps. Reopening always restores a paused match.
 - 23 languages, automatic browser-language selection, saved manual choice and original SVG flags. Hebrew uses right-to-left text.
-- Responsive layout, always-visible bottom tabs, manual header full-screen button, foreground screen wake lock, offline help, legal pages and licence notices.
+- Responsive layout, always-visible bottom tabs, manual header full-screen button, foreground screen wake lock, home-screen instructions in Info, offline help, legal pages and licence notices.
 
 ## Development
 
@@ -46,7 +46,7 @@ GitHub Actions checks the sources, runs automated tests, builds the app and publ
 
 Before pushing: finish local changes and checks, commit locally, inspect the actual commit and all outgoing history, then push only the checked revision. `node web/scripts/check.mjs history HEAD` checks committed file versions for private files and known secret patterns. It supplements review; it does not detect every possible credential.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v15`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v16`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 

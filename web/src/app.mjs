@@ -25,7 +25,6 @@ try {
     if (!restored) throw Error('Invalid saved match');
     ({ config, sound, game, history, language, theme, teams } = restored);
     migrateTeams = !Array.isArray(snapshot.teams);
-    if (game.consumed || game.a || game.b || game.elapsed) noticeKey = 'restored';
   }
   const preferred = localStorage.getItem('juggermaster:language');
   language = resolveLanguage(navigator.languages || [navigator.language], preferred);
@@ -36,7 +35,7 @@ if (migrateTeams) for (const side of ['teamA', 'teamB']) {
 }
 
 if (!globalThis.Framework7) throw Error('Framework7 konnte nicht geladen werden.');
-const f7 = new Framework7({ el: app, name: 'JuggerMaster', theme: 'ios', darkMode: false,
+const f7 = new Framework7({ el: app, name: 'JUGGERMASTER', theme: 'ios', darkMode: false,
   dialog: { closeByBackdropClick: false }, touch: { fastClicks: false, tapHold: false } });
 
 function persist() {
@@ -61,10 +60,17 @@ function setText(name, value) { $(`[data-read="${name}"]`).textContent = value; 
 function configuredTeamName(side) { return config[`${side}Default`] ? t(config[`${side}Default`]) : config[side]; }
 function savedTeamName(team) { return team.defaultName ? t(team.defaultName) : team.name; }
 function teamName(side) { return configuredTeamName(side) || t(side); }
+function setLocalizedText(element, text) {
+  element.replaceChildren(...text.split(/(JUGGERMASTER)/).map(part => {
+    if (part !== 'JUGGERMASTER') return part;
+    const name = document.createElement('strong'); name.textContent = part; return name;
+  }));
+}
 
 function renderLanguage() {
+  $$('[data-home-steps]').forEach(list => list.replaceChildren(...t(list.dataset.homeSteps).split('\n').map(text => { const item = document.createElement('li'); setLocalizedText(item, text); return item; })));
   root.lang = language; document.documentElement.lang = language; document.documentElement.dir = locales[language].dir || 'ltr';
-  $$('[data-i18n]').forEach(element => { element.textContent = t(element.dataset.i18n); });
+  $$('[data-i18n]').forEach(element => { setLocalizedText(element, t(element.dataset.i18n)); });
   $$('[data-i18n-aria]').forEach(element => { element.setAttribute('aria-label', t(element.dataset.i18nAria)); });
   $('[data-read=language-flag]').dataset.language = language;
   $('[data-read=language-flag]').src = new URL(`./images/flag-${locales[language].flag}.svg`, import.meta.url).href;
@@ -130,7 +136,7 @@ function render() {
   $('[data-read=set-settings]').hidden = config.periods !== -1;
   $('[data-setting=limit]').closest('.jm-fields-pair').hidden = config.periods <= 0;
   $('[data-output=pace]').textContent = `${decimal(config.pace)} s`;
-  $$('[data-sound]').forEach(input => { input.value = sound[input.dataset.sound]; });
+  $$('[data-sound]').forEach(input => { if (input.type === 'checkbox') input.checked = sound[input.dataset.sound]; else input.value = sound[input.dataset.sound]; });
   for (const key of ['pitch', 'metal', 'attack', 'decay', 'volume', 'signalVolume']) $(`[data-output=${key}]`).textContent = `${decimal(sound[key])}${key === 'pitch' ? ' Hz' : key === 'decay' ? ' s' : ' %'}`;
   ranges.forEach((range, input) => { if (range.getValue() !== Number(input.value)) range.setValue(Number(input.value)); });
   $$('[data-preset]').forEach(button => button.setAttribute('aria-pressed', String(presets[button.dataset.preset].kind === sound.kind)));
@@ -278,7 +284,7 @@ root.addEventListener('click', async event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
-  if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
+  if (button.dataset.preset) { stopAudio(true); Object.assign(sound, presets[button.dataset.preset]); if (previewing) previewClock.start(config.pace, true); render(); persist(); return; }
   if (button.dataset.teamDelete) {
     const index = teams.findIndex(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase());
     if (index < 0) return;
@@ -314,6 +320,7 @@ root.addEventListener('click', async event => {
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       remember(); game = next; persist(); render();
       currentDialog.once('closed', focusMatchButton);
+      if (!game.ended) start();
     });
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
@@ -352,7 +359,11 @@ root.addEventListener('change', event => {
 });
 root.addEventListener('input', event => {
   const input = event.target;
-  if (input.dataset.sound) { const value = Number(input.value); if (!Number.isFinite(value)) return; sound[input.dataset.sound] = clamp(value, Number(input.min), Number(input.max)); render(); persist(); }
+  if (input.dataset.sound) {
+    if (input.type === 'checkbox') sound[input.dataset.sound] = input.checked;
+    else { const value = Number(input.value); if (!Number.isFinite(value)) return; sound[input.dataset.sound] = clamp(value, Number(input.min), Number(input.max)); }
+    render(); persist();
+  }
   if (input.dataset.setting) {
     const key = input.dataset.setting;
     if (['teamA', 'teamB'].includes(key)) { config[key] = input.value.trim().slice(0, 22); config[`${key}Default`] = ''; }

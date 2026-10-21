@@ -14,11 +14,11 @@ const documents = {
     ],
     "imprint": [
       "用于Jugger比赛计时和计分的移动网页应用，网址为juggermaster.github.io。本应用为独立开发，并非Jugger社区的官方应用。",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗帜、犬头骨和图标均为自行绘制的几何图形。不加载外部插图、队伍标志或字体文件。声音在浏览器中合成。"
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗帜、犬头骨和图标均为自行绘制的几何图形。不加载外部插图、队伍标志或字体文件。声音在浏览器中合成。"
     ],
     "privacy": [
-      "更新日期：21.10.2026。本说明适用于juggermaster.github.io上的JuggerMaster。",
-      "JuggerMaster在浏览器本地保存队伍名称和颜色、得分、石数、获胜局数、时间、声音设置、语言和外观，以及最多30步的修改记录。这些数据不会发送到我们的服务器。没有账户、同步、分析、广告、外部字体服务或跟踪Cookie。",
+      "更新日期：21.10.2026。本说明适用于juggermaster.github.io上的JUGGERMASTER。",
+      "JUGGERMASTER在浏览器本地保存队伍名称和颜色、得分、石数、获胜局数、时间、声音设置、语言和外观，以及最多30步的修改记录。这些数据不会发送到我们的服务器。没有账户、同步、分析、广告、外部字体服务或跟踪Cookie。",
       "应用使用localStorage保存设置和比赛状态。Service Worker和Cache Storage会自动保存所有文件，方便以后离线打开同一网址。应用可能请求浏览器提供持久存储。此存储用于你所要求的比赛功能和离线使用（德国TDDDG第25条第2款第2项）。",
       "数据将保留到重置、删除网站数据或浏览器清理存储时。服务器上没有副本。清除浏览器数据也会删除比赛和离线文件。确认“新比赛”会替换当前比赛，但保留队伍和声音设置。",
       "应用通过GitHub Pages在juggermaster.github.io提供。在线加载时，GitHub会处理提供服务所需的IP地址、时间、请求网址和浏览器HTTP信息等连接数据。我们的目的是依据GDPR第6条第1款(f)项安全提供应用。已保存的比赛不会上传。",
@@ -41,11 +41,11 @@ const documents = {
     ],
     "imprint": [
       "用於Jugger比賽計時和計分的行動網頁應用程式，網址為juggermaster.github.io。本應用程式為獨立開發，並非Jugger社群的官方應用程式。",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗幟、犬頭骨和圖示均為自行繪製的幾何圖形。不載入外部插圖、隊伍標誌或字型檔案。聲音在瀏覽器中合成。"
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗幟、犬頭骨和圖示均為自行繪製的幾何圖形。不載入外部插圖、隊伍標誌或字型檔案。聲音在瀏覽器中合成。"
     ],
     "privacy": [
-      "更新日期：21.10.2026。本說明適用於juggermaster.github.io上的JuggerMaster。",
-      "JuggerMaster在瀏覽器本機儲存隊伍名稱和顏色、得分、石數、獲勝局數、時間、聲音設定、語言和外觀，以及最多30步的修改紀錄。這些資料不會傳送到我們的伺服器。沒有帳號、同步、分析、廣告、外部字型服務或追蹤Cookie。",
+      "更新日期：21.10.2026。本說明適用於juggermaster.github.io上的JUGGERMASTER。",
+      "JUGGERMASTER在瀏覽器本機儲存隊伍名稱和顏色、得分、石數、獲勝局數、時間、聲音設定、語言和外觀，以及最多30步的修改紀錄。這些資料不會傳送到我們的伺服器。沒有帳號、同步、分析、廣告、外部字型服務或追蹤Cookie。",
       "應用程式使用localStorage儲存設定和比賽狀態。Service Worker和Cache Storage會自動儲存所有檔案，方便日後離線開啟同一網址。應用程式可能要求瀏覽器提供永久儲存空間。此儲存用於你所要求的比賽功能和離線使用（德國TDDDG第25條第2項第2款）。",
       "資料會保留到重設、刪除網站資料或瀏覽器清理儲存空間時。伺服器上沒有副本。清除瀏覽器資料也會刪除比賽和離線檔案。確認「新比賽」會取代目前比賽，但保留隊伍和聲音設定。",
       "應用程式透過GitHub Pages在juggermaster.github.io提供。線上載入時，GitHub會處理提供服務所需的IP位址、時間、要求網址及瀏覽器HTTP資訊等連線資料。我們的目的是依據GDPR第6條第1項(f)款安全提供應用程式。已儲存的比賽不會上傳。",
@@ -68,11 +68,11 @@ const documents = {
     ],
     "imprint": [
       "juggermaster.github.ioでJuggerの時間と得点を記録するモバイルウェブアプリです。独自に開発したもので、Juggerコミュニティの公式アプリではありません。",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗、犬の頭蓋骨、アイコンは独自の幾何学的な図案です。外部のイラスト、チームロゴ、フォントファイルは読み込みません。音はブラウザー内で合成します。"
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 旗、犬の頭蓋骨、アイコンは独自の幾何学的な図案です。外部のイラスト、チームロゴ、フォントファイルは読み込みません。音はブラウザー内で合成します。"
     ],
     "privacy": [
-      "更新日：21.10.2026。この説明はjuggermaster.github.ioのJuggerMasterに適用されます。",
-      "JuggerMasterはチーム名と色、得点、ストーン、獲得セット、時間、音の設定、言語、表示設定、および最大30段階の修正履歴をブラウザー内に保存します。これらのデータは当方のサーバーに送信されません。アカウント、同期、アクセス解析、広告、外部フォントサービス、追跡Cookieはありません。",
+      "更新日：21.10.2026。この説明はjuggermaster.github.ioのJUGGERMASTERに適用されます。",
+      "JUGGERMASTERはチーム名と色、得点、ストーン、獲得セット、時間、音の設定、言語、表示設定、および最大30段階の修正履歴をブラウザー内に保存します。これらのデータは当方のサーバーに送信されません。アカウント、同期、アクセス解析、広告、外部フォントサービス、追跡Cookieはありません。",
       "設定と試合状況にはlocalStorageを使います。Service WorkerとCache Storageがすべてのファイルを自動保存し、同じアドレスを後でオフラインでも開けるようにします。ブラウザーに永続ストレージを要求する場合があります。この保存は、利用者が求めた試合機能とオフライン利用のためのものです（ドイツTDDDG第25条第2項第2号）。",
       "データはリセット、サイトデータの削除、またはブラウザーによるストレージ整理まで残ります。サーバー側のコピーはありません。ブラウザーデータを削除すると試合とオフラインファイルも削除されます。「新しい試合」の確認後は現在の試合が置き換わり、チームと音の設定は残ります。",
       "アプリはGitHub Pagesを通じてjuggermaster.github.ioで配信されます。オンライン読み込み時、GitHubはIPアドレス、時刻、要求URL、ブラウザーのHTTP情報など、配信に必要な接続情報を処理します。当方の目的は安全な配信で、根拠はGDPR第6条第1項(f)です。保存済みの試合はアップロードされません。",
@@ -95,11 +95,11 @@ const documents = {
     ],
     "imprint": [
       "juggermaster.github.io에서 Jugger 경기 시간과 점수를 기록하는 모바일 웹 앱입니다. 독립적으로 제작했으며 Jugger 커뮤니티의 공식 앱은 아닙니다.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 국기, 개 두개골, 아이콘은 직접 만든 기하학적 그림입니다. 외부 삽화, 팀 로고 또는 글꼴 파일을 불러오지 않습니다. 소리는 브라우저에서 합성합니다."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. 국기, 개 두개골, 아이콘은 직접 만든 기하학적 그림입니다. 외부 삽화, 팀 로고 또는 글꼴 파일을 불러오지 않습니다. 소리는 브라우저에서 합성합니다."
     ],
     "privacy": [
-      "업데이트: 21.10.2026. 이 안내는 juggermaster.github.io의 JuggerMaster에 적용됩니다.",
-      "JuggerMaster는 팀 이름과 색상, 점수, 스톤, 승리한 세트, 시간, 소리 설정, 언어, 화면 설정과 최대 30단계의 수정 기록을 브라우저에 로컬로 저장합니다. 이 데이터는 당사 서버로 전송되지 않습니다. 계정, 동기화, 분석, 광고, 외부 글꼴 서비스, 추적 쿠키가 없습니다.",
+      "업데이트: 21.10.2026. 이 안내는 juggermaster.github.io의 JUGGERMASTER에 적용됩니다.",
+      "JUGGERMASTER는 팀 이름과 색상, 점수, 스톤, 승리한 세트, 시간, 소리 설정, 언어, 화면 설정과 최대 30단계의 수정 기록을 브라우저에 로컬로 저장합니다. 이 데이터는 당사 서버로 전송되지 않습니다. 계정, 동기화, 분석, 광고, 외부 글꼴 서비스, 추적 쿠키가 없습니다.",
       "설정과 경기 상태는 localStorage에 저장됩니다. Service Worker와 Cache Storage는 모든 파일을 자동으로 저장하여 나중에 같은 주소를 오프라인으로 열 수 있게 합니다. 앱이 브라우저의 영구 저장소를 요청할 수 있습니다. 이 저장은 사용자가 요청한 경기 기능과 오프라인 사용을 위한 것입니다(독일 TDDDG 제25조 제2항 제2호).",
       "데이터는 초기화, 사이트 데이터 삭제 또는 브라우저의 저장소 정리 시까지 남습니다. 서버 사본은 없습니다. 브라우저 데이터를 지우면 경기와 오프라인 파일도 삭제됩니다. ‘새 경기’를 확인하면 현재 경기는 교체되고 팀과 소리 설정은 유지됩니다.",
       "앱은 GitHub Pages를 통해 juggermaster.github.io에서 제공됩니다. 온라인으로 불러올 때 GitHub는 IP 주소, 시간, 요청 주소와 브라우저 HTTP 정보 등 제공에 필요한 연결 정보를 처리합니다. 당사의 목적은 GDPR 제6조 제1항 (f)에 따른 안전한 제공입니다. 저장된 경기는 업로드하지 않습니다.",
@@ -122,11 +122,11 @@ const documents = {
     ],
     "imprint": [
       "Мобільний вебзастосунок для відліку часу й очок у Jugger на juggermaster.github.io. Незалежна реалізація; це не офіційний застосунок спільноти Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Прапори, собачий череп та піктограми — власні геометричні малюнки. Зовнішні ілюстрації, логотипи команд і файли шрифтів не завантажуються. Звуки синтезуються у браузері."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Прапори, собачий череп та піктограми — власні геометричні малюнки. Зовнішні ілюстрації, логотипи команд і файли шрифтів не завантажуються. Звуки синтезуються у браузері."
     ],
     "privacy": [
-      "Оновлено: 21.10.2026. Ця інформація описує JuggerMaster на juggermaster.github.io.",
-      "JuggerMaster локально зберігає у браузері назви й кольори команд, очки, камені, виграні сети, час, налаштування звуку, мову та оформлення, включно з 30 кроками виправлення. Ці дані не надсилаються на наш сервер. Немає облікових записів, синхронізації, аналітики, реклами, зовнішніх сервісів шрифтів або відстежувальних cookies.",
+      "Оновлено: 21.10.2026. Ця інформація описує JUGGERMASTER на juggermaster.github.io.",
+      "JUGGERMASTER локально зберігає у браузері назви й кольори команд, очки, камені, виграні сети, час, налаштування звуку, мову та оформлення, включно з 30 кроками виправлення. Ці дані не надсилаються на наш сервер. Немає облікових записів, синхронізації, аналітики, реклами, зовнішніх сервісів шрифтів або відстежувальних cookies.",
       "Застосунок використовує localStorage для налаштувань і стану матчу. Service Worker і Cache Storage автоматично зберігають усі файли, щоб згодом відкрити ту саму адресу офлайн. Застосунок може запитати постійне сховище браузера. Зберігання забезпечує запитані вами гру й офлайн-користування (§ 25 абз. 2 п. 2 TDDDG).",
       "Дані залишаються до скидання, видалення даних сайту або очищення браузером. Серверної копії немає. Очищення даних браузера також видаляє матчі й офлайн-файли. Підтвердження «Новий матч» замінює поточний матч зі збереженням команд і налаштувань звуку.",
       "Застосунок розміщено на juggermaster.github.io через GitHub Pages. Під час онлайн-завантаження GitHub обробляє потрібні дані: IP-адресу, час, запитану адресу та HTTP-інформацію браузера. Наша мета — безпечне надання за ст. 6 п. 1 підп. f GDPR. Збережені матчі на сервер не завантажуються.",
@@ -149,11 +149,11 @@ const documents = {
     ],
     "imprint": [
       "יישום אינטרנט לנייד למדידת זמן וניקוד ב־Jugger בכתובת juggermaster.github.io. מימוש עצמאי; זה אינו היישום הרשמי של קהילת Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. הדגלים, גולגולת הכלב והסמלים הם איורים גאומטריים מקוריים שלנו. לא נטענים איורים חיצוניים, סמלי קבוצות או קובצי גופנים. הצלילים מסונתזים בדפדפן."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. הדגלים, גולגולת הכלב והסמלים הם איורים גאומטריים מקוריים שלנו. לא נטענים איורים חיצוניים, סמלי קבוצות או קובצי גופנים. הצלילים מסונתזים בדפדפן."
     ],
     "privacy": [
-      "עודכן: 21.10.2026. מידע זה מתאר את JuggerMaster בכתובת juggermaster.github.io.",
-      "JuggerMaster שומר מקומית בדפדפן שמות וצבעי קבוצות, נקודות, אבנים, מערכות שנוצחו, זמנים, הגדרות צליל, שפה ומראה, כולל עד 30 צעדי תיקון. הנתונים האלה אינם נשלחים לשרת שלנו. אין חשבונות, סנכרון, ניתוח שימוש, פרסומות, שירותי גופנים חיצוניים או עוגיות מעקב.",
+      "עודכן: 21.10.2026. מידע זה מתאר את JUGGERMASTER בכתובת juggermaster.github.io.",
+      "JUGGERMASTER שומר מקומית בדפדפן שמות וצבעי קבוצות, נקודות, אבנים, מערכות שנוצחו, זמנים, הגדרות צליל, שפה ומראה, כולל עד 30 צעדי תיקון. הנתונים האלה אינם נשלחים לשרת שלנו. אין חשבונות, סנכרון, ניתוח שימוש, פרסומות, שירותי גופנים חיצוניים או עוגיות מעקב.",
       "היישום משתמש ב־localStorage לשמירת ההגדרות ומצב המשחק. Service Worker ו־Cache Storage שומרים אוטומטית את כל הקבצים כדי שיהיה אפשר לפתוח שוב את אותה הכתובת ללא חיבור. היישום עשוי לבקש אחסון קבוע בדפדפן. האחסון משמש להפעלת המשחק ולשימוש ללא חיבור שביקשת (§ 25, סעיף קטן 2, פסקה 2 של TDDDG).",
       "הנתונים נשארים עד לאיפוס, למחיקת נתוני האתר או לניקוי האחסון בידי הדפדפן. אין עותק בשרת. מחיקת נתוני הדפדפן מסירה גם משחקים וקבצים לשימוש ללא חיבור. אישור ״משחק חדש״ מחליף את המשחק הנוכחי ושומר את הקבוצות ואת הגדרות הצליל.",
       "היישום מתארח ב־juggermaster.github.io דרך GitHub Pages. בטעינה מקוונת GitHub מעבד נתוני חיבור נחוצים: כתובת IP, זמן, הכתובת המבוקשת ומידע HTTP של הדפדפן. מטרתנו היא אספקה מאובטחת לפי סעיף 6(1)(f) ל־GDPR. משחקים שמורים אינם מועלים לשרת.",
@@ -176,11 +176,11 @@ const documents = {
     ],
     "imprint": [
       "Mobilā tīmekļa lietotne Jugger laika un punktu skaitīšanai vietnē juggermaster.github.io. Neatkarīgs risinājums; tā nav oficiāla Jugger kopienas lietotne.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Karogi, suņa galvaskauss un ikonas ir pašu ģeometriski zīmējumi. Netiek ielādētas ārējas ilustrācijas, komandu logotipi vai fontu faili. Skaņas tiek sintezētas pārlūkā."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Karogi, suņa galvaskauss un ikonas ir pašu ģeometriski zīmējumi. Netiek ielādētas ārējas ilustrācijas, komandu logotipi vai fontu faili. Skaņas tiek sintezētas pārlūkā."
     ],
     "privacy": [
-      "Atjaunināts: 21.10.2026. Šī informācija apraksta JuggerMaster vietnē juggermaster.github.io.",
-      "JuggerMaster pārlūkā lokāli saglabā komandu nosaukumus un krāsas, punktus, akmeņus, uzvarētos setus, laikus, skaņas iestatījumus, valodu un izskatu, arī līdz 30 labojumu soļiem. Šie dati netiek sūtīti uz mūsu serveri. Nav kontu, sinhronizācijas, analītikas, reklāmu, ārēju fontu pakalpojumu vai izsekošanas sīkdatņu.",
+      "Atjaunināts: 21.10.2026. Šī informācija apraksta JUGGERMASTER vietnē juggermaster.github.io.",
+      "JUGGERMASTER pārlūkā lokāli saglabā komandu nosaukumus un krāsas, punktus, akmeņus, uzvarētos setus, laikus, skaņas iestatījumus, valodu un izskatu, arī līdz 30 labojumu soļiem. Šie dati netiek sūtīti uz mūsu serveri. Nav kontu, sinhronizācijas, analītikas, reklāmu, ārēju fontu pakalpojumu vai izsekošanas sīkdatņu.",
       "Lietotne izmanto localStorage iestatījumiem un spēles stāvoklim. Service Worker un Cache Storage automātiski saglabā visus failus, lai to pašu adresi vēlāk varētu atvērt bezsaistē. Lietotne var lūgt pastāvīgu pārlūka krātuvi. Šī glabāšana kalpo tavam pieprasītajam spēles darbam un bezsaistes lietošanai (§ 25 2. daļas 2. punkts TDDDG).",
       "Dati paliek līdz atiestatīšanai, vietnes datu dzēšanai vai pārlūka krātuves tīrīšanai. Servera kopijas nav. Pārlūka datu dzēšana izdzēš arī spēles un bezsaistes failus. Apstiprinot «Jauna spēle», pašreizējā spēle tiek aizstāta, saglabājot komandas un skaņas iestatījumus.",
       "Lietotne ir pieejama juggermaster.github.io, izmantojot GitHub Pages. Ielādējot tiešsaistē, GitHub apstrādā nepieciešamos savienojuma datus: IP adresi, laiku, pieprasīto adresi un pārlūka HTTP informāciju. Mūsu mērķis ir droša nodrošināšana, pamatojoties uz VDAR 6. panta 1. punkta f) apakšpunktu. Saglabātās spēles netiek augšupielādētas.",
@@ -203,11 +203,11 @@ const documents = {
     ],
     "imprint": [
       "Mobilioji žiniatinklio programėlė Jugger laikui ir taškams skaičiuoti adresu juggermaster.github.io. Savarankiškas įgyvendinimas; tai nėra oficiali Jugger bendruomenės programėlė.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vėliavos, šuns kaukolė ir piktogramos yra pačių sukurti geometriniai piešiniai. Neįkeliamos išorinės iliustracijos, komandų logotipai ar šriftų failai. Garsai sintetinami naršyklėje."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vėliavos, šuns kaukolė ir piktogramos yra pačių sukurti geometriniai piešiniai. Neįkeliamos išorinės iliustracijos, komandų logotipai ar šriftų failai. Garsai sintetinami naršyklėje."
     ],
     "privacy": [
-      "Atnaujinta: 21.10.2026. Ši informacija aprašo JuggerMaster adresu juggermaster.github.io.",
-      "JuggerMaster vietoje naršyklėje saugo komandų pavadinimus ir spalvas, taškus, akmenis, laimėtus setus, laikus, garso nustatymus, kalbą ir išvaizdą, įskaitant iki 30 taisymo žingsnių. Šie duomenys neperduodami mūsų serveriui. Nėra paskyrų, sinchronizavimo, analizės, reklamos, išorinių šriftų paslaugų ar sekimo slapukų.",
+      "Atnaujinta: 21.10.2026. Ši informacija aprašo JUGGERMASTER adresu juggermaster.github.io.",
+      "JUGGERMASTER vietoje naršyklėje saugo komandų pavadinimus ir spalvas, taškus, akmenis, laimėtus setus, laikus, garso nustatymus, kalbą ir išvaizdą, įskaitant iki 30 taisymo žingsnių. Šie duomenys neperduodami mūsų serveriui. Nėra paskyrų, sinchronizavimo, analizės, reklamos, išorinių šriftų paslaugų ar sekimo slapukų.",
       "Nustatymams ir rungtynėms naudojama localStorage. Service Worker ir Cache Storage automatiškai išsaugo visus failus, kad tą patį adresą būtų galima atverti be ryšio. Programėlė gali prašyti nuolatinės naršyklės saugyklos. Saugojimas skirtas tavo prašytam žaidimui ir naudojimui be ryšio (§ 25 2 dalies 2 punktas TDDDG).",
       "Duomenys lieka iki atkūrimo į pradinę būseną, svetainės duomenų ištrynimo ar naršyklės atliekamo valymo. Serverio kopijos nėra. Naršyklės duomenų išvalymas pašalina ir rungtynes bei failus darbui be ryšio. Patvirtinus „Naujos rungtynės“, esamos rungtynės pakeičiamos, išsaugant komandas ir garso nustatymus.",
       "Programėlė pasiekiama juggermaster.github.io per GitHub Pages. Įkeliant internetu GitHub tvarko būtinus ryšio duomenis: IP adresą, laiką, prašomą adresą ir naršyklės HTTP informaciją. Mūsų tikslas – saugus pateikimas pagal BDAR 6 straipsnio 1 dalies f punktą. Išsaugotos rungtynės neįkeliamos.",
@@ -230,11 +230,11 @@ const documents = {
     ],
     "imprint": [
       "Мобильное веб-приложение для отсчёта времени и очков в Jugger на juggermaster.github.io. Независимая реализация; не является официальным приложением сообщества Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Флаги, собачий череп и значки — собственные геометрические рисунки. Внешние иллюстрации, логотипы команд и файлы шрифтов не загружаются. Звуки синтезируются в браузере."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Флаги, собачий череп и значки — собственные геометрические рисунки. Внешние иллюстрации, логотипы команд и файлы шрифтов не загружаются. Звуки синтезируются в браузере."
     ],
     "privacy": [
-      "Обновлено: 21.10.2026. Здесь описывается JuggerMaster на juggermaster.github.io.",
-      "JuggerMaster хранит в браузере названия и цвета команд, очки, камни, выигранные сеты, время, настройки звука, язык и оформление, включая до 30 шагов исправления. Эти сведения не передаются на наш сервер. Нет аккаунтов, синхронизации, аналитики, рекламы, внешних сервисов шрифтов и отслеживающих cookies.",
+      "Обновлено: 21.10.2026. Здесь описывается JUGGERMASTER на juggermaster.github.io.",
+      "JUGGERMASTER хранит в браузере названия и цвета команд, очки, камни, выигранные сеты, время, настройки звука, язык и оформление, включая до 30 шагов исправления. Эти сведения не передаются на наш сервер. Нет аккаунтов, синхронизации, аналитики, рекламы, внешних сервисов шрифтов и отслеживающих cookies.",
       "Приложение использует localStorage для настроек и матча. Service Worker и Cache Storage автоматически сохраняют все файлы, чтобы позже открыть тот же адрес офлайн. Может запрашиваться постоянное хранилище браузера. Хранение служит запрошенной вами работе игры и офлайн-использованию (§ 25 абз. 2 п. 2 TDDDG).",
       "Данные сохраняются до сброса, удаления данных сайта или очистки браузером. Серверной копии нет. Очистка браузера удаляет также матчи и офлайн-файлы. Подтверждение «Новый матч» заменяет текущий матч, сохраняя команды и настройки звука.",
       "Приложение размещено на juggermaster.github.io через GitHub Pages. При загрузке онлайн GitHub обрабатывает необходимые данные: IP-адрес, время, запрошенный адрес и HTTP-информацию браузера. Наша цель — безопасная доставка на основании ст. 6 п. 1 подп. f GDPR. Сохранённые матчи не загружаются на сервер.",
@@ -257,11 +257,11 @@ const documents = {
     ],
     "imprint": [
       "Mobilní webová aplikace pro měření času a bodů v Juggeru na juggermaster.github.io. Samostatná realizace; nejde o oficiální aplikaci komunity Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vlajky, psí lebka a ikony aplikace jsou vlastní geometrické kresby. Nenačítají se externí ilustrace, týmová loga ani soubory písem. Zvuky vznikají synteticky v prohlížeči."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vlajky, psí lebka a ikony aplikace jsou vlastní geometrické kresby. Nenačítají se externí ilustrace, týmová loga ani soubory písem. Zvuky vznikají synteticky v prohlížeči."
     ],
     "privacy": [
-      "Aktualizováno: 21.10.2026. Tyto informace popisují JuggerMaster na juggermaster.github.io.",
-      "JuggerMaster ukládá místně v prohlížeči názvy a barvy týmů, body, kameny, vyhrané sety, herní časy, zvuková nastavení, jazyk a vzhled včetně až 30 kroků oprav. Tyto údaje neposílá na náš server. Neexistují účty, synchronizace, analytika, reklamy, externí služby písem ani sledovací cookies.",
+      "Aktualizováno: 21.10.2026. Tyto informace popisují JUGGERMASTER na juggermaster.github.io.",
+      "JUGGERMASTER ukládá místně v prohlížeči názvy a barvy týmů, body, kameny, vyhrané sety, herní časy, zvuková nastavení, jazyk a vzhled včetně až 30 kroků oprav. Tyto údaje neposílá na náš server. Neexistují účty, synchronizace, analytika, reklamy, externí služby písem ani sledovací cookies.",
       "Aplikace používá localStorage pro nastavení a stav zápasu. Service Worker a Cache Storage automaticky ukládají všechny soubory, aby šlo stejnou adresu později otevřít offline. Aplikace může požádat o trvalé úložiště. Ukládání slouží vámi požadovanému provozu hry a offline použití (§ 25 odst. 2 bod 2 TDDDG).",
       "Údaje zůstávají do resetu, smazání dat webu nebo vyčištění úložiště prohlížečem. Serverová kopie neexistuje. Smazání dat prohlížeče odstraní také zápasy a offline soubory. Potvrzení „Nový zápas“ nahradí aktuální zápas a ponechá týmy a nastavení zvuku.",
       "Aplikace je dostupná na juggermaster.github.io přes GitHub Pages. Při online načítání GitHub zpracovává nezbytné údaje: IP adresu, čas, požadovanou adresu a HTTP informace prohlížeče. Naším účelem je bezpečné poskytování podle čl. 6 odst. 1 písm. f GDPR. Uložené zápasy se neodesílají.",
@@ -284,11 +284,11 @@ const documents = {
     ],
     "imprint": [
       "Mobil webalkalmazás a Jugger játékidejének és pontjainak mérésére a juggermaster.github.io címen. Önálló megvalósítás; nem a Jugger-közösség hivatalos alkalmazása.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. A zászlók, a kutyakoponya és az ikonok saját geometriai rajzok. Nem töltünk be külső illusztrációkat, csapatlogókat vagy betűkészletfájlokat. A hangok szintetikusan, a böngészőben készülnek."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. A zászlók, a kutyakoponya és az ikonok saját geometriai rajzok. Nem töltünk be külső illusztrációkat, csapatlogókat vagy betűkészletfájlokat. A hangok szintetikusan, a böngészőben készülnek."
     ],
     "privacy": [
-      "Frissítve: 21.10.2026. Ez a tájékoztató a juggermaster.github.io címen működő JuggerMasterre vonatkozik.",
-      "A JuggerMaster a böngészőben helyben tárolja a csapatneveket és színeket, pontokat, köveket, nyert szetteket, játékidőket, hangbeállításokat, nyelvet és megjelenést, legfeljebb 30 javítási lépéssel. Ezeket nem küldi a szerverünkre. Nincsenek fiókok, szinkronizálás, elemzés, reklámok, külső betűkészlet-szolgáltatások vagy követősütik.",
+      "Frissítve: 21.10.2026. Ez a tájékoztató a juggermaster.github.io címen működő JUGGERMASTERre vonatkozik.",
+      "A JUGGERMASTER a böngészőben helyben tárolja a csapatneveket és színeket, pontokat, köveket, nyert szetteket, játékidőket, hangbeállításokat, nyelvet és megjelenést, legfeljebb 30 javítási lépéssel. Ezeket nem küldi a szerverünkre. Nincsenek fiókok, szinkronizálás, elemzés, reklámok, külső betűkészlet-szolgáltatások vagy követősütik.",
       "Az alkalmazás localStorage-ot használ a beállításokhoz és az álláshoz. A Service Worker és a Cache Storage automatikusan menti az összes fájlt, hogy ugyanaz a cím később offline is megnyitható legyen. Tartós böngészőtárhelyet is kérhet. A tárolás az általad kért játékot és offline használatot szolgálja (TDDDG 25. § (2) bekezdés 2. pont).",
       "Az adatok visszaállításig, a webhelyadatok törléséig vagy a böngésző takarításáig maradnak meg. Nincs szerveres másolat. A böngészőadatok törlése a játékokat és az offline fájlokat is eltávolítja. Az „Új mérkőzés” megerősítése lecseréli az aktuális állást, de megtartja a csapatokat és a hangbeállításokat.",
       "Az alkalmazás a juggermaster.github.io címen, GitHub Pages szolgáltatáson érhető el. Online betöltéskor a GitHub kezeli a szükséges kapcsolatadatokat: IP-cím, idő, kért cím és a böngésző HTTP-adatai. Célunk a biztonságos szolgáltatás a GDPR 6. cikk (1) f) alapján. A mentett mérkőzéseket nem töltjük fel.",
@@ -311,11 +311,11 @@ const documents = {
     ],
     "imprint": [
       "Aplicație web mobilă pentru măsurarea timpului și punctelor la Jugger pe juggermaster.github.io. Implementare independentă; nu este o aplicație oficială a comunității Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Steagurile, craniul canin și pictogramele sunt desene geometrice proprii. Nu sunt încărcate ilustrații externe, sigle de echipe sau fișiere de fonturi. Sunetele sunt sintetizate în browser."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Steagurile, craniul canin și pictogramele sunt desene geometrice proprii. Nu sunt încărcate ilustrații externe, sigle de echipe sau fișiere de fonturi. Sunetele sunt sintetizate în browser."
     ],
     "privacy": [
-      "Actualizat: 21.10.2026. Aceste informații descriu JuggerMaster la juggermaster.github.io.",
-      "JuggerMaster salvează local în browser numele și culorile echipelor, punctele, pietrele, seturile câștigate, timpii, reglajele sonore, limba și aspectul, inclusiv până la 30 de pași de corectare. Nu trimite aceste date la serverul nostru. Nu există conturi, sincronizare, analiză, reclame, servicii externe de fonturi sau cookie-uri de urmărire.",
+      "Actualizat: 21.10.2026. Aceste informații descriu JUGGERMASTER la juggermaster.github.io.",
+      "JUGGERMASTER salvează local în browser numele și culorile echipelor, punctele, pietrele, seturile câștigate, timpii, reglajele sonore, limba și aspectul, inclusiv până la 30 de pași de corectare. Nu trimite aceste date la serverul nostru. Nu există conturi, sincronizare, analiză, reclame, servicii externe de fonturi sau cookie-uri de urmărire.",
       "Aplicația folosește localStorage pentru setări și meci. Un Service Worker și Cache Storage salvează automat toate fișierele pentru a redeschide aceeași adresă offline. Se poate solicita stocare persistentă. Stocarea deservește jocul și folosirea offline cerute de tine (§ 25 alin. 2 nr. 2 TDDDG).",
       "Datele rămân până la resetare, ștergerea datelor site-ului sau curățarea browserului. Nu există copie pe server. Ștergerea datelor browserului elimină și meciurile și fișierele offline. Confirmarea „Meci nou” înlocuiește meciul curent, păstrând echipele și setările sonore.",
       "Aplicația este găzduită la juggermaster.github.io prin GitHub Pages. La încărcarea online, GitHub prelucrează datele necesare: IP, ora, adresa cerută și informații HTTP ale browserului. Scopul nostru este furnizarea sigură, în baza art. 6 alin. 1 lit. f RGPD. Meciurile salvate nu sunt încărcate.",
@@ -338,11 +338,11 @@ const documents = {
     ],
     "imprint": [
       "Mobil webbapp för tidtagning och poäng i Jugger på juggermaster.github.io. En fristående lösning; ingen officiell app från Juggergemenskapen.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flaggor, hundskalle och appikoner är egna geometriska teckningar. Inga externa illustrationer, laglogotyper eller typsnittsfiler hämtas. Ljuden skapas syntetiskt i webbläsaren."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flaggor, hundskalle och appikoner är egna geometriska teckningar. Inga externa illustrationer, laglogotyper eller typsnittsfiler hämtas. Ljuden skapas syntetiskt i webbläsaren."
     ],
     "privacy": [
-      "Uppdaterad: 21.10.2026. Informationen gäller JuggerMaster på juggermaster.github.io.",
-      "JuggerMaster sparar lagnamn och färger, poäng, stenar, vunna set, speltider, ljudreglage, språk och utseende lokalt i webbläsaren, inklusive upp till 30 rättelsesteg. Appen skickar inte dessa uppgifter till vår server. Det finns inga konton, synkronisering, analys, reklam, externa typsnittstjänster eller spårningskakor.",
+      "Uppdaterad: 21.10.2026. Informationen gäller JUGGERMASTER på juggermaster.github.io.",
+      "JUGGERMASTER sparar lagnamn och färger, poäng, stenar, vunna set, speltider, ljudreglage, språk och utseende lokalt i webbläsaren, inklusive upp till 30 rättelsesteg. Appen skickar inte dessa uppgifter till vår server. Det finns inga konton, synkronisering, analys, reklam, externa typsnittstjänster eller spårningskakor.",
       "Appen använder localStorage för inställningar och match. En Service Worker och Cache Storage sparar automatiskt alla appfiler så att samma adress kan öppnas offline. Appen kan begära beständig lagring. Lagringen används för det spel och offlinebruk du begärt (§ 25, stycke 2, nr 2 TDDDG).",
       "Uppgifterna finns kvar tills de återställs, webbplatsdata raderas eller webbläsaren städar lagringen. Ingen serverkopia finns. Rensning av webbläsardata tar även bort matcher och offlinefiler. Att bekräfta ”Ny match” ersätter aktuell match men behåller lag- och ljudinställningar.",
       "Appen finns på juggermaster.github.io via GitHub Pages. Vid hämtning online behandlar GitHub nödvändiga anslutningsuppgifter: IP-adress, tid, begärd adress och webbläsarens HTTP-information. Vårt ändamål är säker leverans enligt GDPR artikel 6.1 f. Sparade matcher laddas inte upp.",
@@ -365,11 +365,11 @@ const documents = {
     ],
     "imprint": [
       "Mobiiliverkkosovellus Juggerin ajanottoon ja pisteisiin osoitteessa juggermaster.github.io. Itsenäinen toteutus, ei Jugger-yhteisön virallinen sovellus.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Liput, koirankallo ja sovelluskuvakkeet ovat omia geometrisia piirroksia. Ulkoisia kuvia, joukkuelogoja tai kirjasintiedostoja ei ladata. Äänet muodostetaan synteettisesti selaimessa."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Liput, koirankallo ja sovelluskuvakkeet ovat omia geometrisia piirroksia. Ulkoisia kuvia, joukkuelogoja tai kirjasintiedostoja ei ladata. Äänet muodostetaan synteettisesti selaimessa."
     ],
     "privacy": [
-      "Päivitetty 21.10.2026. Nämä tiedot koskevat JuggerMasteria osoitteessa juggermaster.github.io.",
-      "JuggerMaster tallentaa joukkueiden nimet ja värit, pisteet, kivet, voitetut erät, peliajat, ääniasetukset, kielen ja ulkoasun paikallisesti selaimeen sekä enintään 30 korjausaskelta. Tietoja ei lähetetä palvelimellemme. Tilejä, synkronointia, analytiikkaa, mainontaa, ulkoisia kirjasinpalveluja tai seurantaevästeitä ei ole.",
+      "Päivitetty 21.10.2026. Nämä tiedot koskevat JUGGERMASTERia osoitteessa juggermaster.github.io.",
+      "JUGGERMASTER tallentaa joukkueiden nimet ja värit, pisteet, kivet, voitetut erät, peliajat, ääniasetukset, kielen ja ulkoasun paikallisesti selaimeen sekä enintään 30 korjausaskelta. Tietoja ei lähetetä palvelimellemme. Tilejä, synkronointia, analytiikkaa, mainontaa, ulkoisia kirjasinpalveluja tai seurantaevästeitä ei ole.",
       "Sovellus käyttää localStoragea asetuksiin ja otteluun. Service Worker ja Cache Storage tallentavat kaikki tiedostot automaattisesti, jotta saman osoitteen voi avata myöhemmin ilman verkkoa. Sovellus voi pyytää pysyvää selaintallennusta. Tallennus palvelee pyytämääsi pelaamista ja offline-käyttöä (§ 25, 2 momentti, 2 kohta TDDDG).",
       "Tiedot säilyvät nollaukseen, sivustotietojen poistamiseen tai selaimen tekemään siivoukseen asti. Palvelinkopiota ei ole. Selaintietojen poistaminen poistaa myös ottelut ja offline-tiedostot. Uuden ottelun vahvistaminen korvaa nykyisen ottelun mutta säilyttää joukkue- ja ääniasetukset.",
       "Sovellus julkaistaan osoitteessa juggermaster.github.io GitHub Pagesin kautta. Verkosta ladattaessa GitHub käsittelee tarvittavia yhteystietoja: IP-osoitetta, aikaa, pyydettyä osoitetta ja selaimen HTTP-tietoja. Tarkoituksemme on turvallinen jakelu GDPR:n 6 artiklan 1 kohdan f alakohdan perusteella. Tallennettuja otteluja ei lähetetä.",
@@ -392,11 +392,11 @@ const documents = {
     ],
     "imprint": [
       "Mobilna aplikacja internetowa do pomiaru czasu i punktów Jugger pod adresem juggermaster.github.io. Samodzielna realizacja; nie jest oficjalną aplikacją społeczności Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flagi, psia czaszka i ikony są własnymi rysunkami geometrycznymi. Aplikacja nie ładuje zewnętrznych ilustracji, logotypów drużyn ani plików czcionek. Dźwięki są syntezowane w przeglądarce."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flagi, psia czaszka i ikony są własnymi rysunkami geometrycznymi. Aplikacja nie ładuje zewnętrznych ilustracji, logotypów drużyn ani plików czcionek. Dźwięki są syntezowane w przeglądarce."
     ],
     "privacy": [
-      "Aktualizacja: 21.10.2026. Informacje dotyczą JuggerMaster pod adresem juggermaster.github.io.",
-      "JuggerMaster zapisuje lokalnie w przeglądarce nazwy i kolory drużyn, punkty, kamienie, wygrane sety, czasy gry, ustawienia dźwięku, język i wygląd, w tym do 30 kroków korekty. Nie przesyła tych danych na serwer. Nie ma kont, synchronizacji, analityki, reklam, zewnętrznych usług czcionek ani śledzących plików cookie.",
+      "Aktualizacja: 21.10.2026. Informacje dotyczą JUGGERMASTER pod adresem juggermaster.github.io.",
+      "JUGGERMASTER zapisuje lokalnie w przeglądarce nazwy i kolory drużyn, punkty, kamienie, wygrane sety, czasy gry, ustawienia dźwięku, język i wygląd, w tym do 30 kroków korekty. Nie przesyła tych danych na serwer. Nie ma kont, synchronizacji, analityki, reklam, zewnętrznych usług czcionek ani śledzących plików cookie.",
       "Aplikacja używa localStorage dla ustawień i stanu meczu. Service Worker i Cache Storage automatycznie zapisują wszystkie pliki, by później otworzyć ten sam adres offline. Aplikacja może poprosić o trwałą pamięć przeglądarki. Zapis służy zamówionej obsłudze gry i pracy offline (§ 25 ust. 2 pkt 2 TDDDG).",
       "Dane pozostają do ich wyzerowania, usunięcia danych witryny lub oczyszczenia pamięci przez przeglądarkę. Nie ma kopii na serwerze. Usunięcie danych przeglądarki usuwa również mecze i pliki offline. Potwierdzenie „Nowy mecz” zastępuje bieżący mecz z zachowaniem drużyn i ustawień dźwięku.",
       "Aplikacja jest udostępniana pod juggermaster.github.io przez GitHub Pages. Podczas ładowania online GitHub przetwarza niezbędne dane połączenia: IP, czas, żądany adres i informacje HTTP przeglądarki. Naszym celem jest bezpieczne udostępnianie na podstawie art. 6 ust. 1 lit. f RODO. Zapisane mecze nie są przesyłane.",
@@ -419,11 +419,11 @@ const documents = {
     ],
     "imprint": [
       "Aplicação web móvel para medir tempo e pontos de Jugger em juggermaster.github.io. Implementação independente; não é uma aplicação oficial da comunidade Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Bandeiras, crânio canino e ícones são desenhos geométricos próprios. Não são carregadas ilustrações externas, logótipos de equipas nem ficheiros de tipos de letra. Os sons são gerados sinteticamente no navegador."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Bandeiras, crânio canino e ícones são desenhos geométricos próprios. Não são carregadas ilustrações externas, logótipos de equipas nem ficheiros de tipos de letra. Os sons são gerados sinteticamente no navegador."
     ],
     "privacy": [
-      "Atualizado em 21.10.2026. Esta informação descreve JuggerMaster em juggermaster.github.io.",
-      "JuggerMaster guarda localmente no navegador nomes e cores das equipas, pontos, pedras, sets ganhos, tempos, definições de som, idioma e aparência, incluindo até 30 passos de correção. Não envia esses dados ao nosso servidor. Não há contas, sincronização, análise, publicidade, serviços externos de tipos de letra nem cookies de rastreio.",
+      "Atualizado em 21.10.2026. Esta informação descreve JUGGERMASTER em juggermaster.github.io.",
+      "JUGGERMASTER guarda localmente no navegador nomes e cores das equipas, pontos, pedras, sets ganhos, tempos, definições de som, idioma e aparência, incluindo até 30 passos de correção. Não envia esses dados ao nosso servidor. Não há contas, sincronização, análise, publicidade, serviços externos de tipos de letra nem cookies de rastreio.",
       "A aplicação usa localStorage para definições e estado do jogo. Um Service Worker e Cache Storage guardam automaticamente todos os ficheiros para abrir o mesmo endereço offline. A aplicação pode pedir armazenamento persistente. Esta gravação serve o funcionamento e uso offline pedidos por ti (§ 25, n.º 2, ponto 2 TDDDG).",
       "Os dados permanecem até serem repostos, apagados os dados do site ou limpos pelo navegador. Não há cópia no servidor. Apagar dados do navegador elimina jogos e ficheiros offline. Confirmar «Novo jogo» substitui o jogo atual, mantendo equipas e definições de som.",
       "A aplicação é alojada em juggermaster.github.io através do GitHub Pages. Ao carregar online, o GitHub trata os dados necessários: IP, hora, endereço pedido e informações HTTP do navegador. A nossa finalidade é disponibilizar a aplicação em segurança, nos termos do artigo 6.º, n.º 1, alínea f do RGPD. Os jogos guardados não são enviados.",
@@ -446,11 +446,11 @@ const documents = {
     ],
     "imprint": [
       "Mobiele webapp voor Jugger-tijdmeting en scores op juggermaster.github.io. Een zelfstandige uitvoering; geen officiële app van de Juggergemeenschap.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vlaggen, hondenschedel en appiconen zijn eigen geometrische tekeningen. Er worden geen externe illustraties, teamlogo’s of lettertypebestanden geladen. Geluiden worden synthetisch in de browser gemaakt."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Vlaggen, hondenschedel en appiconen zijn eigen geometrische tekeningen. Er worden geen externe illustraties, teamlogo’s of lettertypebestanden geladen. Geluiden worden synthetisch in de browser gemaakt."
     ],
     "privacy": [
-      "Bijgewerkt: 21.10.2026. Deze informatie beschrijft JuggerMaster op juggermaster.github.io.",
-      "JuggerMaster bewaart teamnamen en kleuren, punten, stenen, gewonnen sets, speeltijden, geluidsinstellingen, taal en weergave lokaal in je browser, inclusief maximaal 30 herstelstappen. De app verstuurt deze gegevens niet naar onze server. Er zijn geen accounts, synchronisatie, analyse, advertenties, externe lettertypediensten of trackingcookies.",
+      "Bijgewerkt: 21.10.2026. Deze informatie beschrijft JUGGERMASTER op juggermaster.github.io.",
+      "JUGGERMASTER bewaart teamnamen en kleuren, punten, stenen, gewonnen sets, speeltijden, geluidsinstellingen, taal en weergave lokaal in je browser, inclusief maximaal 30 herstelstappen. De app verstuurt deze gegevens niet naar onze server. Er zijn geen accounts, synchronisatie, analyse, advertenties, externe lettertypediensten of trackingcookies.",
       "De app gebruikt localStorage voor instellingen en wedstrijdgegevens. Een Service Worker en Cache Storage bewaren automatisch alle appbestanden om hetzelfde adres later offline te openen. De app kan om blijvende browseropslag vragen. Deze opslag dient het gevraagde spelgebruik en offlinegebruik (§ 25, lid 2, nr. 2 TDDDG).",
       "Gegevens blijven tot herstel, verwijdering van websitegegevens of opslagopruiming door de browser. Er is geen serverkopie. Browsergegevens wissen verwijdert ook wedstrijden en offlinebestanden. Bevestigen van ‘Nieuwe wedstrijd’ vervangt de huidige wedstrijd en bewaart teams en geluidsinstellingen.",
       "De app wordt via GitHub Pages aangeboden op juggermaster.github.io. Bij online laden verwerkt GitHub noodzakelijke verbindingsgegevens: IP-adres, tijd, opgevraagd adres en HTTP-informatie van de browser. Ons doel is veilige beschikbaarstelling op grond van artikel 6 lid 1 onder f AVG. Opgeslagen wedstrijden worden niet geüpload.",
@@ -473,11 +473,11 @@ const documents = {
     ],
     "imprint": [
       "Mobil webapp til tidtagning og point i Jugger på juggermaster.github.io. En selvstændig løsning; ikke en officiel app fra Jugger-fællesskabet.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flag, hundekranium og appikoner er egne geometriske tegninger. Ingen eksterne illustrationer, holdlogoer eller skrifttypefiler hentes. Lydene dannes syntetisk i browseren."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flag, hundekranium og appikoner er egne geometriske tegninger. Ingen eksterne illustrationer, holdlogoer eller skrifttypefiler hentes. Lydene dannes syntetisk i browseren."
     ],
     "privacy": [
-      "Opdateret: 21.10.2026. Disse oplysninger vedrører JuggerMaster på juggermaster.github.io.",
-      "JuggerMaster gemmer holdnavne og farver, point, sten, vundne sæt, spilletider, lydindstillinger, sprog og visning lokalt i browseren, inklusive op til 30 rettelsestrin. Appen sender ikke disse data til vores server. Der er ingen konti, synkronisering, analyse, reklamer, eksterne skrifttjenester eller sporingscookies.",
+      "Opdateret: 21.10.2026. Disse oplysninger vedrører JUGGERMASTER på juggermaster.github.io.",
+      "JUGGERMASTER gemmer holdnavne og farver, point, sten, vundne sæt, spilletider, lydindstillinger, sprog og visning lokalt i browseren, inklusive op til 30 rettelsestrin. Appen sender ikke disse data til vores server. Der er ingen konti, synkronisering, analyse, reklamer, eksterne skrifttjenester eller sporingscookies.",
       "Appen bruger localStorage til indstillinger og kampstatus. En Service Worker og Cache Storage gemmer automatisk alle appfiler, så samme adresse kan åbnes offline. Appen kan anmode om vedvarende browserlagring. Lagringen tjener den ønskede kampdrift og offlinebrug (§ 25, stk. 2, nr. 2 TDDDG).",
       "Data bevares indtil nulstilling, sletning af webstedsdata eller browserens oprydning. Der er ingen serverkopi. Sletning af browserdata fjerner også kampe og offlinefiler. Bekræftelse af »Ny kamp« erstatter kampen, men bevarer hold og lydindstillinger.",
       "Appen hostes på juggermaster.github.io via GitHub Pages. Ved online indlæsning behandler GitHub nødvendige forbindelsesdata: IP-adresse, tidspunkt, ønsket adresse og browserens HTTP-oplysninger. Vores formål er sikker levering efter GDPR artikel 6, stk. 1, litra f. Gemte kampe uploades ikke.",
@@ -500,11 +500,11 @@ const documents = {
     ],
     "imprint": [
       "Aplicación web móvil para medir tiempo y puntos de Jugger en juggermaster.github.io. Implementación independiente; no es una aplicación oficial de la comunidad Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Banderas, cráneo canino e iconos son dibujos geométricos propios. No se cargan ilustraciones externas, logotipos de equipos ni archivos de fuentes. Los sonidos se generan sintéticamente en el navegador."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Banderas, cráneo canino e iconos son dibujos geométricos propios. No se cargan ilustraciones externas, logotipos de equipos ni archivos de fuentes. Los sonidos se generan sintéticamente en el navegador."
     ],
     "privacy": [
-      "Actualizado: 21.10.2026. Esta información describe JuggerMaster en juggermaster.github.io.",
-      "JuggerMaster guarda localmente en el navegador nombres y colores de equipos, puntos, piedras, sets ganados, tiempos, controles de sonido, idioma y apariencia, incluidos hasta 30 pasos de corrección. No envía estos datos a nuestro servidor. No hay cuentas, sincronización, análisis, publicidad, servicios externos de fuentes ni cookies de seguimiento.",
+      "Actualizado: 21.10.2026. Esta información describe JUGGERMASTER en juggermaster.github.io.",
+      "JUGGERMASTER guarda localmente en el navegador nombres y colores de equipos, puntos, piedras, sets ganados, tiempos, controles de sonido, idioma y apariencia, incluidos hasta 30 pasos de corrección. No envía estos datos a nuestro servidor. No hay cuentas, sincronización, análisis, publicidad, servicios externos de fuentes ni cookies de seguimiento.",
       "La aplicación usa localStorage para ajustes y estado del partido. Un Service Worker y Cache Storage guardan automáticamente todos los archivos para poder abrir la misma dirección sin conexión. Puede solicitar almacenamiento persistente. Este almacenamiento sirve al funcionamiento y uso offline solicitados por ti (§ 25, apartado 2, número 2 TDDDG).",
       "Los datos se conservan hasta restablecerlos, borrar los datos del sitio o una limpieza del navegador. No existe copia en el servidor. Borrar los datos del navegador elimina también partidos y archivos offline. Confirmar «Nuevo partido» sustituye el partido actual y mantiene equipos y ajustes de sonido.",
       "La aplicación se aloja en juggermaster.github.io mediante GitHub Pages. Al cargar online, GitHub trata los datos de conexión necesarios: IP, hora, dirección solicitada e información HTTP del navegador. Nuestra finalidad es la entrega segura, basada en el artículo 6.1.f del RGPD. No se suben los partidos guardados.",
@@ -527,11 +527,11 @@ const documents = {
     ],
     "imprint": [
       "Application web mobile de mesure du temps et des points au Jugger sur juggermaster.github.io. Réalisation indépendante ; ce n’est pas une application officielle de la communauté Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Drapeaux, crâne canin et icônes sont nos propres dessins géométriques. Aucune illustration externe, aucun logo d’équipe ni fichier de police n’est chargé. Les sons sont synthétisés dans le navigateur."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Drapeaux, crâne canin et icônes sont nos propres dessins géométriques. Aucune illustration externe, aucun logo d’équipe ni fichier de police n’est chargé. Les sons sont synthétisés dans le navigateur."
     ],
     "privacy": [
-      "Mise à jour : 21.10.2026. Ces informations concernent JuggerMaster sur juggermaster.github.io.",
-      "JuggerMaster conserve localement dans le navigateur les noms et couleurs des équipes, points, pierres, sets gagnés, temps de jeu, réglages sonores, langue et apparence, ainsi que jusqu’à 30 étapes de correction. Ces données ne sont pas envoyées à notre serveur. Il n’existe ni comptes, synchronisation, analyse, publicité, services de polices externes, ni cookies de suivi.",
+      "Mise à jour : 21.10.2026. Ces informations concernent JUGGERMASTER sur juggermaster.github.io.",
+      "JUGGERMASTER conserve localement dans le navigateur les noms et couleurs des équipes, points, pierres, sets gagnés, temps de jeu, réglages sonores, langue et apparence, ainsi que jusqu’à 30 étapes de correction. Ces données ne sont pas envoyées à notre serveur. Il n’existe ni comptes, synchronisation, analyse, publicité, services de polices externes, ni cookies de suivi.",
       "L’application utilise localStorage pour les réglages et le match. Un Service Worker et Cache Storage enregistrent automatiquement tous les fichiers pour rouvrir la même adresse hors ligne. Un stockage persistant peut être demandé. Ce stockage sert au jeu et à l’usage hors ligne que vous avez demandés (§ 25, alinéa 2, numéro 2 TDDDG).",
       "Les données restent jusqu’à leur réinitialisation, l’effacement des données du site ou le nettoyage par le navigateur. Aucune copie serveur n’existe. Effacer les données du navigateur supprime aussi matchs et fichiers hors ligne. Confirmer « Nouveau match » remplace le match en cours et conserve équipes et réglages sonores.",
       "L’application est hébergée sur juggermaster.github.io via GitHub Pages. Lors du chargement en ligne, GitHub traite les données nécessaires : adresse IP, heure, adresse demandée et informations HTTP du navigateur. Notre finalité est une fourniture sûre, fondée sur l’article 6, paragraphe 1, point f du RGPD. Aucun match enregistré n’est téléversé.",
@@ -554,11 +554,11 @@ const documents = {
     ],
     "imprint": [
       "Applicazione web mobile per misurare tempo e punti di Jugger su juggermaster.github.io. Realizzazione indipendente; non è un’app ufficiale della comunità Jugger.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Bandiere, teschio canino e icone sono disegni geometrici propri. Non vengono caricati illustrazioni esterne, loghi di squadre o file di caratteri. I suoni sono sintetizzati nel browser."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Bandiere, teschio canino e icone sono disegni geometrici propri. Non vengono caricati illustrazioni esterne, loghi di squadre o file di caratteri. I suoni sono sintetizzati nel browser."
     ],
     "privacy": [
-      "Aggiornamento: 21.10.2026. Queste informazioni riguardano JuggerMaster su juggermaster.github.io.",
-      "JuggerMaster salva nel browser nomi e colori delle squadre, punti, pietre, set vinti, tempi, regolazioni del suono, lingua e aspetto, compresi fino a 30 passaggi di correzione. Non invia questi dati al nostro server. Non ci sono account, sincronizzazione, analisi, pubblicità, servizi di caratteri esterni o cookie di tracciamento.",
+      "Aggiornamento: 21.10.2026. Queste informazioni riguardano JUGGERMASTER su juggermaster.github.io.",
+      "JUGGERMASTER salva nel browser nomi e colori delle squadre, punti, pietre, set vinti, tempi, regolazioni del suono, lingua e aspetto, compresi fino a 30 passaggi di correzione. Non invia questi dati al nostro server. Non ci sono account, sincronizzazione, analisi, pubblicità, servizi di caratteri esterni o cookie di tracciamento.",
       "L’app usa localStorage per impostazioni e partita. Un Service Worker e Cache Storage salvano automaticamente tutti i file per riaprire lo stesso indirizzo offline. Può essere richiesta memoria persistente. Il salvataggio serve al gioco e all’uso offline richiesti (§ 25, comma 2, numero 2 TDDDG).",
       "I dati restano fino al ripristino, alla cancellazione dei dati del sito o alla pulizia del browser. Non esiste copia sul server. Cancellare i dati del browser elimina anche partite e file offline. Confermare « Nuova partita » sostituisce la partita corrente mantenendo squadre e impostazioni sonore.",
       "L’app è ospitata su juggermaster.github.io tramite GitHub Pages. Durante il caricamento online GitHub tratta i dati necessari: IP, orario, indirizzo richiesto e informazioni HTTP del browser. La nostra finalità è fornire l’app in sicurezza, ai sensi dell’articolo 6, paragrafo 1, lettera f del GDPR. Le partite salvate non vengono caricate.",
@@ -581,11 +581,11 @@ const documents = {
     ],
     "imprint": [
       "Mobile Webapp zur Jugger-Spielzeit- und Punktmessung unter juggermaster.github.io. Eine eigenständige Umsetzung; keine offizielle App der Jugger-Gemeinschaft.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flaggen, Hundeschädel und App-Symbole sind eigene geometrische Darstellungen. Es werden keine externen Illustrationen, Teamlogos oder Fontdateien geladen. Die Klänge entstehen synthetisch im Browser."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flaggen, Hundeschädel und App-Symbole sind eigene geometrische Darstellungen. Es werden keine externen Illustrationen, Teamlogos oder Fontdateien geladen. Die Klänge entstehen synthetisch im Browser."
     ],
     "privacy": [
-      "Stand: 21. Oktober 2026. Diese Hinweise beschreiben JuggerMaster unter juggermaster.github.io.",
-      "Teamnamen, Teamfarben, Punkte, Steine, gewonnene Sätze, Spielzeiten, Klangregler, Sprache und Darstellung speichert JuggerMaster lokal im Browser. Auch die letzten bis zu 30 Korrekturschritte liegen dort. Die App überträgt diese Inhalte nicht an unseren Server. Es gibt keine Konten, Synchronisierung, Analyse-, Werbe- oder externen Schriftendienste und keine Tracking-Cookies.",
+      "Stand: 21. Oktober 2026. Diese Hinweise beschreiben JUGGERMASTER unter juggermaster.github.io.",
+      "Teamnamen, Teamfarben, Punkte, Steine, gewonnene Sätze, Spielzeiten, Klangregler, Sprache und Darstellung speichert JUGGERMASTER lokal im Browser. Auch die letzten bis zu 30 Korrekturschritte liegen dort. Die App überträgt diese Inhalte nicht an unseren Server. Es gibt keine Konten, Synchronisierung, Analyse-, Werbe- oder externen Schriftendienste und keine Tracking-Cookies.",
       "Die App nutzt localStorage für Einstellungen und Spielstand. Ein Service Worker und Cache Storage speichern automatisch sämtliche App-Dateien, damit derselbe Seitenaufruf später offline funktioniert. Die App kann dauerhaften Browserspeicher anfragen. Diese Speicherung dient dem von dir angeforderten Spielbetrieb einschließlich Offline-Nutzung (§ 25 Abs. 2 Nr. 2 TDDDG).",
       "Die Daten bleiben bis zum Zurücksetzen oder Löschen der Website-Daten beziehungsweise einer Speicherbereinigung durch den Browser erhalten. Es gibt keine Serverkopie. Browserdaten zu löschen entfernt auch gespeicherte Spielstände und Offline-Dateien. „Neues Spiel“ ersetzt nach Bestätigung den aktuellen Spielstand; Team- und Klangeinstellungen bleiben erhalten.",
       "Die App wird unter juggermaster.github.io über GitHub Pages bereitgestellt. Beim Online-Abruf verarbeitet GitHub die zur Auslieferung erforderlichen Verbindungsdaten wie IP-Adresse, Abrufzeit, angeforderte Adresse und HTTP-Informationen des Browsers. Unser Zweck ist die sichere Bereitstellung der App auf Grundlage von Art. 6 Abs. 1 Buchst. f DSGVO. Gespeicherte Spielstände werden dabei nicht hochgeladen.",
@@ -608,11 +608,11 @@ const documents = {
     ],
     "imprint": [
       "Mobile web app for Jugger match timing and scoring at juggermaster.github.io. An independent implementation; not an official Jugger community app.",
-      "JuggerMaster: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flags, canine skull and app icons are our own geometric drawings. The app loads no external illustrations, team logos or font files. Sounds are generated synthetically in the browser."
+      "JUGGERMASTER: {projectLicense}; Framework7 9.2.0: {license}; {thirdParty}. Flags, canine skull and app icons are our own geometric drawings. The app loads no external illustrations, team logos or font files. Sounds are generated synthetically in the browser."
     ],
     "privacy": [
-      "Updated 21 October 2026. These notes describe JuggerMaster at juggermaster.github.io.",
-      "JuggerMaster stores team names and colours, points, stones, won sets, match times, sound settings, language and appearance locally in your browser, including up to 30 recent undo steps. The app does not send these records to our server. It has no accounts, synchronisation, analytics, advertising, external font services or tracking cookies.",
+      "Updated 21 October 2026. These notes describe JUGGERMASTER at juggermaster.github.io.",
+      "JUGGERMASTER stores team names and colours, points, stones, won sets, match times, sound settings, language and appearance locally in your browser, including up to 30 recent undo steps. The app does not send these records to our server. It has no accounts, synchronisation, analytics, advertising, external font services or tracking cookies.",
       "The app uses localStorage for settings and match state. A service worker and Cache Storage automatically save all app files so that the same address can be opened offline later. The app may request persistent browser storage. This storage serves the match operation and offline use you requested (section 25(2)(2) TDDDG).",
       "Records remain until reset, deletion of site data or browser storage cleanup. There is no server backup. Clearing site data also removes saved matches and offline files. Confirming “New match” replaces the current match while retaining team and sound settings.",
       "The app is hosted at juggermaster.github.io through GitHub Pages. Online requests involve GitHub processing connection data needed for delivery, such as IP address, request time, requested address and browser HTTP information. Our purpose is secure delivery of the app, based on Article 6(1)(f) GDPR. Saved matches are not uploaded.",
@@ -631,10 +631,10 @@ export function translatedLegal(contact) {
     const t = key => texts[language][key], h = doc.headings;
     if (h.length !== 7 || doc.imprint.length !== 2 || doc.privacy.length !== 10) throw Error(`Incomplete legal translation: ${language}`);
     const links = { license: '<a href="__ASSETS__/LICENSE-Framework7.txt">MIT</a>', projectLicense: '<a href="./LICENSE.txt">MIT</a>', thirdParty: `<a href="./lizenzen.html">${t('licenses')}</a>`, github: `<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noreferrer">GitHub (${t('privacy')})</a>`, authority: '<a href="https://www.lfd.niedersachsen.de/" rel="noreferrer">Landesbeauftragter für den Datenschutz Niedersachsen</a>' };
-    const paragraph = value => `<p>${value.replace(/\{(license|projectLicense|thirdParty|github|authority)\}/g, (_, key) => links[key])}</p>`;
+    const paragraph = value => `<p>${value.replaceAll('JUGGERMASTER', '<strong>JUGGERMASTER</strong>').replace(/\{(license|projectLicense|thirdParty|github|authority)\}/g, (_, key) => links[key])}</p>`;
     const heading = value => `<h2>${value}</h2>`;
     const dir = locales[language].dir || 'ltr', p = doc.privacy;
-    result.impressum[language] = { title: t('imprint'), dir, body: `<h1>${t('imprint')}</h1>${heading(h[0])}${contact}${heading('JuggerMaster')}${paragraph(doc.imprint[0])}${heading(h[1])}${paragraph(doc.imprint[1])}` };
+    result.impressum[language] = { title: t('imprint'), dir, body: `<h1>${t('imprint')}</h1>${heading(h[0])}${contact}${heading('JUGGERMASTER')}${paragraph(doc.imprint[0])}${heading(h[1])}${paragraph(doc.imprint[1])}` };
     result.datenschutz[language] = { title: t('privacy'), dir, body: `<h1>${t('privacy')}</h1>${paragraph(p[0])}${heading(h[2])}${paragraph(p[1])}${heading(h[3])}${contact}${heading(h[4])}${paragraph(p[2])}${paragraph(p[3])}${heading(h[5])}${paragraph(p[4])}${paragraph(p[5])}${heading('GitHub')}${paragraph(p[6])}${paragraph(p[7])}${heading(h[6])}${paragraph(p[8])}${paragraph(p[9])}` };
   }
   return result;
