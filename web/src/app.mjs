@@ -85,8 +85,8 @@ function render() {
   $('[data-action=score-a-minus]').disabled = blocked || !game.a; $('[data-action=score-b-minus]').disabled = blocked || !game.b;
   $('[data-action=stone-minus]').disabled = (config.direction === 'down' && finite ? remaining : game.consumed) === 0 || game.ended;
   $('[data-action=stone-plus]').disabled = game.ended;
-  $('[data-action=toggle]').disabled = (blocked && !nextSetReady) || complete;
-  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'matchEnded' : nextSetReady ? 'nextSet' : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
+  $('[data-action=toggle]').disabled = !game.ended && ((blocked && !nextSetReady) || complete);
+  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
   $('[data-action=toggle] .jm-symbol').textContent = running || countdown >= 0 ? 'Ⅱ' : '▶';
   $('[data-action=undo]').disabled = !history.length;
   $('[data-action=next]').disabled = game.ended || game.golden || game.periods === 0 || (game.periods === -1 && !game.setComplete);
@@ -182,7 +182,7 @@ async function togglePreview() {
   previewing = true; previewClock.start(config.pace, true); render(); keepAwake();
 }
 async function endSignal() { if (sound.signalVolume && await unlockAudio()) playEndSignal(sound, config.signalCount); }
-function focusNextSet() {
+function focusMatchButton() {
   const stones = $('.jm-stones');
   stones.style.removeProperty('--jm-resume-gap');
   if (!matchMedia('(max-width:699px)').matches) return;
@@ -224,7 +224,8 @@ root.addEventListener('click', async event => {
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
-  const action = button.dataset.action === 'toggle' && game.setComplete ? 'next' : button.dataset.action;
+  let action = button.dataset.action;
+  if (action === 'toggle') action = game.ended ? 'new' : game.setComplete ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
   else if (action === 'fullscreen') await enterFullscreen();
   else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
@@ -232,7 +233,10 @@ root.addEventListener('click', async event => {
   else if (action === 'beat-preview') await togglePreview();
   else if (action === 'signal-preview') await endSignal();
   else if (action === 'undo') { pause(); game = history.pop() || game; persist(); render(); }
-  else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), () => { history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match'); });
+  else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), () => {
+    history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
+    currentDialog.once('closed', focusMatchButton);
+  });
   else if (action === 'next') {
     const sets = game.periods === -1, next = nextSection(game);
     if (next === game) return;
@@ -240,7 +244,7 @@ root.addEventListener('click', async event => {
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${config.teamA} ${game.a} : ${game.b} ${config.teamB}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       remember(); game = next; persist(); render();
-      if (sets) currentDialog.once('closed', focusNextSet);
+      if (sets) currentDialog.once('closed', focusMatchButton);
     });
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
