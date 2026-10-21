@@ -117,13 +117,29 @@ async function main() {
     await click('toggle'); assert.equal(await read('[data-read=stones]'), '20');
     await page.waitForTimeout(700); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
     await click('toggle'); assert.equal(await read('[data-read=status]'), 'PAUSIERT');
-    await newMatch({ periods: -1, targetPoints: 2, setsToWin: 2, countdown: false });
-    for (let set = 0; set < 2; set++) {
-      await click('score-a-plus'); await click('score-a-plus');
-      if (!set) { await click('next'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' }); }
+    for (const height of [600, 1000]) {
+      await page.setViewportSize({ width: 390, height });
+      await page.emulateMedia({ reducedMotion: height === 600 ? 'reduce' : 'no-preference' });
+      await newMatch({ periods: -1, targetPoints: 2, setsToWin: 2, countdown: false });
+      for (let set = 0; set < 2; set++) {
+        await click('score-a-plus'); await click('score-a-plus');
+        if (!set) {
+          assert.equal(await read('[data-read=start-label]'), 'Nächster Satz');
+          assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
+          const advance = height === 600 ? 'toggle' : 'next';
+          await click(advance); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+          assert.equal(await read('[data-read=score-a]'), '2', 'Abbrechen behält den beendeten Satz');
+          assert.equal(await page.locator('.jm-stones').evaluate(element => element.style.getPropertyValue('--jm-resume-gap')), '', 'Abbrechen verändert die Ansicht nicht');
+          await click(advance); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+          await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
+          assert.equal(await read('[data-read=start-label]'), 'Spiel fortsetzen');
+          assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
+        }
+      }
+      assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); assert.match(await read('[data-read=sets]'), /2 : 0/);
+      assert.equal(await page.locator('[data-action=toggle]').isDisabled(), true, 'Nach dem Matchende beginnt kein weiterer Satz');
+      await click('undo'); assert.equal(await read('[data-read=score-a]'), '1');
     }
-    assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); assert.match(await read('[data-read=sets]'), /2 : 0/);
-    await click('undo'); assert.equal(await read('[data-read=score-a]'), '1');
     await newMatch({ periods: 3, limit: 50 });
     for (const phase of ['2. Drittel', '3. Drittel', 'Golden Jugg']) {
       await click('next'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });

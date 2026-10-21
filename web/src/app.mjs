@@ -80,13 +80,13 @@ function render() {
   setText('score-a', game.a); setText('score-b', game.b);
   $$('.jm-team').forEach((team, index) => team.style.setProperty('--jm-team-color', index ? config.colorB : config.colorA));
   setText('elapsed', time(game.elapsed)); setText('period-time', time(game.periodTime)); setText('playtime', time(game.playtime)); setText('pace', `${decimal(config.pace)} s`);
-  const blocked = game.ended || game.setComplete;
+  const blocked = game.ended || game.setComplete, nextSetReady = game.periods === -1 && game.setComplete && !game.ended;
   $('[data-action=score-a-plus]').disabled = blocked; $('[data-action=score-b-plus]').disabled = blocked;
   $('[data-action=score-a-minus]').disabled = blocked || !game.a; $('[data-action=score-b-minus]').disabled = blocked || !game.b;
   $('[data-action=stone-minus]').disabled = (config.direction === 'down' && finite ? remaining : game.consumed) === 0 || game.ended;
   $('[data-action=stone-plus]').disabled = game.ended;
-  $('[data-action=toggle]').disabled = blocked || complete;
-  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'matchEnded' : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
+  $('[data-action=toggle]').disabled = (blocked && !nextSetReady) || complete;
+  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'matchEnded' : nextSetReady ? 'nextSet' : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
   $('[data-action=toggle] .jm-symbol').textContent = running || countdown >= 0 ? 'Ⅱ' : '▶';
   $('[data-action=undo]').disabled = !history.length;
   $('[data-action=next]').disabled = game.ended || game.golden || game.periods === 0 || (game.periods === -1 && !game.setComplete);
@@ -182,6 +182,17 @@ async function togglePreview() {
   previewing = true; previewClock.start(config.pace, true); render(); keepAwake();
 }
 async function endSignal() { if (sound.signalVolume && await unlockAudio()) playEndSignal(sound, config.signalCount); }
+function focusNextSet() {
+  const stones = $('.jm-stones');
+  stones.style.removeProperty('--jm-resume-gap');
+  if (!matchMedia('(max-width:699px)').matches) return;
+  const pane = $('.jm-scroll'), button = $('[data-action=toggle]');
+  const bottom = button.getBoundingClientRect().bottom - pane.getBoundingClientRect().top + pane.scrollTop;
+  // Tall phones need room above the button for exact bottom alignment.
+  stones.style.setProperty('--jm-resume-gap', `${Math.max(0, pane.clientHeight - bottom)}px`);
+  button.focus({ preventScroll: true });
+  button.scrollIntoView({ block: 'end', behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
+}
 function dialog(title, text, label, action) {
   pause(); closeLanguages(); lastFocus = document.activeElement;
   const safe = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -194,6 +205,7 @@ function dialog(title, text, label, action) {
 }
 function showView(next) {
   if (running || countdown >= 0 || starting) pause();
+  $('.jm-stones').style.removeProperty('--jm-resume-gap');
   view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-scroll').scrollTop = 0;
   globalThis.history.replaceState(null, '', next === 'match' ? location.pathname + location.search : `#${next}`);
   ranges.forEach(range => { range.calcSize(); range.layout(); });
@@ -212,7 +224,7 @@ root.addEventListener('click', async event => {
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
-  const action = button.dataset.action;
+  const action = button.dataset.action === 'toggle' && game.setComplete ? 'next' : button.dataset.action;
   if (action === 'language-menu') openLanguages();
   else if (action === 'fullscreen') await enterFullscreen();
   else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
@@ -226,7 +238,10 @@ root.addEventListener('click', async event => {
     if (next === game) return;
     const title = sets ? 'nextSetQuestion' : next.golden ? 'tieQuestion' : next.ended ? 'finishQuestion' : 'nextPeriodQuestion';
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${config.teamA} ${game.a} : ${game.b} ${config.teamB}` : t('nextPeriodDescription');
-    dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => { remember(); game = next; persist(); render(); });
+    dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
+      remember(); game = next; persist(); render();
+      if (sets) currentDialog.once('closed', focusNextSet);
+    });
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
     const next = awardPoint(game, key, delta); if (next === game) return;
