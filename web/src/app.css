@@ -86,6 +86,14 @@
 #jm-arena .jm-field input[type=text], #jm-arena .jm-field input[type=number], #jm-arena .jm-field select { width:100%; min-width:0; padding:11px 12px; min-height:44px; border:1px solid var(--jm-line); border-radius:6px; background:var(--jm-panel); color:var(--jm-ink); font-size:14px; }
 #jm-arena .jm-fields-pair { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
 #jm-arena .jm-fields-pair .jm-field { margin-top:0; }
+#jm-arena .jm-field { min-width:0; }
+#jm-arena .jm-team-entry { display:flex; gap:8px; align-items:center; min-width:0; }
+#jm-arena .jm-team-combo { position:relative; flex:1; min-width:0; }
+#jm-arena .jm-team-combo input[type=text] { padding-inline-end:48px; }
+#jm-arena .jm-team-combo select { position:absolute; inset-block:0; inset-inline-end:0; width:44px; padding:0; appearance:none; color:transparent; background:transparent; border:0; border-inline-start:1px solid var(--jm-line); border-radius:0; }
+#jm-arena .jm-team-combo select option { color:var(--jm-ink); background:var(--jm-panel); }
+#jm-arena .jm-team-combo>span { position:absolute; inset-inline-end:0; top:0; width:44px; height:100%; display:grid; place-items:center; pointer-events:none; }
+#jm-arena .jm-team-delete { width:44px; flex-shrink:0; }
 #jm-arena .jm-divider { border:0; border-top:1px solid var(--jm-line); margin:22px 0; }
 #jm-arena .jm-check { display:flex; align-items:center; gap:10px; min-height:44px; font-size:12px; font-weight:600; }
 #jm-arena .jm-check input { width:18px; height:18px; accent-color:var(--jm-accent); }
@@ -117,7 +125,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-body { min-height:0; }
 #jm-arena .jm-stage>.jm-app { display:flex; flex-direction:column; height:100dvh!important; min-height:0; overflow:hidden; }
 #jm-arena .jm-stage>.jm-app>.jm-nav { flex-shrink:0; }
-#jm-arena .jm-scroll { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+#jm-arena .jm-scroll { flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
 #jm-arena .jm-language-picker { position:relative; }
 #jm-arena .jm-language-select { gap:1px; }
 #jm-arena .jm-select-arrow { font-size:10px; line-height:1; }
@@ -150,6 +158,8 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-legal a { color:var(--jm-green); text-underline-offset:3px; }
 #jm-arena .jm-legal footer { display:flex; gap:18px; flex-wrap:wrap; margin-top:32px; }
 @media(max-width:699px) {
+  #jm-arena .jm-team-entry { flex-direction:column; align-items:stretch; }
+  #jm-arena .jm-team-delete { align-self:flex-end; }
   #jm-arena .jm-stones { padding-top:calc(16px + var(--jm-resume-gap,0px)/2); padding-bottom:calc(12px + var(--jm-resume-gap,0px)/2); }
 }
 @media(min-width:700px) {

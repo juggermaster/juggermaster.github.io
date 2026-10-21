@@ -190,7 +190,7 @@ async function main() {
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Testteam'); await range('pace', 2, 'setting');
     await page.locator('[data-setting=countdown]').setChecked(true);
     const beforeDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
-    assert.equal(await read('[data-i18n=loadDefaults]'), 'Voreinstellungen laden');
+    assert.equal(await read('[data-action=defaults]'), 'Voreinstellungen laden');
     await click('defaults');
     const afterDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     const { defaults } = await import(pathToFileURL(path.join(root, 'web/src/core.mjs')).href);
@@ -219,6 +219,29 @@ async function main() {
     assert.equal(await page.locator('[data-team-choice=teamA]').inputValue(), '', 'Abweichende aktuelle Farbe bietet die gespeicherte Teamwahl erneut an');
     await page.locator('[data-team-choice=teamA]').selectOption('Raben');
     assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#abcdef', 'Voreinstellungen und Neustart überschreiben keine gespeicherte Teamfarbe');
+    const beforeDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    await page.locator('[data-team-delete=teamA]').click();
+    assert.equal(await page.locator('[data-team-delete=teamA]').isDisabled(), true);
+    assert.equal(await page.locator('[data-team-choice=teamB] option[value=Raben]').count(), 0, 'Löschen entfernt das Team aus beiden Listen');
+    const afterDelete = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    assert.deepEqual(afterDelete.game, beforeDelete.game, 'Team löschen erhält das aktuelle Spiel');
+    assert.deepEqual(afterDelete.config, beforeDelete.config, 'Team löschen erhält die aktuellen Mannschaften');
+    await page.reload(); await ready();
+    assert.equal(await page.locator('[data-team-choice=teamA] option[value=Raben]').count(), 0, 'Gelöschte aktuelle Teams bleiben nach Neustart gelöscht');
+    await page.locator('[data-setting=teamA]').fill('falken'); await page.locator('[data-setting=teamA]').press('Tab');
+    assert.equal(await page.locator('[data-setting=teamA]').inputValue(), 'Falken', 'Gespeicherten Namen direkt im kombinierten Feld eingeben');
+    assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#123456');
+    await tab('sound'); await range('pitch', 300); await range('volume', 12); await range('signalVolume', 20);
+    await page.locator('[data-setting=signalCount]').fill('7');
+    const beforeSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    await click('beat-preview'); await click('sound-defaults');
+    const afterSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    const { defaultSound } = await import(pathToFileURL(path.join(root, 'web/src/core.mjs')).href);
+    assert.deepEqual(afterSoundDefaults.sound, defaultSound);
+    assert.deepEqual(afterSoundDefaults.config, { ...beforeSoundDefaults.config, signalCount: defaults.signalCount });
+    assert.deepEqual(afterSoundDefaults.teams, beforeSoundDefaults.teams);
+    assert.deepEqual(afterSoundDefaults.game, beforeSoundDefaults.game);
+    assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false', 'Klang-Reset stoppt die Vorschau');
     await newMatch({ periods: 2, limit: 100, pace: .5 });
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Schakale'); await tab('sound'); await range('pitch', 225); await range('signalVolume', 80); await chooseLanguage('en');
     await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = 'sans-serif'; });
@@ -227,6 +250,11 @@ async function main() {
       for (const view of ['match', 'sound', 'setup', 'info']) {
         await tab(view);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${view}: ${width}px ohne Überbreite`);
+        assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth), `${view}: ${width}px ohne seitliches Scrollen im Inhalt`);
+        if (view === 'setup') for (const side of ['A', 'B']) {
+          const combo = await page.locator(`[data-setting=team${side}]`).boundingBox(), remove = await page.locator(`[data-team-delete=team${side}]`).boundingBox();
+          assert.ok(width < 700 ? remove.y >= combo.y + combo.height : remove.x >= combo.x + combo.width && Math.abs(remove.y + remove.height / 2 - combo.y - combo.height / 2) <= 1, 'Löschbutton mobil unter dem Feld, sonst daneben');
+        }
         assert.ok(await page.evaluate(() => { const brand = document.querySelector('.jm-brand'), box = brand.getBoundingClientRect(), actions = document.querySelector('.jm-head-actions').getBoundingClientRect(); return brand.scrollWidth <= brand.clientWidth && box.right <= actions.left; }), `Kopfzeile ${width}px`);
         const navBefore = await page.locator('.jm-nav').boundingBox();
         const headBefore = await page.locator('.jm-head').boundingBox();
@@ -326,10 +354,13 @@ async function main() {
           await sample.locator(`[data-tab=${view}]`).click();
           await sample.locator(`[data-view=${view}]`).waitFor({ state: 'visible' });
           if (view === 'setup') {
-            assert.equal(await sample.locator('[data-i18n=loadDefaults]').textContent(), texts[language].loadDefaults);
+            assert.equal(await sample.locator('[data-action=defaults]').textContent(), texts[language].loadDefaults);
             assert.equal(await sample.locator('[data-team-choice=teamA] option').first().textContent(), texts[language].chooseTeam);
+            assert.equal(await sample.locator('[data-team-delete=teamA]').getAttribute('aria-label'), texts[language].deleteTeam);
           }
+          if (view === 'sound') assert.equal(await sample.locator('[data-action=sound-defaults]').textContent(), texts[language].loadDefaults);
           assert.ok(await sample.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${language}/${view}: kein horizontaler Überlauf`);
+          assert.ok(await sample.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${language}/${view}: Inhalt scrollt nicht seitlich`);
         }
         await sample.locator('[data-action=language-menu]').click();
         assert.equal(await sample.locator('[data-language-option]').count(), 23);

@@ -13,7 +13,7 @@ const storageKey = 'juggermaster:state:v1';
 let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [], teams = [];
 let language = 'de', theme = '', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
 let countdown = -1, requestId = 0, currentDialog = null, lastFocus = null, wakeLock = null;
-let noticeKey = null, lastSave = '', storageError = false;
+let noticeKey = null, lastSave = '', storageError = false, migrateTeams = true;
 let stoneHold = null, ignoreStoneClick = null;
 const ranges = new Map(), t = (key, values) => translate(language, key, values);
 const decimal = value => Number(value).toLocaleString(locales[language].tag, { maximumFractionDigits: 1 });
@@ -21,16 +21,17 @@ const time = milliseconds => { const seconds = Math.floor(milliseconds / 1000); 
 try {
   const saved = localStorage.getItem(storageKey);
   if (saved) {
-    const restored = restoreSnapshot(JSON.parse(saved));
+    const snapshot = JSON.parse(saved), restored = restoreSnapshot(snapshot);
     if (!restored) throw Error('Invalid saved match');
     ({ config, sound, game, history, language, theme, teams } = restored);
+    migrateTeams = !Array.isArray(snapshot.teams);
     if (game.consumed || game.a || game.b || game.elapsed) noticeKey = 'restored';
   }
   const preferred = localStorage.getItem('juggermaster:language');
   language = resolveLanguage(navigator.languages || [navigator.language], preferred);
 } catch { noticeKey = 'restoreFailed'; }
 if (noticeKey === 'restoreFailed') language = resolveLanguage(navigator.languages || [navigator.language]);
-for (const side of ['teamA', 'teamB']) {
+if (migrateTeams) for (const side of ['teamA', 'teamB']) {
   if (!teams.some(team => team.name.toLowerCase() === config[side].toLowerCase())) rememberTeam(side);
 }
 
@@ -121,6 +122,7 @@ function render() {
     const saved = teams.find(team => team.name === config[select.dataset.teamChoice] && team.color.toLowerCase() === config[select.dataset.teamChoice === 'teamA' ? 'colorA' : 'colorB'].toLowerCase());
     select.value = saved?.name || '';
   });
+  $$('[data-team-delete]').forEach(button => { button.disabled = !teams.some(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase()); });
   $('[data-read=set-settings]').hidden = config.periods !== -1;
   $('[data-setting=limit]').closest('.jm-fields-pair').hidden = config.periods <= 0;
   $('[data-output=pace]').textContent = `${decimal(config.pace)} s`;
@@ -273,6 +275,7 @@ root.addEventListener('click', async event => {
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { Object.assign(sound, presets[button.dataset.preset]); render(); persist(); return; }
+  if (button.dataset.teamDelete) { teams = teams.filter(team => team.name.toLowerCase() !== config[button.dataset.teamDelete].toLowerCase()); render(); persist(); return; }
   let action = button.dataset.action;
   if (action === 'toggle') action = game.ended ? 'new' : game.setComplete || (finiteMatch(game) && game.consumed >= game.limit) ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
@@ -283,6 +286,7 @@ root.addEventListener('click', async event => {
   else if (action === 'signal-preview') await endSignal();
   else if (action === 'undo') { pause(); game = history.pop() || game; persist(); render(); }
   else if (action === 'defaults') { pause(); config = { ...defaults }; render(); persist(); }
+  else if (action === 'sound-defaults') { pause(); sound = { ...defaultSound }; config.signalCount = defaults.signalCount; render(); persist(); }
   else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), () => {
     rememberTeam('teamA'); rememberTeam('teamB');
     history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');

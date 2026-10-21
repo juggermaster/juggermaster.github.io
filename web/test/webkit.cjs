@@ -27,6 +27,7 @@ const path = require('node:path');
           for (const view of ['setup', 'sound', 'info']) {
             await page.locator(`[data-tab=${view}]`).click();
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${device}/${language}/${view}`);
+            assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${device}/${language}/${view}: kein seitliches Scrollen`);
             const navBefore = await page.locator('.jm-nav').boundingBox();
             const headBefore = await page.locator('.jm-head').boundingBox();
             assert.ok(Math.abs(navBefore.y + navBefore.height - await page.evaluate(() => innerHeight)) <= 1, 'Tabs am Bildschirmrand');
