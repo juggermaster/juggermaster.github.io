@@ -129,6 +129,7 @@ async function main() {
     await click('score-b-plus'); assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); await click('undo');
     await newMatch({ periods: 2, limit: 100, pace: .5 });
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Schakale'); await tab('sound'); await range('pitch', 225); await range('signalVolume', 80); await chooseLanguage('en');
+    await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = 'sans-serif'; });
     for (const width of [320, 390, 736, 1024]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const view of ['match', 'sound', 'setup', 'info']) {
@@ -137,6 +138,7 @@ async function main() {
         assert.ok(await page.evaluate(() => { const brand = document.querySelector('.jm-brand'), box = brand.getBoundingClientRect(), actions = document.querySelector('.jm-head-actions').getBoundingClientRect(); return brand.scrollWidth <= brand.clientWidth && box.right <= actions.left; }), `Kopfzeile ${width}px`);
       }
     }
+    await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = ''; });
     await fs.mkdir(path.join(root, 'screenshots'), { recursive: true });
     await page.setViewportSize({ width: 390, height: 1000 }); await tab('match');
     await page.screenshot({ path: path.join(root, 'screenshots/app-mobile.png'), fullPage: true });
