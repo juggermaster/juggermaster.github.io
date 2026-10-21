@@ -33,7 +33,7 @@ const path = require('node:path');
           }
           assert.equal(await page.locator('.jm-scroll>.jm-alert, .jm-home-hint').count(), 0, 'Keine Hinweiszeile unter dem Header');
           assert.equal(await page.locator('html').getAttribute('lang'), language);
-          for (const view of ['setup', 'sound', 'info']) {
+          for (const view of ['match', 'setup', 'sound', 'info']) {
             await page.locator(`[data-tab=${view}]`).click();
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${device}/${language}/${view}`);
             assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${device}/${language}/${view}: kein seitliches Scrollen`);
@@ -44,6 +44,7 @@ const path = require('node:path');
             const scrollTop = await page.locator('.jm-scroll').evaluate(element => element.scrollTop);
             assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y + scrollTop) <= 1, 'Header scrollt mit');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
+            if (view === 'match') await page.locator('[data-view=match] > :last-child [data-action=new]').click({ trial: true });
             if (view === 'sound') {
               await page.locator('[data-action=signal-preview]').click({ trial: true });
               for (const key of ['beatNormalize', 'signalNormalize']) {

@@ -50,7 +50,7 @@ async function main() {
   });
   let page = await context.newPage(); page.setDefaultTimeout(10000);
   const read = selector => page.locator(selector).textContent();
-  const click = action => page.locator(`[data-action=${action}]`).click();
+  const click = action => page.locator(`[data-action=${action}]:visible`).click();
   const tab = async view => { await page.locator(`[data-tab=${view}]`).click(); await page.locator(`[data-view=${view}]`).waitFor({ state: 'visible' }); };
   const range = (key, value, type = 'sound') => page.locator(`[data-${type}=${key}]`).evaluate((input, value) => { input.value = String(value); input.dispatchEvent(new Event('input', { bubbles: true })); }, value);
   const chooseLanguage = async language => { await click('language-menu'); await page.locator(`[data-language-option=${language}]`).click(); };
@@ -207,6 +207,18 @@ async function main() {
       assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
       assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
     }
+    await click('score-a-plus');
+    const beforeNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    const bottomNew = page.locator('[data-view=match] > :last-child [data-action=new]');
+    assert.equal(await bottomNew.textContent(), '↻Neues Spiel');
+    await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
+    await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    const afterNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+    assert.deepEqual(afterNew.config, beforeNew.config, 'Neues Spiel im Spiel-Tab behält Teams, Farben und Einstellungen');
+    assert.deepEqual(afterNew.sound, beforeNew.sound, 'Klang bleibt erhalten');
+    assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
+    assert.equal(await read('[data-read=phase]'), '1. Satz'); assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
     await newMatch({ periods: 3, limit: 1, pace: 1.5 });
     for (const phase of ['2. Drittel', '3. Drittel', 'Golden Jugg']) {
       await click('stone-minus');
@@ -311,6 +323,7 @@ async function main() {
         const navAfter = await page.locator('.jm-nav').boundingBox();
         assert.equal(navAfter.y, navBefore.y, `Tabs bleiben beim Scrollen sichtbar: ${view}/${width}`);
         assert.ok(await page.locator('.jm-body').evaluate(element => element.getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top + 1), 'Inhalt überlappt keine Tabs');
+        if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
         if (view === 'sound') await page.locator('[data-action=signal-preview]').click({ trial: true });
       }
     }
