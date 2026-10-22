@@ -6,8 +6,6 @@ import { unlockAudio, audioTime, playBeat, playEndSignal, stopAudio, onAudioInte
 import { setupOffline, applyUpdate, offlineState } from './offline.mjs';
 
 const root = document.getElementById('jm-arena'), app = root.querySelector('.jm-app');
-const fullscreenRequest = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
-const fullscreenAvailable = !!fullscreenRequest && document.fullscreenEnabled !== false && document.webkitFullscreenEnabled !== false;
 const $ = selector => root.querySelector(selector), $$ = selector => [...root.querySelectorAll(selector)];
 const storageKey = 'juggermaster:state:v1';
 let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [], teams = [];
@@ -44,11 +42,7 @@ function persist() {
   try { localStorage.setItem(storageKey, json); lastSave = json; storageError = false; }
   catch { storageError = true; noticeKey = 'storageFailed'; }
 }
-async function enterFullscreen() {
-  if (document.fullscreenElement || document.webkitFullscreenElement || matchMedia('(display-mode: fullscreen)').matches) return;
-  try { await fullscreenRequest.call(document.documentElement, { navigationUI: 'hide' }); }
-  catch { noticeKey = 'fullscreenFailed'; render(); }
-}
+
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
 function rememberTeam(side) {
   const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'], defaultName = config[`${side}Default`];
@@ -104,7 +98,6 @@ root.addEventListener('toggle', async event => {
   } finally { delete details.dataset.loading; content.removeAttribute('aria-busy'); }
 }, true);
 function render() {
-  $('[data-action=fullscreen]').hidden = !fullscreenAvailable;
   const finite = finiteMatch(game), remaining = Math.max(0, game.limit - game.consumed);
   const complete = finite && remaining === 0;
   const next = complete ? nextSection(game) : null;
@@ -131,7 +124,8 @@ function render() {
   $('[data-action=stone-plus]').disabled = game.ended;
   $('[data-action=toggle]').disabled = !game.ended && blocked && !nextSetReady;
   setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : complete ? sectionLabel : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
-  $('[data-action=toggle] .jm-symbol').textContent = running || countdown >= 0 ? 'Ⅱ' : '▶';
+  $('[data-action=toggle] [data-icon=play]').toggleAttribute('hidden', running || countdown >= 0);
+  $('[data-action=toggle] [data-icon=pause]').toggleAttribute('hidden', !running && countdown < 0);
   $('[data-action=undo]').disabled = !history.length;
   $('[data-action=next]').disabled = game.ended || game.golden || game.periods === 0 || (game.periods === -1 && !game.setComplete);
   $('[data-action=next] [data-i18n=period]').textContent = t(game.periods === -1 ? 'nextSet' : 'period');
@@ -350,7 +344,6 @@ root.addEventListener('click', async event => {
   let action = button.dataset.action;
   if (action === 'toggle') action = game.ended ? 'new' : game.setComplete || (finiteMatch(game) && game.consumed >= game.limit) ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
-  else if (action === 'fullscreen') await enterFullscreen();
   else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
   else if (action === 'toggle') { if (running || countdown >= 0 || starting) pause(); else await start(); }
   else if (action === 'beat-preview') await togglePreview();

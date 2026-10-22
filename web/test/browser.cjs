@@ -34,9 +34,6 @@ async function main() {
   context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
   context.on('request', request => { if (!request.url().startsWith(url) && !request.url().startsWith('data:')) external.push(request.url()); });
   await context.addInitScript(() => {
-    window.__fullscreenRequests = [];
-    Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: true });
-    Element.prototype.requestFullscreen = async function (options) { window.__fullscreenRequests.push({ element: this.tagName, options }); if (window.__fullscreenRejected) throw Error('Rejected by browser'); };
     window.__starts = []; window.__ends = []; window.__cancelled = 0;
     const original = AudioContext.prototype.createOscillator;
     AudioContext.prototype.createOscillator = function (...args) {
@@ -78,14 +75,19 @@ async function main() {
     }
     await click('new'); await page.locator('[data-dialog-action=confirm]').click();
     await page.locator('[data-read=status][data-running=true]').waitFor();
+    assert.equal(await page.locator('[data-icon=pause]').isVisible(), true, 'Laufendes Spiel zeigt das Pause-SVG');
     // Pause the automatic start before testing individual match controls.
     await page.locator('[data-action=toggle]').evaluate(button => button.click());
     await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('[data-icon=play]').isVisible(), true, 'Pausiertes Spiel zeigt das Start-SVG');
   };
   try {
     await require('./audio.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
+    assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
+    assert.equal(await page.locator('.jm-symbol:not(svg)').count(), 0, 'Alle Bedienicons sind SVG statt Schriftzeichen');
+    assert.ok(await page.locator('svg.jm-symbol').count() > 10);
     for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
       assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auf der Spielanzeige unterdrückt`);
       assert.equal(await page.locator('[data-setting=teamA]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), true, `${type}: Eingabefelder bleiben nutzbar`);
@@ -137,21 +139,12 @@ async function main() {
     assert.ok((await audio()).cancelled > 0, 'Auch ohne Taktvorschau wird das Endsignal beim Tabwechsel gestoppt');
     assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
     assert.equal(await page.locator('.jm-feedback').count(), 0, 'Keine Toast-Oberfläche');
-    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Tabwechsel aktiviert kein Vollbild');
     assert.equal((await (await context.request.get(url + 'manifest.webmanifest')).json()).display, 'standalone');
     await click('language-menu');
-    assert.deepEqual(await page.evaluate(() => window.__fullscreenRequests), [], 'Flaggenmenü aktiviert kein Vollbild');
     assert.equal((await page.locator('#jm-languages').textContent()).trim(), '', 'Sprachmenü enthält ausschließlich Flaggen');
-    assert.equal((await page.locator('[data-action=language-menu]').textContent()).replace('⌄', '').trim(), '', 'Keine Sprachkürzel in der Anzeige');
+    assert.equal((await page.locator('[data-action=language-menu]').textContent()).trim(), '', 'Keine Sprachkürzel in der Anzeige');
     await page.locator('[data-language-option=en]').click();
     assert.equal(await read('[data-read=start-label]'), 'Start match'); await chooseLanguage('de');
-    assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Weitere Klicks aktivieren kein Vollbild');
-    assert.equal(await page.locator('.jm-head [data-action=fullscreen]').count(), 1);
-    await click('fullscreen');
-    assert.deepEqual(await page.evaluate(() => window.__fullscreenRequests), [{ element: 'HTML', options: { navigationUI: 'hide' } }], 'Nur der Kopfzeilenknopf fordert Vollbild an');
-    await page.evaluate(() => { window.__fullscreenRejected = true; });
-    await click('fullscreen'); assert.match(await read('[data-read=notice]'), /Vollbild/);
-    await page.evaluate(() => { window.__fullscreenRejected = false; });
     await tab('match');
     await resetAudio(); await click('score-a-plus'); await page.waitForFunction(() => window.__starts.length === 21);
     assert.ok((await audio()).ends[0] > (await audio()).starts[7], 'Endschläge überlagern sich');
@@ -265,7 +258,7 @@ async function main() {
     await click('score-a-plus');
     const beforeNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     const bottomNew = page.locator('[data-view=match] [data-action=new]');
-    assert.equal(await bottomNew.textContent(), '↻Neues Spiel');
+    assert.equal(await bottomNew.textContent(), 'Neues Spiel');
     await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
     await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
@@ -443,26 +436,19 @@ async function main() {
     assert.equal(await read('[data-read=version]'), 'v3-rollback', 'Rollback-Fassung bleibt offline verfügbar');
     await context.setOffline(false);
     const fresh = await browser.newContext({ locale: 'de-DE' }); corruptIcon = true;
-    await fresh.addInitScript(() => {
-      window.__fullscreenRequests = 0;
-      Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: false });
-      Element.prototype.requestFullscreen = async () => { window.__fullscreenRequests++; };
-    });
     const failed = await fresh.newPage(); await failed.goto(url);
     await failed.locator('[data-action=offline-retry]').waitFor({ state: 'visible', timeout: 45000 });
     assert.doesNotMatch(await failed.locator('[data-read=offline]').textContent(), /Offline bereit|Offline ready/, 'Beschädigter Erstdownload erhält keinen Bereit-Status');
     corruptIcon = false; await failed.locator('[data-action=offline-retry]').click();
     await failed.locator('[data-read=offline]').filter({ hasText: 'Offline bereit' }).waitFor({ state: 'attached', timeout: 45000 });
     await failed.locator('[data-tab=info]').click();
-    assert.equal(await failed.locator('[data-action=fullscreen]').isHidden(), true, 'Nicht unterstütztes Vollbild wird nicht angeboten');
-    assert.equal(await failed.evaluate(() => window.__fullscreenRequests), 0, 'Browser ohne Vollbild bleibt bedienbar');
+    assert.equal(await failed.locator('[data-action=fullscreen]').count(), 0, 'Kein Vollbildbutton');
     assert.equal(await failed.locator('.jm-feedback').count(), 0);
     await fresh.close();
     const { locales } = await import(pathToFileURL(path.join(root, 'web/src/locale.mjs')).href);
     const { texts } = await import(pathToFileURL(path.join(root, 'web/src/i18n.mjs')).href);
     for (const [language, locale] of Object.entries(locales)) {
       const translated = await browser.newContext({ locale: locale.tag, viewport: { width: 390, height: 1000 } });
-      await translated.addInitScript(() => { Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: false }); });
       try {
         const sample = await translated.newPage(); await sample.goto(url);
         await sample.locator('.jm-app[data-ready=true]').waitFor();
@@ -521,7 +507,6 @@ async function main() {
       } finally { await translated.close(); }
     }
     const preferred = await browser.newContext({ locale: 'es-MX' });
-    await preferred.addInitScript(() => { Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, value: false }); });
     try {
       let sample = await preferred.newPage(); await sample.goto(url); await sample.locator('.jm-app[data-ready=true]').waitFor();
       assert.equal(await sample.locator('html').getAttribute('lang'), 'es');
@@ -555,7 +540,7 @@ async function main() {
     } finally { await preferred.close(); }
     assert.deepEqual(external, [], 'Keine externen Laufzeit-Abhängigkeiten');
     assert.deepEqual(errors, [], 'Keine JavaScript-Fehler');
-    console.log('OK: Sätze als Standard, manuelles Vollbild, feste Tabs beim Scrollen, Spielabläufe, Audio, Flaggen, Wake Lock, vier Breiten, Offline-Neustart und kontrolliertes Update.');
+    console.log('OK: Sätze als Standard, feste Tabs beim Scrollen, Spielabläufe, Audio, Flaggen, Wake Lock, vier Breiten, Offline-Neustart und kontrolliertes Update.');
   } catch (error) {
     console.error('Browserdiagnose:', { errors, url: page.url(), state: await page.evaluate(() => ({ lang: document.documentElement.lang, preference: localStorage.getItem('juggermaster:language'), sections: [...document.querySelectorAll('[data-locale]')].map(section => ({ locale: section.dataset.locale, hidden: section.hidden, height: section.getBoundingClientRect().height })) })).catch(() => null) });
     throw error;

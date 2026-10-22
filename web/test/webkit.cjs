@@ -59,6 +59,8 @@ const path = require('node:path');
         try {
           const page = await context.newPage(); await page.goto('http://127.0.0.1:4178/');
           await page.locator('.jm-app[data-ready=true]').waitFor();
+          assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
+          assert.equal(await page.locator('.jm-symbol').evaluateAll(icons => icons.every(icon => icon.namespaceURI === 'http://www.w3.org/2000/svg' && icon.getAttribute('stroke') === 'currentColor')), true, 'Bedienicons sind einfarbige SVGs');
           assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').count(), 0);
           assert.equal(await page.locator('.jm-statusbar').isHidden(), true, 'Kein Statusleisten-Overlay im normalen Browser');
           await page.emulateMedia({ colorScheme: 'light' });

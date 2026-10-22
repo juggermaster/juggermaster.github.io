@@ -12,7 +12,7 @@ Jugger match timing and scoring in a mobile web app. Open the website online onc
 - Synthesised stone-on-metal, gong and drum sounds, with drum as the default. Separate beat and Jugg/period-end volume and optional volume levelling for each; one to ten overlapping end beats.
 - Continuous sound preview, local match state and 30 undo steps. Reopening always restores a paused match.
 - 23 languages, automatic browser-language selection, saved manual choice and original SVG flags. Hebrew uses right-to-left text.
-- Responsive layout, always-visible bottom tabs, manual header full-screen button, foreground screen wake lock, home-screen instructions in Info, offline help, legal pages and licence notices.
+- Responsive layout, always-visible bottom tabs, foreground screen wake lock, home-screen instructions in Info, offline help, legal pages and licence notices.
 
 ## Development
 
@@ -46,11 +46,11 @@ GitHub Actions checks the sources, runs automated tests, builds the app and publ
 
 Before pushing: finish local changes and checks, commit locally, inspect the actual commit and all outgoing history, then push only the checked revision. `node web/scripts/check.mjs history HEAD` checks committed file versions for private files and known secret patterns. It supplements review; it does not detect every possible credential.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v29`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v30`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 
-Use a current browser. Automated Chromium and WebKit tests include mobile and desktop layouts; emulation does not replace tests on real phones. Before a match, check volume, speaker/Bluetooth latency and interruption behaviour on the actual device. Keep the app visible. Browsers may refuse wake lock or full screen, and playback while locked or in the background is not guaranteed. New versions are accepted only when playback is stopped.
+Use a current browser. Automated Chromium and WebKit tests include mobile and desktop layouts; emulation does not replace tests on real phones. Before a match, check volume, speaker/Bluetooth latency and interruption behaviour on the actual device. Keep the app visible. Browsers may refuse wake lock, and playback while locked or in the background is not guaranteed. New versions are accepted only when playback is stopped.
 
 Match state and settings remain in this browser. Clearing site data or browser storage eviction removes matches and offline files; there is no server backup. On a new origin the app starts with defaults. No login, synchronisation, advertising or analytics is built into the app. GitHub Pages handles hosting connection data as explained in the privacy page.
 

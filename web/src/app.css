@@ -17,7 +17,7 @@
 #jm-arena .jm-skull:before { content:''; position:absolute; width:8px; height:9px; border-radius:50% 45% 55% 35%; background:var(--jm-panel-alt); top:8px; left:2px; box-shadow:17px 0 var(--jm-panel-alt); }
 #jm-arena .jm-skull:after { content:''; position:absolute; top:22px; left:12px; width:5px; height:11px; background:var(--jm-panel-alt); clip-path:polygon(50% 0,100% 90%,65% 100%,35% 100%,0 90%); }
 #jm-arena .jm-teeth { position:absolute; width:14px; height:7px; left:7px; top:29px; background:linear-gradient(90deg,var(--jm-panel-alt) 0 2px,transparent 2px 12px,var(--jm-panel-alt) 12px); clip-path:polygon(0 0,100% 0,86% 100%,14% 100%); }
-#jm-arena .jm-symbol { display:inline-block; font-family:system-ui,sans-serif; font-size:17px; font-weight:500; line-height:1; }
+#jm-arena .jm-symbol { display:inline-block; width:17px; height:17px; flex:none; vertical-align:middle; }
 #jm-arena .jm-brand { font:800 28px/.85 var(--jm-title); letter-spacing:.3px; flex:1; min-width:0; }
 #jm-arena .jm-app { container-type:inline-size; }
 #jm-arena .jm-head-actions { display:flex; gap:7px; flex:none; }
@@ -146,7 +146,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-scroll { flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
 #jm-arena .jm-language-picker { position:relative; }
 #jm-arena .jm-language-select { gap:1px; }
-#jm-arena .jm-select-arrow { font-size:10px; line-height:1; }
+#jm-arena .jm-language-select .jm-select-arrow { width:10px; height:10px; }
 #jm-arena .jm-language-options { position:absolute; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); top:calc(100% + 7px); right:0; padding:5px; width:min(244px,calc(100vw - 32px)); max-height:min(60vh,320px); overflow-y:auto; z-index:30; background:var(--jm-panel-alt); border:1px solid var(--jm-line); border-radius:var(--jm-radius); box-shadow:0 8px 20px #0003; }
 #jm-arena .jm-language-options button { display:grid; place-items:center; min-height:44px; width:100%; background:transparent; border:0; border-radius:5px; }
 #jm-arena .jm-language-options button[aria-selected=true] { background:var(--jm-panel); box-shadow:inset 0 -2px var(--jm-accent); }

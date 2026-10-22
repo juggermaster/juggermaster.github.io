@@ -133,8 +133,6 @@ export const texts = {
     "privacy": "Datenschutz",
     "imprint": "Impressum",
     "help": "Hilfe",
-    "fullscreen": "Vollbild öffnen",
-    "fullscreenFailed": "Vollbild wird von diesem Browser nicht erlaubt. Versuche den Start über das Startbildschirm-Symbol.",
     "backApp": "← Zur App",
     "sourceCode": "Quellcode",
     "licenses": "Lizenzen"
@@ -272,8 +270,6 @@ export const texts = {
     "privacy": "Privacy",
     "imprint": "Legal notice",
     "help": "Help",
-    "fullscreen": "Enter full screen",
-    "fullscreenFailed": "This browser does not allow full screen. Try opening the app from its home-screen icon.",
     "backApp": "← Back to app",
     "sourceCode": "Source code",
     "licenses": "Licences"
