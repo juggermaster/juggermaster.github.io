@@ -104,10 +104,13 @@ const path = require('node:path');
           assert.equal(await page.locator('[data-view=info]').isVisible(), true);
           const guide = page.locator('.jm-home-guide details').nth(1);
           await guide.locator('summary').click(); assert.equal(await guide.locator('li:visible').count(), 5);
-          await page.locator('a[href="./lizenzen.html"]').click();
-          await page.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
+          const licencePanel = page.locator('[data-document="lizenzen.html"]');
+          const infoUrl = page.url();
+          await licencePanel.locator('summary').click();
+          await licencePanel.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
+          assert.equal(page.url(), infoUrl, 'Lizenzen öffnen innerhalb der Infoansicht');
           await page.waitForFunction(() => document.documentElement.style.colorScheme === 'dark');
-          const licence = await page.locator(`[data-locale="${language}"] a`).first().getAttribute('href');
+          const licence = await licencePanel.locator(`[data-locale="${language}"] a`).first().getAttribute('href');
           assert.equal(licence, './LICENSE.txt');
           assert.deepEqual(errors, []);
         } finally { await context.close(); }

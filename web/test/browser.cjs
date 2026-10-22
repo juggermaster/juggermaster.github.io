@@ -60,6 +60,8 @@ async function main() {
   const dismissWinner = async result => {
     const winner = page.locator('.dialog[aria-label="Spiel beendet"]');
     await winner.waitFor({ state:'visible' });
+    assert.equal(await winner.locator('.jm-final-score strong').count(), 2, 'Siegerdialog nennt beide Teams');
+    assert.equal(await winner.locator('.jm-final-score b').count(), 2, 'Siegerdialog zeigt beide Ergebnisse');
     if (result) assert.match(await winner.textContent(), result);
     assert.equal(await winner.locator('[data-dialog-action=cancel]').textContent(), 'Schließen');
     await winner.locator('[data-dialog-action=cancel]').click(); await winner.waitFor({ state:'hidden' });
@@ -397,11 +399,12 @@ async function main() {
     assert.equal(await read('[data-read=stones]'), '99', 'Offline-Spiel läuft nach erneutem URL-Aufruf');
     await tab('info');
     for (const [filename, title] of [['datenschutz.html', 'Privacy'], ['impressum.html', 'Legal notice'], ['hilfe.html', 'Help']]) {
-      await page.locator(`[data-view=info] a[href="./${filename}"]`).click();
-      await page.locator('[data-locale=en]').waitFor({ state: 'visible' });
-      assert.equal(await page.locator('[data-locale=en] h1').textContent(), title, `${title} offline und lokalisiert verfügbar`);
-      await page.locator('a[data-i18n=backApp]').click(); await ready();
-      await page.locator('[data-view=info]').waitFor({ state: 'visible' });
+      const panel = page.locator(`[data-document="${filename}"]`), infoUrl = page.url();
+      await panel.locator('summary').click();
+      await panel.locator('[data-locale=en]').waitFor({ state: 'visible' });
+      assert.equal(await panel.locator('[data-locale=en] h1').textContent(), title, `${title} offline und lokalisiert verfügbar`);
+      assert.equal(page.url(), infoUrl, 'Dokument wird ohne Seitenwechsel aufgeklappt');
+      await panel.locator('summary').click();
     }
     await tab('match');
     await page.evaluate(async () => { const name = (await caches.keys()).find(key => key.startsWith('juggermaster-')); const cache = await caches.open(name); const key = (await cache.keys()).find(key => key.url.endsWith('icon-512.png')); await cache.delete(key); });
@@ -498,12 +501,14 @@ async function main() {
         assert.equal(await sample.evaluate(() => document.activeElement.dataset.languageOption), 'zh-Hant');
         await sample.keyboard.press('Escape');
         for (const [file, title] of [['hilfe', 'help'], ['impressum', 'imprint'], ['datenschutz', 'privacy']]) {
-          await sample.locator(`a[href="./${file}.html"]`).first().click();
+          const panel = sample.locator(`[data-document="${file}.html"]`);
+          await panel.locator('summary').click();
           await sample.waitForFunction(([language, direction]) => document.documentElement.lang === language && document.documentElement.dir === direction, [language, locale.dir || 'ltr']);
-          await sample.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
-          assert.equal(await sample.locator('[data-locale]:visible').count(), 1);
-          assert.equal(await sample.locator(`[data-locale="${language}"] h1`).textContent(), texts[language][title]);
+          await panel.locator(`[data-locale="${language}"]`).waitFor({ state: 'visible' });
+          assert.equal(await panel.locator('[data-locale]:visible').count(), 1);
+          assert.equal(await panel.locator(`[data-locale="${language}"] h1`).textContent(), texts[language][title]);
           assert.equal(await sample.locator('html').getAttribute('dir'), locale.dir || 'ltr');
+          await panel.locator('summary').click();
         }
       } finally { await translated.close(); }
     }

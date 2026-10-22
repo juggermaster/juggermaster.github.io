@@ -111,6 +111,9 @@
 #jm-arena .jm-app .dialog { position:absolute; max-width:calc(100% - 32px); color:var(--jm-ink); background:var(--jm-panel-alt); border:1px solid var(--jm-line); border-radius:17px; }
 #jm-arena .jm-app .dialog-title { font-family:var(--jm-title); line-height:1.1; }
 #jm-arena .jm-app .dialog-text { font-size:13px; line-height:1.6; }
+#jm-arena .jm-final-score { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; margin:16px 0; text-align:start; }
+#jm-arena .jm-final-score strong { font-size:clamp(26px,7vw,36px); font-weight:900; line-height:1.15; overflow-wrap:anywhere; }
+#jm-arena .jm-final-score b { font-size:44px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
 #jm-arena .jm-app .dialog-button { border-radius:9px; background:var(--jm-panel); color:var(--jm-ink); font:700 12px/1.4 system-ui,-apple-system,sans-serif; text-transform:none; min-height:44px; white-space:normal; padding:10px; }
 #jm-arena .jm-app .dialog-button.button-fill { background:var(--jm-accent); color:var(--jm-accent-ink); }
 #jm-arena .jm-app .dialog-backdrop { position:absolute; inset:0; background:#0008; }
@@ -163,6 +166,13 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-sets { padding:12px; text-align:center; font-weight:700; background:var(--jm-panel); border-radius:var(--jm-radius); margin-top:12px; }
 #jm-arena .jm-sets { display:grid; place-items:center; }
 #jm-arena .jm-info-links { display:grid; gap:10px; }
+#jm-arena .jm-info-links details { border:1px solid var(--jm-line); background:var(--jm-panel); border-radius:var(--jm-radius); }
+#jm-arena .jm-info-links summary { padding:16px; min-height:48px; font-weight:600; cursor:pointer; }
+#jm-arena .jm-document { padding:0 16px 16px; font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+#jm-arena .jm-document h1 { font:700 28px/1.2 var(--jm-title); }
+#jm-arena .jm-document h2 { font-size:18px; line-height:1.3; margin-top:24px; }
+#jm-arena .jm-document[aria-busy=true] { opacity:.5; }
+#jm-arena .jm-info-links .jm-document a { display:inline; padding:0; min-height:0; border:0; background:transparent; text-decoration:underline; }
 #jm-arena .jm-info-links a { display:block; padding:16px; min-height:48px; border:1px solid var(--jm-line); color:var(--jm-ink); background:var(--jm-panel); border-radius:var(--jm-radius); font-weight:600; text-decoration:none; }
 #jm-arena .jm-info-version { color:var(--jm-soft); margin:0 0 24px; }
 #jm-arena [data-view=info] .jm-alert { margin:0 0 24px; }

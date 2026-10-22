@@ -68,6 +68,7 @@ function setLocalizedText(element, text) {
 }
 
 function renderLanguage() {
+  $$('.jm-document [data-locale]').forEach(section => { section.hidden = section.dataset.locale !== language; });
   $$('[data-home-steps]').forEach(list => list.replaceChildren(...t(list.dataset.homeSteps).split('\n').map(text => { const item = document.createElement('li'); setLocalizedText(item, text); return item; })));
   root.lang = language; document.documentElement.lang = language; document.documentElement.dir = locales[language].dir || 'ltr';
   $$('[data-i18n]').forEach(element => { setLocalizedText(element, t(element.dataset.i18n)); });
@@ -82,6 +83,23 @@ function phase() {
   if (game.periods === 0) return t('freeDrumming');
   return t(game.periods === -1 ? 'setNumber' : game.periods === 3 ? 'third' : 'half', { number: game.period });
 }
+root.addEventListener('toggle', async event => {
+  const details = event.target;
+  if (!details.matches('details[data-document]') || !details.open || details.dataset.loaded || details.dataset.loading) return;
+  const content = details.querySelector('.jm-document');
+  details.dataset.loading = 'true'; content.setAttribute('aria-busy', 'true');
+  try {
+    const response = await fetch(`./${details.dataset.document}`);
+    if (!response.ok) throw Error('Document unavailable');
+    const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const sections = [...page.querySelectorAll('main > [data-locale]')];
+    if (!sections.length) throw Error('Document content missing');
+    sections.forEach(section => { section.hidden = section.dataset.locale !== language; });
+    content.replaceChildren(...sections); details.dataset.loaded = 'true';
+  } catch {
+    // Keep the direct document link available; reopening retries the request.
+  } finally { delete details.dataset.loading; content.removeAttribute('aria-busy'); }
+}, true);
 function render() {
   $('[data-action=fullscreen]').hidden = !fullscreenAvailable;
   const finite = finiteMatch(game), remaining = Math.max(0, game.limit - game.consumed);
@@ -241,6 +259,13 @@ function resetMatch() {
 function showWinner() {
   const sets = game.periods === -1, a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
   dialog(t('matchEnded'), t('matchResult', { team: teamName(a > b ? 'teamA' : 'teamB'), a, b }), t('startNewMatch'), resetMatch, t('close'));
+  const scoreboard = document.createElement('div'); scoreboard.className = 'jm-final-score';
+  for (const [team, score] of [['teamA', a], ['teamB', b]]) {
+    const name = document.createElement('strong'), points = document.createElement('b');
+    name.textContent = teamName(team); points.textContent = score;
+    scoreboard.append(name, points);
+  }
+  currentDialog.el.querySelector('.dialog-text').prepend(scoreboard);
 }
 function dialog(title, text, label, action, cancelLabel = t('cancel')) {
   stopStoneHold(true);
