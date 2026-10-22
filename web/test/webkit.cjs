@@ -14,6 +14,42 @@ const path = require('node:path');
       server.once('exit', code => reject(Error(`Preview server exited: ${code}`)));
     });
     browser = await webkit.launch();
+    const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', serviceWorkers:'block' });
+    try {
+      const page = await compact.newPage();
+      await page.goto('http://127.0.0.1:4178/');
+      await page.locator('.jm-app[data-ready=true]').waitFor();
+      for (const height of [400, 500, 550, 667, 850]) {
+        await page.setViewportSize({ width:375, height });
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
+        assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollHeight <= element.clientHeight + 1), `iPhone 8/${height}: Spiel ohne Scrollen`);
+        for (const action of ['toggle', 'stone-plus', 'score-a-plus', 'undo', 'next', 'new']) {
+          const box = await page.locator(`[data-view=match] [data-action=${action}]`).boundingBox();
+          const pane = await page.locator('.jm-scroll').boundingBox();
+          const body = await page.locator('.jm-body').boundingBox();
+          assert.ok(box.y >= pane.y && box.y + box.height <= Math.min(pane.y + pane.height, body.y + body.height) + 1, `${action}: vollständig sichtbar`);
+        }
+        if (process.env.COMPACT_SCREENSHOT && [500, 667].includes(height)) await page.screenshot({ path:process.env.COMPACT_SCREENSHOT.replace('.png', `-${height}.png`) });
+      }
+      await page.setViewportSize({ width:375, height:500 });
+      if (process.env.COMPACT_SCREENSHOT) await page.screenshot({ path:process.env.COMPACT_SCREENSHOT });
+    } finally { await compact.close(); }
+    if (process.env.COMPACT_SCREENSHOT) {
+      const preview = await browser.newContext({ ...devices['iPhone 8'], locale:'de-DE' });
+      try {
+        const page = await preview.newPage();
+        await page.goto('http://127.0.0.1:4178/');
+        await page.locator('.jm-app[data-ready=true]').waitFor();
+        await page.locator('.jm-offline').waitFor({ state:'hidden' });
+        for (const height of [500, 667]) {
+          await page.setViewportSize({ width:375, height });
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
+          await page.screenshot({ path:process.env.COMPACT_SCREENSHOT.replace('.png', `-${height}.png`) });
+        }
+      } finally { await preview.close(); }
+    }
     const { locales } = await import(pathToFileURL(path.resolve('web/src/locale.mjs')).href);
     for (const device of ['iPhone 13', 'iPad Mini']) {
       for (const language of ['de', 'en', 'he', 'ja', 'zh-Hant']) {
@@ -21,7 +57,7 @@ const path = require('node:path');
         const errors = [];
         context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
         try {
-          const page = await context.newPage(); await page.goto('http://localhost:4178/');
+          const page = await context.newPage(); await page.goto('http://127.0.0.1:4178/');
           await page.locator('.jm-app[data-ready=true]').waitFor();
           assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').count(), 0);
           assert.equal(await page.locator('.jm-statusbar').isHidden(), true, 'Kein Statusleisten-Overlay im normalen Browser');
@@ -41,11 +77,21 @@ const path = require('node:path');
             const headBefore = await page.locator('.jm-head').boundingBox();
             assert.ok(Math.abs(navBefore.y + navBefore.height - await page.evaluate(() => innerHeight)) <= 1, 'Tabs am Bildschirmrand');
             await page.locator('.jm-scroll').evaluate(element => { element.scrollTop = element.scrollHeight; });
-            const scrollTop = await page.locator('.jm-scroll').evaluate(element => element.scrollTop);
-            assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y + scrollTop) <= 1, 'Header scrollt mit');
+            assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y) <= 1, 'Header bleibt fest');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
-            if (view === 'match') await page.locator('[data-view=match] > :last-child [data-action=new]').click({ trial: true });
+            if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
             if (view === 'sound') {
+              if (device === 'iPhone 13' && language === 'de') {
+                for (const input of await page.locator('[data-view=sound] input[type=range]').all()) {
+                  await input.locator('..').scrollIntoViewIfNeeded();
+                  const value = await input.inputValue();
+                  const fraction = await input.evaluate(element => (Number(element.value) - Number(element.min)) / (Number(element.max) - Number(element.min)));
+                  const bar = input.locator('..');
+                  const box = await bar.boundingBox();
+                  await bar.tap({ position:{ x:box.width * (fraction < .5 ? .9 : .1), y:box.height / 2 } });
+                  assert.equal(await input.inputValue(), value, 'Antippen der Klang-Leiste verändert keinen Wert');
+                }
+              }
               await page.locator('[data-action=signal-preview]').click({ trial: true });
               for (const key of ['beatNormalize', 'signalNormalize']) {
                 const input = page.locator(`[data-sound=${key}]`);

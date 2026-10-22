@@ -115,6 +115,7 @@
 #jm-arena .jm-app .dialog-backdrop { position:absolute; inset:0; background:#0008; }
 #jm-arena .jm-range-wrap { height:28px; position:relative; --f7-range-bar-size:4px; --f7-range-knob-size:23px; --f7-range-knob-color:var(--jm-accent); --f7-range-bar-active-bg-color:var(--jm-accent); --f7-range-bar-bg-color:var(--jm-line); }
 #jm-arena .jm-range-wrap input[type=range] { display:block!important; opacity:0; position:absolute; inset:0; width:100%; height:28px; z-index:3; }
+#jm-arena [data-view=sound] .jm-range-wrap input[type=range] { pointer-events:none; }
 #jm-arena .jm-range-wrap:focus-within { outline:2px solid var(--jm-green); outline-offset:4px; border-radius:4px; }
 #jm-arena .jm-nav .tab-link { height:auto; flex-direction:row; text-decoration:none; }
 @media(max-width:380px) { #jm-arena .jm-stage { padding:12px 0; } #jm-arena .jm-head { padding:20px 15px 17px; } #jm-arena .jm-body { padding:19px 14px 17px; } #jm-arena .jm-score-controls .jm-point { font-size:11px; } #jm-arena .jm-team { padding:12px 8px 10px; } }
@@ -133,8 +134,11 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-app { max-width:none; min-height:100dvh; border:0; border-radius:0; box-shadow:none; overflow:visible; padding-top:env(safe-area-inset-top); }
 #jm-arena .jm-head { padding-top:16px; padding-bottom:16px; }
 #jm-arena .jm-body { min-height:0; }
-#jm-arena .jm-stage>.jm-app { display:flex; flex-direction:column; height:100dvh!important; min-height:0; overflow:hidden; }
+#jm-arena .jm-stage>.jm-app { display:flex; flex-direction:column; height:100vh!important; height:100dvh!important; min-height:0; overflow:hidden; }
 #jm-arena .jm-stage>.jm-app>.jm-nav { flex-shrink:0; }
+#jm-arena .jm-stage>.jm-app>.jm-head, #jm-arena .jm-stage>.jm-app>.jm-stripe { flex-shrink:0; }
+#jm-arena [data-view=match] { width:calc(100% / var(--jm-match-scale,1)); min-height:var(--jm-match-content-height,0px); transform:scale(var(--jm-match-scale,1)); transform-origin:top left; }
+#jm-arena .jm-body[data-fit-match] { height:var(--jm-match-height); overflow:hidden; }
 #jm-arena .jm-scroll { flex:1; min-height:0; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
 #jm-arena .jm-language-picker { position:relative; }
 #jm-arena .jm-language-select { gap:1px; }
@@ -178,7 +182,8 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-legal footer { display:flex; gap:18px; flex-wrap:wrap; margin-top:32px; }
 @media(max-width:699px) {
   #jm-arena .jm-team-fields { grid-template-columns:minmax(0,1fr); }
-  #jm-arena .jm-stones { padding-top:calc(16px + var(--jm-resume-gap,0px)/2); padding-bottom:calc(12px + var(--jm-resume-gap,0px)/2); }
+  #jm-arena [data-view=match] { display:flex; flex-direction:column; }
+  #jm-arena [data-action=toggle] { margin-top:auto; }
 }
 @media(min-width:700px) {
   #jm-arena .jm-body { padding:26px 30px; max-width:1600px; margin-inline:auto; width:100%; }
@@ -197,4 +202,25 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 @media(max-width:479px) {
   #jm-arena[lang=de] .jm-nav { grid-template-columns:minmax(0,1fr) minmax(max-content,1fr) minmax(0,1fr) minmax(0,1fr); }
   #jm-arena .jm-nav .tab-link { flex-direction:column; gap:4px; min-width:0; padding:5px 2px; }
+}
+@media(max-width:699px) and (max-height:740px) {
+  #jm-arena .jm-body[data-fit-match] { padding:4px 14px; }
+  #jm-arena [data-view=match] { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; }
+  #jm-arena [data-view=match]>* { grid-column:1/-1; }
+  #jm-arena [data-view=match]>.jm-actions { display:contents; }
+  #jm-arena [data-view=match] .jm-secondary { padding:4px; gap:4px; font-size:10px; }
+  #jm-arena .jm-phase { font-size:21px; margin-top:3px; }
+  #jm-arena .jm-stones { padding:0; }
+  #jm-arena .jm-stone-number { font-size:clamp(48px,10vh,74px); }
+  #jm-arena .jm-track { margin-top:5px; }
+  #jm-arena .jm-teams { margin:0; gap:8px; }
+  #jm-arena .jm-team { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:3px; padding:5px 8px; }
+  #jm-arena .jm-team-name { letter-spacing:.3px; }
+  #jm-arena .jm-score-controls { grid-column:1/-1; margin:0; }
+  #jm-arena .jm-score { font-size:28px; line-height:1; }
+  #jm-arena [data-action=toggle] { margin:0; min-height:44px; }
+  #jm-arena .jm-timing { margin:0; }
+  #jm-arena .jm-timing strong { margin-top:2px; }
+  #jm-arena .jm-countdown { padding:4px; font-size:28px; }
+  #jm-arena .jm-result, #jm-arena .jm-sets { padding:5px; margin:0; }
 }

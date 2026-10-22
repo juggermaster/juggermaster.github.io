@@ -155,7 +155,7 @@ async function main() {
     await click('toggle'); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.equal(await read('[data-read=phase]'), '1. Halbzeit'); assert.equal(await read('[data-read=stones]'), '0');
     await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
-    await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
+    await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
     assert.equal(await read('[data-read=phase]'), '2. Halbzeit');
     assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet die Halbzeit direkt');
     await page.waitForFunction(() => Number(document.querySelector('[data-read=stones]').textContent) < 4);
@@ -179,12 +179,10 @@ async function main() {
           assert.equal(await read('[data-read=start-label]'), 'Nächster Satz');
           assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
           const advance = height === 600 ? 'toggle' : 'next';
-          const gap = await page.locator('.jm-stones').evaluate(element => element.style.getPropertyValue('--jm-resume-gap'));
           await click(advance); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
           assert.equal(await read('[data-read=score-a]'), '2', 'Abbrechen behält den beendeten Satz');
-          assert.equal(await page.locator('.jm-stones').evaluate(element => element.style.getPropertyValue('--jm-resume-gap')), gap, 'Abbrechen verändert die Ansicht nicht');
           await click(advance); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
-          await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
+          await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
           assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren');
           assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet den nächsten Satz direkt');
           assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
@@ -197,7 +195,7 @@ async function main() {
       assert.equal(await read('[data-read=phase]'), 'Spiel beendet', 'Abbrechen behält das Match-Ergebnis');
       await click('undo'); assert.equal(await read('[data-read=score-a]'), '1');
       await click('score-a-plus'); await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
-      await page.waitForFunction(() => Math.abs(document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom - document.querySelector('.jm-nav').getBoundingClientRect().top) < 1);
+      await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
       assert.equal(await read('[data-read=phase]'), '1. Satz');
       assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
       assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
@@ -209,7 +207,7 @@ async function main() {
     }
     await click('score-a-plus');
     const beforeNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
-    const bottomNew = page.locator('[data-view=match] > :last-child [data-action=new]');
+    const bottomNew = page.locator('[data-view=match] [data-action=new]');
     assert.equal(await bottomNew.textContent(), '↻Neues Spiel');
     await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
@@ -318,8 +316,7 @@ async function main() {
         const headBefore = await page.locator('.jm-head').boundingBox();
         assert.ok(Math.abs(navBefore.y + navBefore.height - 1000) <= 1, `Tabs am unteren Rand: ${view}/${width}`);
         await page.locator('.jm-scroll').evaluate(element => { element.scrollTop = element.scrollHeight; });
-        const scrollTop = await page.locator('.jm-scroll').evaluate(element => element.scrollTop);
-        assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y + scrollTop) <= 1, 'Header scrollt mit dem Inhalt');
+        assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y) <= 1, 'Header bleibt fest');
         const navAfter = await page.locator('.jm-nav').boundingBox();
         assert.equal(navAfter.y, navBefore.y, `Tabs bleiben beim Scrollen sichtbar: ${view}/${width}`);
         assert.ok(await page.locator('.jm-body').evaluate(element => element.getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top + 1), 'Inhalt überlappt keine Tabs');

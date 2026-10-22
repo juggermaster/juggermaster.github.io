@@ -212,16 +212,28 @@ async function togglePreview() {
   previewing = true; previewClock.start(config.pace, true); render(); keepAwake();
 }
 async function endSignal() { if (sound.signalVolume && await unlockAudio()) playEndSignal(sound, config.signalCount); }
+function fitMatch() {
+  const pane = $('.jm-scroll'), body = $('.jm-body'), match = $('[data-view=match]');
+  if (match.hidden) { delete body.dataset.fitMatch; return; }
+  body.dataset.fitMatch = '';
+  body.style.setProperty('--jm-match-scale', 1);
+  body.style.setProperty('--jm-match-content-height', '0px');
+  const padding = getComputedStyle(body);
+  const inset = parseFloat(padding.paddingTop) + parseFloat(padding.paddingBottom);
+  const otherHeight = [...pane.children].filter(element => element !== body).reduce((sum, element) => {
+    const style = getComputedStyle(element);
+    return sum + (element.hidden ? 0 : element.offsetHeight + parseFloat(style.marginTop) + parseFloat(style.marginBottom));
+  }, 0);
+  const naturalHeight = match.offsetHeight;
+  const available = Math.max(1, pane.clientHeight - otherHeight - inset - 1);
+  const scale = Math.max(.01, Math.min(1, available / Math.max(1, naturalHeight)));
+  body.style.setProperty('--jm-match-scale', scale);
+  body.style.setProperty('--jm-match-content-height', `${available / scale}px`);
+  body.style.setProperty('--jm-match-height', `${Math.ceil(available + inset)}px`);
+  pane.scrollTop = 0;
+}
 function focusMatchButton() {
-  const stones = $('.jm-stones');
-  stones.style.removeProperty('--jm-resume-gap');
-  if (!matchMedia('(max-width:699px)').matches) return;
-  const pane = $('.jm-scroll'), button = $('[data-action=toggle]');
-  const bottom = button.getBoundingClientRect().bottom - pane.getBoundingClientRect().top + pane.scrollTop;
-  // Tall phones need room above the button for exact bottom alignment.
-  stones.style.setProperty('--jm-resume-gap', `${Math.max(0, pane.clientHeight - bottom)}px`);
-  button.focus({ preventScroll: true });
-  button.scrollIntoView({ block: 'end', behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
+  $('[data-action=toggle]').focus({ preventScroll: true });
 }
 function dialog(title, text, label, action) {
   stopStoneHold(true);
@@ -237,7 +249,6 @@ function dialog(title, text, label, action) {
 function showView(next) {
   stopStoneHold(true);
   if (running || countdown >= 0 || starting) pause();
-  $('.jm-stones').style.removeProperty('--jm-resume-gap');
   view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-scroll').scrollTop = 0;
   globalThis.history.replaceState(null, '', next === 'match' ? location.pathname + location.search : `#${next}`);
   ranges.forEach(range => { range.calcSize(); range.layout(); });
@@ -389,11 +400,14 @@ $('.jm-wave').replaceChildren(...Array.from({ length: 34 }, () => document.creat
 renderLanguage(); render();
 $$('.jm-range').forEach(input => {
   const wrapper = document.createElement('div'); wrapper.className = 'jm-range-wrap range-slider'; input.before(wrapper); wrapper.append(input);
-  const range = f7.range.create({ el: wrapper, min: Number(input.min), max: Number(input.max), step: Number(input.step) || 1, value: Number(input.value),
+  const range = f7.range.create({ el: wrapper, draggableBar: !input.closest('[data-view=sound]'), min: Number(input.min), max: Number(input.max), step: Number(input.step) || 1, value: Number(input.value),
     on: { change(instance, value) { if (Number(input.value) === value) return; input.value = value; input.dispatchEvent(new Event('input', { bubbles: true })); } } });
   ranges.set(input, range);
 });
 setText('version', '__VERSION__');
 app.dataset.ready = 'true'; app.inert = false; app.removeAttribute('aria-busy');
 setupOffline(render);
+const matchLayout = new ResizeObserver(fitMatch);
+['.jm-scroll', '[data-view=match]', '.jm-update', '.jm-offline'].forEach(selector => matchLayout.observe($(selector)));
+fitMatch();
 console.assert(Object.values(texts).every(value => JSON.stringify(Object.keys(value).sort()) === JSON.stringify(Object.keys(texts.de).sort())), 'Übersetzungen vollständig');
