@@ -162,6 +162,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 #jm-arena .jm-update { display:flex; align-items:center; gap:12px; justify-content:space-between; }
 #jm-arena .jm-countdown { font:700 42px/1.2 var(--jm-title); text-align:center; color:var(--jm-ink); padding:14px; background:var(--jm-panel-alt); border-radius:var(--jm-radius); }
 #jm-arena .jm-result, #jm-arena .jm-sets { padding:12px; text-align:center; font-weight:700; background:var(--jm-panel); border-radius:var(--jm-radius); margin-top:12px; }
+#jm-arena .jm-sets { display:grid; place-items:center; }
 #jm-arena .jm-info-links { display:grid; gap:10px; }
 #jm-arena .jm-info-links a { display:block; padding:16px; min-height:48px; border:1px solid var(--jm-line); color:var(--jm-ink); background:var(--jm-panel); border-radius:var(--jm-radius); font-weight:600; text-decoration:none; }
 #jm-arena .jm-info-version { color:var(--jm-soft); margin:0 0 24px; }
