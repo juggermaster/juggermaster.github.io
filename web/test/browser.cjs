@@ -93,7 +93,16 @@ async function main() {
     assert.equal(await page.locator('[data-preset=drum]').getAttribute('aria-pressed'), 'true', 'Trommel ist die frische Klangvorgabe');
     assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), true);
     assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true);
-    await page.locator('[data-preset=deep]').click(); await tab('match');
+    for (const preset of ['stone', 'drum', 'deep']) {
+      await resetAudio();
+      await page.locator(`[data-preset=${preset}]`).click();
+      await page.waitForFunction(() => window.__starts.length > 0);
+      assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'true', `${preset}: Klangwahl startet den Takt`);
+      assert.equal(await read('[data-read=stones]'), '0', 'Hörprobe verändert keine Spielsteine');
+      await click('beat-preview');
+      assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false');
+    }
+    await tab('match');
     assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
     assert.equal(await page.locator('.jm-feedback').count(), 0, 'Keine Toast-Oberfläche');
     assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Tabwechsel aktiviert kein Vollbild');

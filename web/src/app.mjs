@@ -296,7 +296,7 @@ root.addEventListener('click', async event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
-  if (button.dataset.preset) { stopAudio(true); Object.assign(sound, presets[button.dataset.preset]); if (previewing) previewClock.start(config.pace, true); render(); persist(); return; }
+  if (button.dataset.preset) { stopAudio(true); Object.assign(sound, presets[button.dataset.preset]); if (previewing) previewClock.start(config.pace, true); else await togglePreview(); render(); persist(); return; }
   if (button.dataset.teamDelete) {
     const index = teams.findIndex(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase());
     if (index < 0) return;

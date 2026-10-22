@@ -63,6 +63,7 @@
 #jm-arena .jm-primary { display:flex; align-items:center; justify-content:center; gap:10px; background:var(--jm-accent); border:0; color:var(--jm-accent-ink); min-height:56px; width:100%; border-radius:var(--jm-radius); font-size:14px; font-weight:800; }
 #jm-arena .jm-primary svg { width:18px; height:18px; }
 #jm-arena [data-action=toggle] { margin-top:14px; }
+#jm-arena [data-view=setup]>.jm-primary { margin-top:14px; }
 #jm-arena [data-action=stone-minus], #jm-arena [data-action=stone-plus] { touch-action:none; user-select:none; -webkit-touch-callout:none; }
 #jm-arena .jm-secondary { border:1px solid var(--jm-line); border-radius:var(--jm-radius); background:transparent; min-height:44px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 12px; }
 #jm-arena .jm-secondary svg { width:15px; height:15px; }
