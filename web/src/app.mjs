@@ -316,7 +316,11 @@ root.addEventListener('pointerdown', event => {
 for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) root.addEventListener(type, event => {
   if (stoneHold?.pointer === event.pointerId) stopStoneHold(true);
 });
-root.addEventListener('contextmenu', event => { if (event.target.closest('[data-action=stone-minus], [data-action=stone-plus]')) event.preventDefault(); });
+for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
+  root.addEventListener(type, event => {
+    if (!event.target.closest('input, textarea, select, [contenteditable], [data-view=info], .jm-legal')) event.preventDefault();
+  });
+}
 root.addEventListener('click', event => {
   if (ignoreStoneClick && event.detail && event.target.closest('button') === ignoreStoneClick) {
     ignoreStoneClick = null; event.preventDefault(); event.stopImmediatePropagation();

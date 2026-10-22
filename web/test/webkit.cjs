@@ -80,6 +80,12 @@ const path = require('node:path');
             assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y) <= 1, 'Header bleibt fest');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
             if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
+            if (view === 'match') {
+              assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'none');
+              assert.equal(await page.locator('[data-read=stones]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), false);
+            }
+            if (view === 'setup') assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
+            if (view === 'info') assert.equal(await page.locator('[data-view=info]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
             if (['setup', 'sound'].includes(view) && device === 'iPhone 13' && language === 'de') {
               for (const input of await page.locator(`[data-view=${view}] input[type=range]`).all()) {
                 await input.locator('..').scrollIntoViewIfNeeded();

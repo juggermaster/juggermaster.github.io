@@ -86,6 +86,12 @@ async function main() {
     await require('./audio.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
+    for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
+      assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auf der Spielanzeige unterdrückt`);
+      assert.equal(await page.locator('[data-setting=teamA]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), true, `${type}: Eingabefelder bleiben nutzbar`);
+    }
+    assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).userSelect), 'none');
+    assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).userSelect), 'text');
     assert.equal(await page.locator('[data-read=result]').count(), 0, 'Kein dauerhaftes Satz- oder Siegermeldungsfeld');
     assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'JUGGERMASTER');
     assert.equal(await page.locator('.jm-scroll>.jm-alert').count(), 0, 'Keine Statusmeldungen unter dem Header');
@@ -403,6 +409,8 @@ async function main() {
       await panel.locator('summary').click();
       await panel.locator('[data-locale=en]').waitFor({ state: 'visible' });
       assert.equal(await panel.locator('[data-locale=en] h1').textContent(), title, `${title} offline und lokalisiert verfügbar`);
+      assert.equal(await panel.locator('[data-locale=en]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), true, 'Infotexte behalten das Kontextmenü');
+      assert.equal(await panel.locator('[data-locale=en]').evaluate(element => getComputedStyle(element).userSelect), 'text');
       assert.equal(page.url(), infoUrl, 'Dokument wird ohne Seitenwechsel aufgeklappt');
       await panel.locator('summary').click();
     }
