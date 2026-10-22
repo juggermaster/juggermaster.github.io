@@ -56,8 +56,8 @@
 #jm-arena .jm-score-controls button { min-height:44px; border:1px solid var(--jm-line); background:var(--jm-panel-alt); border-radius:5px; font-size:12px; font-weight:800; }
 #jm-arena .jm-score-controls .jm-minus { width:44px; flex:none; font-size:20px; }
 #jm-arena .jm-score-controls .jm-point { flex:1; }
-#jm-arena .jm-timing { display:flex; justify-content:space-between; gap:8px; margin:15px 0 17px; }
-#jm-arena .jm-timing div { text-align:center; flex:1; }
+#jm-arena .jm-timing { display:flex; justify-content:space-between; gap:8px; margin:16px 0; }
+#jm-arena .jm-timing div { display:flex; flex-direction:column; justify-content:center; text-align:center; flex:1; }
 #jm-arena .jm-timing span { display:block; font-size:9px; font-weight:700; color:var(--jm-soft); letter-spacing:.9px; text-transform:uppercase; }
 #jm-arena .jm-timing strong { display:block; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:4px; }
 #jm-arena .jm-primary { display:flex; align-items:center; justify-content:center; gap:10px; background:var(--jm-accent); border:0; color:var(--jm-accent-ink); min-height:56px; width:100%; border-radius:var(--jm-radius); font-size:14px; font-weight:800; }
