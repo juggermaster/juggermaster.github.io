@@ -86,6 +86,7 @@ async function main() {
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
     assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
+    assert.equal(await page.locator('[data-action=next]').count(), 0, 'Satz- und Rundenwechsel nutzen den großen Spielbutton');
     assert.equal(await page.locator('.jm-symbol:not(svg)').count(), 0, 'Alle Bedienicons sind SVG statt Schriftzeichen');
     assert.ok(await page.locator('svg.jm-symbol').count() > 10);
     for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
@@ -248,10 +249,9 @@ async function main() {
           assert.equal(await page.locator('.dialog').count(), 0, 'Satzende öffnet keinen Siegerdialog');
           assert.equal(await read('[data-read=start-label]'), 'Nächster Satz');
           assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
-          const advance = height === 600 ? 'toggle' : 'next';
-          await click(advance); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+          await click('toggle'); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
           assert.equal(await read('[data-read=score-a]'), '2', 'Abbrechen behält den beendeten Satz');
-          await click(advance); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+          await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
           await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
           assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren');
           assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet den nächsten Satz direkt');

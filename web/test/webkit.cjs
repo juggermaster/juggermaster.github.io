@@ -26,7 +26,7 @@ const path = require('node:path');
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
         assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollHeight <= element.clientHeight + 1), `iPhone 8/${height}: Spiel ohne Scrollen`);
-        for (const action of ['toggle', 'stone-plus', 'score-a-plus', 'undo', 'next', 'new']) {
+        for (const action of ['toggle', 'stone-plus', 'score-a-plus', 'undo', 'new']) {
           const box = await page.locator(`[data-view=match] [data-action=${action}]`).boundingBox();
           const pane = await page.locator('.jm-scroll').boundingBox();
           const body = await page.locator('.jm-body').boundingBox();

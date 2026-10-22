@@ -223,7 +223,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
 }
 @media(max-width:699px) and (max-height:740px) {
   #jm-arena .jm-body[data-fit-match] { padding:4px 14px; }
-  #jm-arena [data-view=match] { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; }
+  #jm-arena [data-view=match] { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2px; }
   #jm-arena [data-view=match]>* { grid-column:1/-1; }
   #jm-arena [data-view=match]>.jm-actions { display:contents; }
   #jm-arena [data-view=match] .jm-secondary { padding:4px; gap:4px; font-size:10px; }

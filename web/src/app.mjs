@@ -140,8 +140,6 @@ function render() {
   $('[data-action=toggle] [data-icon=play]').toggleAttribute('hidden', running || countdown >= 0);
   $('[data-action=toggle] [data-icon=pause]').toggleAttribute('hidden', !running && countdown < 0);
   $('[data-action=undo]').disabled = !history.length;
-  $('[data-action=next]').disabled = game.ended || game.golden || game.periods === 0 || (game.periods === -1 && !game.setComplete);
-  $('[data-action=next] [data-i18n=period]').textContent = t(game.periods === -1 ? 'nextSet' : 'period');
   $('[data-read=countdown]').hidden = countdown < 0;
   if (countdown >= 0) setText('countdown', [t('attention'), '3', '2', '1', t('jugg')][countdown]);
   $('[data-read=sets]').hidden = game.periods !== -1;
