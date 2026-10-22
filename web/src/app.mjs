@@ -404,7 +404,7 @@ $('.jm-wave').replaceChildren(...Array.from({ length: 34 }, () => document.creat
 renderLanguage(); render();
 $$('.jm-range').forEach(input => {
   const wrapper = document.createElement('div'); wrapper.className = 'jm-range-wrap range-slider'; input.before(wrapper); wrapper.append(input);
-  const range = f7.range.create({ el: wrapper, draggableBar: !input.closest('[data-view=sound]'), min: Number(input.min), max: Number(input.max), step: Number(input.step) || 1, value: Number(input.value),
+  const range = f7.range.create({ el: wrapper, draggableBar: false, min: Number(input.min), max: Number(input.max), step: Number(input.step) || 1, value: Number(input.value),
     on: { change(instance, value) { if (Number(input.value) === value) return; input.value = value; input.dispatchEvent(new Event('input', { bubbles: true })); } } });
   ranges.set(input, range);
 });

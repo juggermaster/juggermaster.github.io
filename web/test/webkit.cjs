@@ -80,18 +80,18 @@ const path = require('node:path');
             assert.ok(Math.abs((await page.locator('.jm-head').boundingBox()).y - headBefore.y) <= 1, 'Header bleibt fest');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
             if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
-            if (view === 'sound') {
-              if (device === 'iPhone 13' && language === 'de') {
-                for (const input of await page.locator('[data-view=sound] input[type=range]').all()) {
-                  await input.locator('..').scrollIntoViewIfNeeded();
-                  const value = await input.inputValue();
-                  const fraction = await input.evaluate(element => (Number(element.value) - Number(element.min)) / (Number(element.max) - Number(element.min)));
-                  const bar = input.locator('..');
-                  const box = await bar.boundingBox();
-                  await bar.tap({ position:{ x:box.width * (fraction < .5 ? .9 : .1), y:box.height / 2 } });
-                  assert.equal(await input.inputValue(), value, 'Antippen der Klang-Leiste verändert keinen Wert');
-                }
+            if (['setup', 'sound'].includes(view) && device === 'iPhone 13' && language === 'de') {
+              for (const input of await page.locator(`[data-view=${view}] input[type=range]`).all()) {
+                await input.locator('..').scrollIntoViewIfNeeded();
+                const value = await input.inputValue();
+                const fraction = await input.evaluate(element => (Number(element.value) - Number(element.min)) / (Number(element.max) - Number(element.min)));
+                const bar = input.locator('..');
+                const box = await bar.boundingBox();
+                await bar.tap({ position:{ x:box.width * (fraction < .5 ? .9 : .1), y:box.height / 2 } });
+                assert.equal(await input.inputValue(), value, 'Antippen der Reglerleiste verändert keinen Wert');
               }
+            }
+            if (view === 'sound') {
               await page.locator('[data-action=signal-preview]').click({ trial: true });
               for (const key of ['beatNormalize', 'signalNormalize']) {
                 const input = page.locator(`[data-sound=${key}]`);

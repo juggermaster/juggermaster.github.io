@@ -115,8 +115,7 @@
 #jm-arena .jm-app .dialog-button.button-fill { background:var(--jm-accent); color:var(--jm-accent-ink); }
 #jm-arena .jm-app .dialog-backdrop { position:absolute; inset:0; background:#0008; }
 #jm-arena .jm-range-wrap { height:28px; position:relative; --f7-range-bar-size:4px; --f7-range-knob-size:23px; --f7-range-knob-color:var(--jm-accent); --f7-range-bar-active-bg-color:var(--jm-accent); --f7-range-bar-bg-color:var(--jm-line); }
-#jm-arena .jm-range-wrap input[type=range] { display:block!important; opacity:0; position:absolute; inset:0; width:100%; height:28px; z-index:3; }
-#jm-arena [data-view=sound] .jm-range-wrap input[type=range] { pointer-events:none; }
+#jm-arena .jm-range-wrap input[type=range] { display:block!important; opacity:0; position:absolute; inset:0; width:100%; height:28px; z-index:3; pointer-events:none; }
 #jm-arena .jm-range-wrap:focus-within { outline:2px solid var(--jm-green); outline-offset:4px; border-radius:4px; }
 #jm-arena .jm-nav .tab-link { height:auto; flex-direction:row; text-decoration:none; }
 @media(max-width:380px) { #jm-arena .jm-stage { padding:12px 0; } #jm-arena .jm-head { padding:20px 15px 17px; } #jm-arena .jm-body { padding:19px 14px 17px; } #jm-arena .jm-score-controls .jm-point { font-size:11px; } #jm-arena .jm-team { padding:12px 8px 10px; } }
