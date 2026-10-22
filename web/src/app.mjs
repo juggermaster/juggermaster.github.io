@@ -94,7 +94,10 @@ root.addEventListener('toggle', async event => {
     const page = new DOMParser().parseFromString(await response.text(), 'text/html');
     const sections = [...page.querySelectorAll('main > [data-locale]')];
     if (!sections.length) throw Error('Document content missing');
-    sections.forEach(section => { section.hidden = section.dataset.locale !== language; });
+    sections.forEach(section => {
+      section.hidden = section.dataset.locale !== language;
+      section.querySelectorAll('a[href]').forEach(link => link.classList.add('external'));
+    });
     content.replaceChildren(...sections); details.dataset.loaded = 'true';
   } catch {
     // Keep the direct document link available; reopening retries the request.

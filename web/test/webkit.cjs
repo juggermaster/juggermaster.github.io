@@ -118,6 +118,16 @@ const path = require('node:path');
           await page.waitForFunction(() => document.documentElement.style.colorScheme === 'dark');
           const licence = await licencePanel.locator(`[data-locale="${language}"] a`).first().getAttribute('href');
           assert.equal(licence, './LICENSE.txt');
+          if (device === 'iPhone 13' && language === 'de') {
+            const links = await licencePanel.locator('[data-locale=de] a').evaluateAll(links => links.map(link => ({ href:link.href, external:link.classList.contains('external') })));
+            for (const link of links) {
+              assert.equal(link.external, true, 'Dokumentlinks umgehen die App-Navigation');
+              if (new URL(link.href).origin === new URL(infoUrl).origin) assert.equal((await context.request.get(link.href)).status(), 200, link.href);
+            }
+          }
+          await licencePanel.locator(`[data-locale="${language}"] a`).first().click();
+          await page.waitForURL('**/LICENSE.txt');
+          assert.match(await page.locator('body').textContent(), /MIT License/);
           assert.deepEqual(errors, []);
         } finally { await context.close(); }
       }
