@@ -7,11 +7,11 @@ import { setupOffline, applyUpdate, offlineState } from './offline.mjs';
 
 const root = document.getElementById('jm-arena'), app = root.querySelector('.jm-app');
 const $ = selector => root.querySelector(selector), $$ = selector => [...root.querySelectorAll(selector)];
-const storageKey = 'juggermaster:state:v1';
+const storageKey = 'juggermaster:state:v2';
 let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [], teams = [];
 let language = 'de', theme = '', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
 let countdown = -1, requestId = 0, currentDialog = null, lastFocus = null, wakeLock = null;
-let noticeKey = null, lastSave = '', storageError = false, migrateTeams = true;
+let noticeKey = null, lastSave = '', storageError = false, freshState = true;
 let stoneHold = null, ignoreStoneClick = null;
 const ranges = new Map(), t = (key, values) => translate(language, key, values);
 const decimal = value => Number(value).toLocaleString(locales[language].tag, { maximumFractionDigits: 1 });
@@ -22,22 +22,20 @@ try {
     const snapshot = JSON.parse(saved), restored = restoreSnapshot(snapshot);
     if (!restored) throw Error('Invalid saved match');
     ({ config, sound, game, history, language, theme, teams } = restored);
-    migrateTeams = !Array.isArray(snapshot.teams);
+    freshState = false;
   }
   const preferred = localStorage.getItem('juggermaster:language');
   language = resolveLanguage(navigator.languages || [navigator.language], preferred);
 } catch { noticeKey = 'restoreFailed'; }
 if (noticeKey === 'restoreFailed') language = resolveLanguage(navigator.languages || [navigator.language]);
-if (migrateTeams) for (const side of ['teamA', 'teamB']) {
-  if (!teams.some(team => team.name.toLowerCase() === config[side].toLowerCase())) rememberTeam(side);
-}
+if (freshState) for (const side of ['teamA', 'teamB']) rememberTeam(side);
 
 if (!globalThis.Framework7) throw Error('Framework7 konnte nicht geladen werden.');
 const f7 = new Framework7({ el: app, name: 'JUGGERMASTER', theme: 'ios', darkMode: false,
   dialog: { closeByBackdropClick: false }, touch: { fastClicks: false, tapHold: false } });
 
 function persist() {
-  const json = JSON.stringify({ version: 1, language, theme, config, sound, game, history, teams });
+  const json = JSON.stringify({ version: 2, language, theme, config, sound, game, history, teams });
   if (json === lastSave) return;
   try { localStorage.setItem(storageKey, json); lastSave = json; storageError = false; }
   catch { storageError = true; noticeKey = 'storageFailed'; }
@@ -75,7 +73,7 @@ function phase() {
   if (game.ended) return t('matchEnded');
   if (game.golden) return t('goldenJugg');
   if (game.periods === 0) return t('freeDrumming');
-  return t(game.periods === -1 ? 'setNumber' : game.periods === 3 ? 'third' : 'half', { number: game.period });
+  return t(game.periods === -1 ? 'setNumber' : 'roundNumber', { number: game.period });
 }
 root.addEventListener('toggle', async event => {
   const details = event.target;
@@ -126,7 +124,9 @@ function render() {
   const track = $('.jm-track'); track.hidden = !finite;
   track.setAttribute('aria-valuemax', game.limit); track.setAttribute('aria-valuenow', remaining);
   track.firstElementChild.style.width = `${remaining / game.limit * 100}%`;
-  setText('team-a', teamName('teamA').toLocaleUpperCase(language)); setText('team-b', teamName('teamB').toLocaleUpperCase(language));
+  for (const [label, side] of [['team-a', 'teamA'], ['team-b', 'teamB']]) {
+    setText(label, teamName(side).toLocaleUpperCase(language)); $(`[data-read=${label}]`).title = teamName(side);
+  }
   setText('score-a', game.a); setText('score-b', game.b);
   $$('.jm-team').forEach((team, index) => team.style.setProperty('--jm-team-color', index ? config.colorB : config.colorA));
   setText('elapsed', time(game.elapsed)); setText('period-time', time(game.periodTime)); setText('playtime', time(game.playtime)); setText('pace', `${decimal(config.pace)} s`);
@@ -161,6 +161,7 @@ function render() {
   $$('[data-team-delete]').forEach(button => { button.disabled = !teams.some(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase()); });
   $('[data-read=set-settings]').hidden = config.periods !== -1;
   $('[data-setting=limit]').closest('.jm-fields-pair').hidden = config.periods <= 0;
+  $('[data-setting=direction]').closest('.jm-field').hidden = config.periods <= 0;
   $('[data-output=pace]').textContent = `${decimal(config.pace)} s`;
   $$('[data-sound]').forEach(input => { if (input.type === 'checkbox') input.checked = sound[input.dataset.sound]; else input.value = sound[input.dataset.sound]; });
   for (const key of ['pitch', 'metal', 'attack', 'decay', 'volume', 'signalVolume']) $(`[data-output=${key}]`).textContent = `${decimal(sound[key])}${key === 'pitch' ? ' Hz' : key === 'decay' ? ' s' : ' %'}`;
@@ -269,10 +270,11 @@ function resetMatch() {
 function showWinner() {
   const sets = game.periods === -1, a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
   dialog(t('matchEnded'), t('matchResult', { team: teamName(a > b ? 'teamA' : 'teamB'), a, b }), t('startNewMatch'), resetMatch, t('close'));
+  currentDialog.el.classList.add('jm-result-dialog');
   const scoreboard = document.createElement('div'); scoreboard.className = 'jm-final-score';
   for (const [team, score] of [['teamA', a], ['teamB', b]]) {
     const name = document.createElement('strong'), points = document.createElement('b');
-    name.textContent = teamName(team); points.textContent = score;
+    name.textContent = teamName(team); name.title = name.textContent; points.textContent = score;
     scoreboard.append(name, points);
   }
   currentDialog.el.querySelector('.dialog-text').prepend(scoreboard);
@@ -281,7 +283,7 @@ function dialog(title, text, label, action, cancelLabel = t('cancel')) {
   stopStoneHold(true);
   pause(); closeLanguages(); lastFocus = document.activeElement;
   const safe = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  currentDialog = f7.dialog.create({ title: safe(title), text: safe(text), verticalButtons: true, destroyOnClose: true,
+  currentDialog = f7.dialog.create({ title: safe(title), text: '<span class="jm-dialog-description">' + safe(text) + '</span>', verticalButtons: true, destroyOnClose: true,
     buttons: [{ text: label, strong: true, onClick: action }, { text: cancelLabel }],
     on: { opened(instance) { instance.el.querySelector('.dialog-button').focus(); }, closed() { currentDialog = null; lastFocus?.focus(); } } });
   currentDialog.el.setAttribute('role', 'dialog'); currentDialog.el.setAttribute('aria-modal', 'true'); currentDialog.el.setAttribute('aria-label', title);
@@ -376,6 +378,7 @@ root.addEventListener('click', async event => {
       currentDialog.once('closed', () => { if (game.ended) showWinner(); else focusMatchButton(); });
       if (!game.ended) start();
     });
+    if (next.ended) currentDialog.el.classList.add('jm-result-dialog');
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
     const next = awardPoint(game, key, delta); if (next === game) return;
@@ -421,13 +424,13 @@ root.addEventListener('input', event => {
   }
   if (input.dataset.setting) {
     const key = input.dataset.setting;
-    if (['teamA', 'teamB'].includes(key)) { config[key] = input.value.trim().slice(0, 22); config[`${key}Default`] = ''; }
+    if (['teamA', 'teamB'].includes(key)) { config[key] = input.value.trim().slice(0, 255); config[`${key}Default`] = ''; }
     else if (['colorA', 'colorB'].includes(key)) { if (/^#[0-9a-f]{6}$/i.test(input.value)) config[key] = input.value; }
     else if (input.type === 'checkbox') config[key] = input.checked;
     else if (key === 'direction') config[key] = input.value;
     else {
       const value = Number(input.value); if (!Number.isFinite(value) || input.value === '') return;
-      if (key === 'periods') { if (![-1, 0, 2, 3].includes(value)) return; config[key] = value; }
+      if (key === 'periods') { if (![-1, 0, 2].includes(value)) return; config[key] = value; }
       else config[key] = key === 'pace' ? clamp(value, .5, 3) : clamp(Math.round(value), Number(input.min), Number(input.max));
       if (key === 'pace' && previewing) previewClock.interval = config.pace;
     }

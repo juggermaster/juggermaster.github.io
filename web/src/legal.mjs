@@ -15,7 +15,7 @@ function render() {
   $$('[data-language-option]').forEach(option => option.setAttribute('aria-selected', String(option.dataset.languageOption === language)));
   const key = location.pathname.endsWith('hilfe.html') ? 'help' : location.pathname.endsWith('datenschutz.html') ? 'privacy' : location.pathname.endsWith('lizenzen.html') ? 'licenses' : 'imprint';
   document.title = `${translate(language, key)} · JUGGERMASTER`;
-  try { const saved = JSON.parse(localStorage.getItem('juggermaster:state:v1')); if (['light', 'dark'].includes(saved?.theme)) { $('.jm-app').style.colorScheme = saved.theme; document.documentElement.style.colorScheme = saved.theme; } } catch {}
+  try { const saved = JSON.parse(localStorage.getItem('juggermaster:state:v2')); if (['light', 'dark'].includes(saved?.theme)) { $('.jm-app').style.colorScheme = saved.theme; document.documentElement.style.colorScheme = saved.theme; } } catch {}
 }
 function close(focus = false) { $('#jm-languages').hidden = true; $('[data-action=language-menu]').setAttribute('aria-expanded', 'false'); if (focus) $('[data-action=language-menu]').focus(); }
 document.addEventListener('click', event => {
@@ -24,8 +24,8 @@ document.addEventListener('click', event => {
     language = option.dataset.languageOption;
     try {
       localStorage.setItem('juggermaster:language', language);
-      const saved = JSON.parse(localStorage.getItem('juggermaster:state:v1'));
-      if (saved?.version === 1) { saved.language = language; localStorage.setItem('juggermaster:state:v1', JSON.stringify(saved)); }
+      const saved = JSON.parse(localStorage.getItem('juggermaster:state:v2'));
+      if (saved?.version === 2) { saved.language = language; localStorage.setItem('juggermaster:state:v2', JSON.stringify(saved)); }
     } catch {}
     render(); close(true);
   } else if (event.target.closest('[data-action=language-menu]')) {

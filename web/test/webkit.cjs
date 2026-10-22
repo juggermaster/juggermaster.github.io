@@ -54,6 +54,48 @@ const path = require('node:path');
       await projectLicense.locator('summary').click();
       await projectLicense.locator('pre').waitFor({ state:'visible' });
       assert.match(await projectLicense.locator('pre').textContent(), /MIT License/);
+      await page.locator('[data-tab=setup]').click();
+      await page.locator('[data-setting=periods]').selectOption('2');
+      assert.equal(await page.locator('[data-setting=limit]').inputValue(), '100');
+      assert.equal(await page.locator('[data-setting=rounds]').inputValue(), '2');
+      await page.locator('[data-setting=direction]').selectOption('up');
+      assert.equal(await page.locator('[data-setting=direction]').inputValue(), 'up');
+      const names = ['Team Alpha ', 'Team Beta '].map(name => name + 'X'.repeat(255 - name.length));
+      for (const [index, side] of ['teamA', 'teamB'].entries()) {
+        const input = page.locator(`[data-setting=${side}]`);
+        assert.equal(await input.getAttribute('maxlength'), '255');
+        await input.fill(names[index]);
+      }
+      await page.locator('[data-setting=periods]').selectOption('-1');
+      await page.locator('[data-setting=targetPoints]').fill('1');
+      await page.locator('[data-setting=setsToWin]').fill('1');
+      await page.locator('[data-view=setup] [data-action=new]').click();
+      await page.locator('[data-dialog-action=confirm]').click();
+      await page.locator('.dialog').waitFor({ state:'hidden' });
+      await page.reload(); await page.locator('.jm-app[data-ready=true]').waitFor();
+      const snapshot = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
+      assert.equal(snapshot.config.teamA, names[0]); assert.equal(snapshot.config.teamB, names[1]);
+      assert.ok(names.every(name => snapshot.teams.some(team => team.name === name)), 'Vollständige Namen bleiben in gespeicherten Teams erhalten');
+      for (const [index, label] of ['team-a', 'team-b'].entries()) {
+        const name = page.locator(`[data-read=${label}]`);
+        assert.equal(await name.textContent(), names[index].toUpperCase());
+        assert.equal(await name.getAttribute('title'), names[index]);
+        assert.equal(await name.evaluate(element => getComputedStyle(element).textOverflow), 'ellipsis');
+        assert.ok(await name.evaluate(element => element.scrollWidth > element.clientWidth), 'Lange Namen werden sichtbar gekürzt');
+      }
+      assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1));
+      await page.setViewportSize({ width:375, height:400 });
+      await page.locator('[data-action=score-a-plus]').click();
+      const winner = page.locator('.dialog.jm-result-dialog');
+      await winner.waitFor({ state:'visible' });
+      await page.waitForFunction(() => {
+        const box = document.querySelector('.dialog.jm-result-dialog').getBoundingClientRect();
+        return box.y >= 0 && box.bottom <= innerHeight + 1;
+      });
+      assert.deepEqual(await winner.locator('.jm-final-score strong').allTextContents(), names);
+      assert.equal(await winner.locator('.jm-final-score strong').evaluateAll(elements => elements.every(element => getComputedStyle(element).textOverflow === 'ellipsis')), true);
+      const dialogBox = await winner.boundingBox();
+      assert.ok(dialogBox.y >= 0 && dialogBox.y + dialogBox.height <= 401, 'Siegerdialog mit langen Namen passt auf kleine Displays');
     } finally { await compact.close(); }
     if (process.env.COMPACT_SCREENSHOT) {
       const preview = await browser.newContext({ ...devices['iPhone 8'], locale:'de-DE' });

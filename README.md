@@ -6,7 +6,7 @@ Jugger match timing and scoring in a mobile web app. Open the website online onc
 
 ## Features
 
-- Sets by default, plus two halves, three periods, Golden Jugg and continuous beats.
+- Sets by default, plus timed matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats.
 - Configurable stones, interval, teams, colours, countdown and up/down counting.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
 - Synthesised stone-on-metal, gong and drum sounds, with drum as the default. Separate beat and Jugg/period-end volume and optional volume levelling for each; one to ten overlapping end beats.
@@ -48,13 +48,13 @@ Before pushing: finish local changes and checks, commit locally, inspect the act
 
 After every push, monitor GitHub Actions through the checks and deployment, fix any failures, and verify that the live site serves the checked release build. Publication is complete only after those checks succeed.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v32`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v33`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 
 Use a current browser. Automated Chromium and WebKit tests include mobile and desktop layouts; emulation does not replace tests on real phones. Before a match, check volume, speaker/Bluetooth latency and interruption behaviour on the actual device. Keep the app visible. Browsers may refuse wake lock, and playback while locked or in the background is not guaranteed. New versions are accepted only when playback is stopped.
 
-Match state and settings remain in this browser. Clearing site data or browser storage eviction removes matches and offline files; there is no server backup. On a new origin the app starts with defaults. No login, synchronisation, advertising or analytics is built into the app. GitHub Pages handles hosting connection data as explained in the privacy page.
+Match state uses schema 2; snapshots from earlier releases are not imported. Team names support up to 255 characters and are shortened visually where needed. Match state and settings remain in this browser. Clearing site data or browser storage eviction removes matches and offline files; there is no server backup. On a new origin the app starts with defaults. No login, synchronisation, advertising or analytics is built into the app. GitHub Pages handles hosting connection data as explained in the privacy page.
 
 ## Contributions
 

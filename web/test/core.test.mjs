@@ -8,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { translatedHelp } from '../help-content.mjs';
 import { translatedLegal } from '../legal-content.mjs';
 
-test('Halbzeiten, Golden Jugg und Korrekturen', () => {
+test('Zeitrunden, Golden Jugg und Korrekturen', () => {
   let game = newGame({ ...defaults, periods: 2 });
   assert.equal(game.consumed, 0);
   game = adjustStones(game, -1, 'down');
@@ -20,6 +20,29 @@ test('Halbzeiten, Golden Jugg und Korrekturen', () => {
   game = awardPoint(game, 'b', 1); assert.equal(game.ended, true); assert.equal(game.b, 1);
   assert.equal(before.b, 0, 'Undo-Snapshot bleibt unverändert');
   assert.equal(awardPoint(game, 'b', 1), game, 'Beendetes Spiel erhält keine weiteren Punkte');
+});
+test('Zeitspiel mit frei wählbaren Runden', () => {
+  assert.equal(defaults.rounds, 2); assert.equal(defaults.limit, 100);
+  for (const rounds of [1, 2, 3, 4, 99]) {
+    const config = cleanConfig({ ...defaults, periods:2, rounds, limit:37 });
+    let game = awardPoint(newGame(config), 'a', 1);
+    assert.equal(game.periods, rounds); assert.equal(game.limit, 37);
+    for (let round = 1; round < rounds; round++) {
+      game = nextSection(game); assert.equal(game.period, round + 1); assert.equal(game.ended, false);
+    }
+    assert.equal(nextSection(game).ended, true);
+    const restored = restoreSnapshot({ version:2, config, game, history:[game] });
+    assert.deepEqual(restored.game, game); assert.equal(restored.config.rounds, rounds); assert.equal(restored.history.length, 1);
+  }
+  for (const invalid of [0, -1, 100, 1.5, Infinity, '3']) assert.equal(cleanConfig({ rounds:invalid }).rounds, 2);
+  assert.equal(cleanConfig({ periods:3 }).periods, defaults.periods);
+});
+
+test('Teamnamen bis 255 Zeichen vollständig speichern', () => {
+  const name = 'Langes Team '.repeat(24).slice(0, 255);
+  assert.equal(cleanConfig({ teamA:name + 'extra' }).teamA, name);
+  const restored = restoreSnapshot({ version:2, game:newGame(defaults), config:{ teamA:name }, teams:[{ name, color:'#123456' }] });
+  assert.equal(restored.config.teamA, name); assert.equal(restored.teams[0].name, name);
 });
 test('Satzspiel mit fünf Punkten und zwei Gewinnsätzen', () => {
   assert.equal(defaults.periods, -1, 'Neue Spiele verwenden standardmäßig Sätze');
@@ -33,8 +56,9 @@ test('Satzspiel mit fünf Punkten und zwei Gewinnsätzen', () => {
   assert.equal(game.setsA, 2); assert.equal(game.ended, true);
 });
 test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
-  assert.equal(restoreSnapshot({ version: 1, game: { a: -1 } }), null);
-  const restored = restoreSnapshot({ version: 1, game: newGame(defaults), config: null, sound: null, language: 'x', history: [] });
+  assert.equal(restoreSnapshot({ version:1, game:newGame(defaults) }), null);
+  assert.equal(restoreSnapshot({ version: 2, game: { a: -1 } }), null);
+  const restored = restoreSnapshot({ version: 2, game: newGame(defaults), config: null, sound: null, language: 'x', history: [] });
   assert.deepEqual(restored.config, defaults); assert.deepEqual(restored.sound, defaultSound); assert.equal(restored.language, 'de');
   assert.equal(cleanConfig({ colorA: 'red;url(x)', limit: Infinity, signalCount: 100 }).signalCount, 3);
   assert.equal(cleanSound({ volume: 101, decay: NaN }).volume, 55);
@@ -52,13 +76,13 @@ test('Trommel als Vorgabe und unabhängiger Lautstärkeausgleich', () => {
   assert.deepEqual(cleanSound(oldGong), { ...oldGong, beatNormalize: true, signalNormalize: true }, 'Gespeicherte Klangwahl bleibt erhalten');
 });
 
-test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
-  const saved = { version: 1, game: newGame(defaults) };
+test('Gespeicherte Teams validieren', () => {
+  const saved = { version: 2, game: newGame(defaults) };
   assert.deepEqual(restoreSnapshot(saved).teams, []);
   assert.deepEqual(restoreSnapshot({ ...saved, teams: {} }).teams, []);
   const restored = restoreSnapshot({ ...saved, teams: [
     { name: 'Raben', color: '#123456' }, { name: ' raben ', color: '#ABCDEF' },
-    { name: '', color: '#123456' }, { name: 'x'.repeat(23), color: '#123456' },
+    { name: '', color: '#123456' }, { name: 'x'.repeat(256), color: '#123456' },
     { name: 'Ungültig', color: 'red' }, null
   ] });
   assert.deepEqual(restored.teams, [{ name: 'raben', color: '#ABCDEF', defaultName: '' }]);
@@ -68,15 +92,10 @@ test('Gespeicherte Teams validieren und alte Spielstände übernehmen', () => {
   assert.deepEqual(empty.teams, [], 'Leere Teamfelder werden beim Wiederherstellen nicht neu befüllt');
 });
 
-test('Standardnamen markieren, alte Vorgaben übernehmen und eigene Namen erhalten', () => {
-  const saved = { version: 1, game: newGame(defaults) };
-  const legacy = restoreSnapshot({ ...saved, config: { teamA: 'Raben', teamB: 'HLU' }, teams: [{ name: 'Raben', color: defaults.colorA }, { name: 'HLU', color: '#123456' }] });
-  assert.equal(legacy.config.teamADefault, 'defaultTeamA');
-  assert.equal(legacy.config.teamBDefault, '');
-  assert.deepEqual(legacy.teams.map(team => team.defaultName), ['defaultTeamA', '']);
+test('Standardnamen markieren und eigene Namen erhalten', () => {
   assert.equal(cleanConfig({ ...defaults, teamA: 'HLU' }).teamADefault, '', 'Fremde Namen können keine Standardmarkierung behalten');
   assert.equal(cleanConfig({ ...defaults, colorA: '#123456' }).teamADefault, 'defaultTeamA', 'Markierte Vorgaben behalten ihre eigene Farbe');
-  assert.equal(cleanConfig({ teamA: 'Raben', colorA: '#123456' }).teamADefault, '', 'Vorhandene eigene Farbprofile unverändert lassen');
+  assert.equal(cleanConfig({ teamA: 'Raben', colorA: '#123456', teamADefault:'' }).teamADefault, '', 'Eigene Farbprofile unverändert lassen');
   assert.equal(cleanConfig({ ...defaults, teamADefault: '' }).teamADefault, '', 'Bewusst eigene Namen beim Neustart erhalten');
   assert.equal(cleanConfig({ ...defaults, teamA: 'Wölfe', teamADefault: 'defaultTeamB' }).teamADefault, 'defaultTeamB', 'Standardteam kann die Seite wechseln');
   assert.equal(cleanConfig({ ...defaults, teamADefault: 'unknown' }).teamADefault, '');
@@ -94,7 +113,7 @@ test('Alle Sprachfassungen, Platzhalter und lokale SVG-Flaggen sind vollständig
       assert.deepEqual(placeholders(texts[language][key]), placeholders(texts.de[key]), `${language}.${key}`);
     }
     assert.ok(existsSync(new URL(`../src/images/flag-${locale.flag}.svg`, import.meta.url)), language);
-    assert.equal(restoreSnapshot({ version: 1, game: newGame(defaults), language }).language, language);
+    assert.equal(restoreSnapshot({ version: 2, game: newGame(defaults), language }).language, language);
   }
 });
 
