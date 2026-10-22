@@ -79,18 +79,31 @@ function phase() {
 }
 root.addEventListener('toggle', async event => {
   const details = event.target;
-  if (!details.matches('details[data-document]') || !details.open || details.dataset.loaded || details.dataset.loading) return;
+  if (!details.matches('details[data-document], details[data-license]') || !details.open || details.dataset.loaded || details.dataset.loading) return;
   const content = details.querySelector('.jm-document');
   details.dataset.loading = 'true'; content.setAttribute('aria-busy', 'true');
   try {
-    const response = await fetch(`./${details.dataset.document}`);
+    const response = await fetch(details.dataset.license || `./${details.dataset.document}`);
     if (!response.ok) throw Error('Document unavailable');
+    if (details.dataset.license) {
+      const text = document.createElement('pre'); text.dir = 'ltr'; text.textContent = await response.text();
+      content.replaceChildren(text); details.dataset.loaded = 'true'; return;
+    }
     const page = new DOMParser().parseFromString(await response.text(), 'text/html');
     const sections = [...page.querySelectorAll('main > [data-locale]')];
     if (!sections.length) throw Error('Document content missing');
     sections.forEach(section => {
       section.hidden = section.dataset.locale !== language;
       section.querySelectorAll('a[href]').forEach(link => link.classList.add('external'));
+      if (details.dataset.document === 'lizenzen.html') section.querySelectorAll('a[href]').forEach(link => {
+        const url = new URL(link.getAttribute('href'), location.href);
+        if (url.origin !== location.origin || !url.pathname.endsWith('.txt')) return;
+        const license = document.createElement('details'), summary = document.createElement('summary'), body = document.createElement('div');
+        license.dataset.license = link.getAttribute('href'); body.className = 'jm-document';
+        summary.append(...link.cloneNode(true).childNodes);
+        (link.parentElement.tagName === 'P' ? link.parentElement : link).replaceWith(license);
+        body.append(link); license.append(summary, body);
+      });
     });
     content.replaceChildren(...sections); details.dataset.loaded = 'true';
   } catch {

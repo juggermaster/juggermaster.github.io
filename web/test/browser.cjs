@@ -409,6 +409,26 @@ async function main() {
       assert.equal(page.url(), infoUrl, 'Dokument wird ohne Seitenwechsel aufgeklappt');
       await panel.locator('summary').click();
     }
+    const licenses = page.locator('[data-document="lizenzen.html"]'), infoUrl = page.url();
+    await licenses.locator('summary').click();
+    const documents = licenses.locator('[data-locale=en] [data-license]');
+    await documents.first().waitFor({ state:'visible' });
+    assert.equal(await documents.count(), 9, 'Projektlizenz, Hinweise und alle Komponenten aufklappbar');
+    for (const panel of await documents.all()) {
+      const filename = await panel.getAttribute('data-license');
+      let requests = 0;
+      const count = request => { if (request.url() === new URL(filename, infoUrl).href) requests++; };
+      page.on('request', count);
+      await panel.locator('summary').click();
+      await panel.locator('pre').waitFor({ state:'visible' });
+      assert.equal(await panel.locator('pre').textContent(), await fs.readFile(path.join(dist, filename), 'utf8'), `${filename} offline vollständig nachgeladen`);
+      await panel.locator('summary').click(); await panel.locator('summary').click();
+      assert.equal(requests, 1, 'Erneutes Öffnen verwendet den bereits geladenen Text');
+      page.off('request', count);
+      assert.equal(page.url(), infoUrl, 'Lizenztext bleibt in derselben Ansicht');
+      await panel.locator('summary').click();
+    }
+    await licenses.locator(':scope > summary').click();
     await tab('match');
     await page.evaluate(async () => { const name = (await caches.keys()).find(key => key.startsWith('juggermaster-')); const cache = await caches.open(name); const key = (await cache.keys()).find(key => key.url.endsWith('icon-512.png')); await cache.delete(key); });
     await page.reload(); await ready(); await page.locator('[data-action=offline-retry]').waitFor({ state: 'visible' });

@@ -34,6 +34,26 @@ const path = require('node:path');
       }
       await page.setViewportSize({ width:375, height:500 });
       if (process.env.COMPACT_SCREENSHOT) await page.screenshot({ path:process.env.COMPACT_SCREENSHOT });
+      await page.locator('[data-tab=info]').click();
+      const licenses = page.locator('[data-document="lizenzen.html"]');
+      await licenses.locator('summary').click();
+      const projectLicense = licenses.locator('[data-locale=de] [data-license="./LICENSE.txt"]');
+      await page.route('**/LICENSE.txt', route => route.abort());
+      await Promise.all([
+        page.waitForEvent('requestfailed', { predicate:request => request.url().endsWith('/LICENSE.txt') }),
+        projectLicense.locator('summary').click()
+      ]);
+      await page.waitForFunction(() => {
+        const panel = document.querySelector('[data-locale=de] [data-license="./LICENSE.txt"]');
+        return panel?.open && !panel.dataset.loading;
+      });
+      assert.equal(await projectLicense.locator('a.external').isVisible(), true, 'Bei Ladefehler bleibt der direkte Lizenzlink verfügbar');
+      assert.equal(await projectLicense.getAttribute('data-loaded'), null);
+      await projectLicense.locator('summary').click();
+      await page.unroute('**/LICENSE.txt');
+      await projectLicense.locator('summary').click();
+      await projectLicense.locator('pre').waitFor({ state:'visible' });
+      assert.match(await projectLicense.locator('pre').textContent(), /MIT License/);
     } finally { await compact.close(); }
     if (process.env.COMPACT_SCREENSHOT) {
       const preview = await browser.newContext({ ...devices['iPhone 8'], locale:'de-DE' });
@@ -128,9 +148,12 @@ const path = require('node:path');
               if (new URL(link.href).origin === new URL(infoUrl).origin) assert.equal((await context.request.get(link.href)).status(), 200, link.href);
             }
           }
-          await licencePanel.locator(`[data-locale="${language}"] a`).first().click();
-          await page.waitForURL('**/LICENSE.txt');
-          assert.match(await page.locator('body').textContent(), /MIT License/);
+          const licenseText = licencePanel.locator(`[data-locale="${language}"] [data-license]`).first();
+          await licenseText.locator('summary').click();
+          await licenseText.locator('pre').waitFor({ state:'visible' });
+          assert.match(await licenseText.locator('pre').textContent(), /MIT License/);
+          assert.equal(page.url(), infoUrl, 'Lizenztext öffnet ohne Seitenwechsel');
+          assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1), 'Langer Lizenztext bleibt innerhalb der Ansicht');
           assert.deepEqual(errors, []);
         } finally { await context.close(); }
       }
