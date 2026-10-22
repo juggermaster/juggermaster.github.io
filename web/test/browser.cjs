@@ -57,6 +57,13 @@ async function main() {
   const resetAudio = () => page.evaluate(() => { window.__starts = []; window.__ends = []; window.__cancelled = 0; });
   const audio = () => page.evaluate(() => ({ starts: window.__starts, ends: window.__ends, cancelled: window.__cancelled }));
   const ready = () => page.locator('.jm-app[data-ready=true]').waitFor();
+  const dismissWinner = async result => {
+    const winner = page.locator('.dialog[aria-label="Spiel beendet"]');
+    await winner.waitFor({ state:'visible' });
+    if (result) assert.match(await winner.textContent(), result);
+    assert.equal(await winner.locator('[data-dialog-action=cancel]').textContent(), 'Schließen');
+    await winner.locator('[data-dialog-action=cancel]').click(); await winner.waitFor({ state:'hidden' });
+  };
   const offlineReady = () => page.locator('[data-read=offline]').filter({ hasText: /Offline (bereit|ready)/ }).waitFor({ state: 'attached', timeout: 45000 });
   const newMatch = async settings => {
     await tab('setup');
@@ -67,12 +74,17 @@ async function main() {
       else if (key === 'pace') await range(key, value, 'setting');
       else await input.fill(String(value));
     }
-    await click('new'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    await click('new'); await page.locator('[data-dialog-action=confirm]').click();
+    await page.locator('[data-read=status][data-running=true]').waitFor();
+    // Pause the automatic start before testing individual match controls.
+    await page.locator('[data-action=toggle]').evaluate(button => button.click());
+    await page.locator('.dialog').waitFor({ state: 'hidden' });
   };
   try {
     await require('./audio.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
+    assert.equal(await page.locator('[data-read=result]').count(), 0, 'Kein dauerhaftes Satz- oder Siegermeldungsfeld');
     assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'JUGGERMASTER');
     assert.equal(await page.locator('.jm-scroll>.jm-alert').count(), 0, 'Keine Statusmeldungen unter dem Header');
     assert.equal(await page.locator('.jm-home-hint').count(), 0, 'Kein Homescreen-Hinweis unter dem Header');
@@ -183,7 +195,8 @@ async function main() {
     await click('score-a-plus'); await click('toggle');
     await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
     assert.equal(await read('[data-read=start-label]'), 'Ergebnis bestätigen');
-    await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    await click('toggle'); await page.locator('[data-dialog-action=confirm]').click();
+    await dismissWinner(/gewinnt/);
     assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
     assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Ergebnis bestätigen startet kein beendetes Spiel');
     await newMatch({ periods: 2, limit: 20, pace: .5, countdown: true });
@@ -197,6 +210,7 @@ async function main() {
       for (let set = 0; set < 2; set++) {
         await click('score-a-plus'); await click('score-a-plus');
         if (!set) {
+          assert.equal(await page.locator('.dialog').count(), 0, 'Satzende öffnet keinen Siegerdialog');
           assert.equal(await read('[data-read=start-label]'), 'Nächster Satz');
           assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
           const advance = height === 600 ? 'toggle' : 'next';
@@ -209,16 +223,30 @@ async function main() {
           assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
         }
       }
+      await dismissWinner(/HLU gewinnt · 2 : 0/);
       assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); assert.match(await read('[data-read=sets]'), /2 : 0/);
+      await click('theme'); await click('theme');
+      assert.equal(await page.locator('.dialog').count(), 0, 'Geschlossener Siegerdialog erscheint beim Rendern nicht erneut');
       assert.equal(await page.locator('[data-action=toggle]').isEnabled(), true);
       assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
       await click('toggle'); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
       assert.equal(await read('[data-read=phase]'), 'Spiel beendet', 'Abbrechen behält das Match-Ergebnis');
       await click('undo'); assert.equal(await read('[data-read=score-a]'), '1');
-      await click('score-a-plus'); await click('toggle'); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+      if (height === 1000) {
+        await tab('setup'); await page.locator('[data-setting=countdown]').check(); await tab('match');
+      }
+      await click('score-a-plus');
+      const won = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+      const winner = page.locator('.dialog[aria-label="Spiel beendet"]'); await winner.waitFor({ state:'visible' });
+      await winner.locator('[data-dialog-action=confirm]').click(); await winner.waitFor({ state:'hidden' });
+      const restarted = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
+      assert.deepEqual(restarted.config, won.config, 'Neustart aus dem Siegerdialog behält Einstellungen');
+      assert.deepEqual(restarted.sound, won.sound, 'Neustart aus dem Siegerdialog behält Klang');
       await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
       assert.equal(await read('[data-read=phase]'), '1. Satz');
-      assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
+      await page.locator('[data-read=status][data-running=true]').waitFor();
+      assert.equal(await read('[data-read=start-label]'), height === 1000 ? 'Start abbrechen' : 'Spiel pausieren', 'Neustart aus dem Siegerdialog beginnt sofort, optional mit Countdown');
+      await click('toggle');
       assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
       assert.match(await read('[data-read=sets]'), /0 : 0/);
       assert.equal(await read('[data-read=team-a]'), 'HLU'); assert.equal(await read('[data-read=team-b]'), 'SPALTER');
@@ -233,12 +261,15 @@ async function main() {
     await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
     await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    await page.locator('[data-read=status][data-running=true]').waitFor();
+    assert.equal(await read('[data-read=start-label]'), 'Start abbrechen', 'Auch der normale Neustart startet sofort mit dem eingestellten Countdown');
+    await click('toggle');
     const afterNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));
     assert.deepEqual(afterNew.config, beforeNew.config, 'Neues Spiel im Spiel-Tab behält Teams, Farben und Einstellungen');
     assert.deepEqual(afterNew.sound, beforeNew.sound, 'Klang bleibt erhalten');
     assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
     assert.equal(await read('[data-read=phase]'), '1. Satz'); assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
-    await newMatch({ periods: 3, limit: 1, pace: 1.5 });
+    await newMatch({ periods: 3, limit: 1, pace: 1.5, countdown:false });
     for (const phase of ['2. Drittel', '3. Drittel', 'Golden Jugg']) {
       await click('stone-minus');
       assert.equal(await read('[data-read=stones]'), '0');
@@ -248,7 +279,7 @@ async function main() {
       assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Drittel und Golden Jugg starten nach Bestätigung');
       await click('toggle');
     }
-    await click('score-b-plus'); assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); await click('undo');
+    await click('score-b-plus'); await dismissWinner(/Spalter gewinnt/); assert.equal(await read('[data-read=phase]'), 'Spiel beendet'); await click('undo');
     await tab('setup'); await page.locator('[data-setting=teamA]').fill('Testteam'); await range('pace', 2, 'setting');
     await page.locator('[data-setting=countdown]').setChecked(true);
     const beforeDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v1')));

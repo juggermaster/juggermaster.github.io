@@ -280,4 +280,10 @@ export const texts = {
   }
 };
 Object.assign(texts, translations);
+const closeLabels = {
+  de:'Schließen', en:'Close', es:'Cerrar', fr:'Fermer', it:'Chiudi', pt:'Fechar', nl:'Sluiten', da:'Luk', sv:'Stäng', fi:'Sulje',
+  pl:'Zamknij', cs:'Zavřít', hu:'Bezárás', ro:'Închide', lv:'Aizvērt', lt:'Uždaryti', ru:'Закрыть', uk:'Закрити', he:'סגירה',
+  ja:'閉じる', ko:'닫기', 'zh-Hans':'关闭', 'zh-Hant':'關閉'
+};
+for (const [language, close] of Object.entries(closeLabels)) texts[language].close = close;
 export function translate(language, key, values = {}) { return texts[language][key].replace(/\{(\w+)\}/g, (_, name) => String(values[name])); }

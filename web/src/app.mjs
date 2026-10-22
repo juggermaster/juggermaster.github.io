@@ -116,9 +116,6 @@ function render() {
   $('[data-action=next] [data-i18n=period]').textContent = t(game.periods === -1 ? 'nextSet' : 'period');
   $('[data-read=countdown]').hidden = countdown < 0;
   if (countdown >= 0) setText('countdown', [t('attention'), '3', '2', '1', t('jugg')][countdown]);
-  $('[data-read=result]').hidden = !game.ended && !game.setComplete;
-  if (game.ended) setText('result', t('matchResult', { team: teamName((game.periods === -1 ? game.setsA > game.setsB : game.a > game.b) ? 'teamA' : 'teamB'), a: game.periods === -1 ? game.setsA : game.a, b: game.periods === -1 ? game.setsB : game.b }));
-  else if (game.setComplete) setText('result', t('setEnded'));
   $('[data-read=sets]').hidden = game.periods !== -1;
   setText('sets', t('setsScore', { a: game.setsA, b: game.setsB }));
   $$('[data-view]').forEach(element => { element.hidden = element.dataset.view !== view; element.classList.toggle('tab-active', element.dataset.view === view); });
@@ -235,12 +232,22 @@ function fitMatch() {
 function focusMatchButton() {
   $('[data-action=toggle]').focus({ preventScroll: true });
 }
-function dialog(title, text, label, action) {
+function resetMatch() {
+  rememberTeam('teamA'); rememberTeam('teamB');
+  history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
+  currentDialog.once('closed', focusMatchButton);
+  start();
+}
+function showWinner() {
+  const sets = game.periods === -1, a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
+  dialog(t('matchEnded'), t('matchResult', { team: teamName(a > b ? 'teamA' : 'teamB'), a, b }), t('startNewMatch'), resetMatch, t('close'));
+}
+function dialog(title, text, label, action, cancelLabel = t('cancel')) {
   stopStoneHold(true);
   pause(); closeLanguages(); lastFocus = document.activeElement;
   const safe = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   currentDialog = f7.dialog.create({ title: safe(title), text: safe(text), verticalButtons: true, destroyOnClose: true,
-    buttons: [{ text: label, strong: true, onClick: action }, { text: t('cancel') }],
+    buttons: [{ text: label, strong: true, onClick: action }, { text: cancelLabel }],
     on: { opened(instance) { instance.el.querySelector('.dialog-button').focus(); }, closed() { currentDialog = null; lastFocus?.focus(); } } });
   currentDialog.el.setAttribute('role', 'dialog'); currentDialog.el.setAttribute('aria-modal', 'true'); currentDialog.el.setAttribute('aria-label', title);
   currentDialog.el.querySelectorAll('.dialog-button').forEach((button, index) => { button.dataset.dialogAction = index ? 'cancel' : 'confirm'; });
@@ -319,11 +326,7 @@ root.addEventListener('click', async event => {
   else if (action === 'undo') { pause(); game = history.pop() || game; persist(); render(); }
   else if (action === 'defaults') { pause(); config = { ...defaults }; render(); persist(); }
   else if (action === 'sound-defaults') { pause(); sound = { ...defaultSound }; config.signalCount = defaults.signalCount; render(); persist(); }
-  else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), () => {
-    rememberTeam('teamA'); rememberTeam('teamB');
-    history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
-    currentDialog.once('closed', focusMatchButton);
-  });
+  else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), resetMatch);
   else if (action === 'next') {
     const sets = game.periods === -1, next = nextSection(game);
     if (next === game) return;
@@ -331,7 +334,7 @@ root.addEventListener('click', async event => {
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${teamName('teamA')} ${game.a} : ${game.b} ${teamName('teamB')}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       remember(); game = next; persist(); render();
-      currentDialog.once('closed', focusMatchButton);
+      currentDialog.once('closed', () => { if (game.ended) showWinner(); else focusMatchButton(); });
       if (!game.ended) start();
     });
   } else if (action?.startsWith('score-')) {
@@ -339,6 +342,7 @@ root.addEventListener('click', async event => {
     const next = awardPoint(game, key, delta); if (next === game) return;
     remember(); if (config.pausePoint || game.golden || next.setComplete) pause(delta < 0);
     game = next; render(); persist();
+    if (game.ended) showWinner();
     if (delta > 0) await endSignal();
   } else if (action === 'stone-minus' || action === 'stone-plus') { pause(); remember(); game = adjustStones(game, action === 'stone-plus' ? 1 : -1, config.direction); persist(); render(); }
   else if (action === 'offline-retry') setupOffline(render);
