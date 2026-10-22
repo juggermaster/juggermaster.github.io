@@ -79,6 +79,9 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.equal(restoreSnapshot({ version: 2, game: { a: -1 } }), null);
   const restored = restoreSnapshot({ version: 2, game: newGame(defaults), config: null, sound: null, language: 'x', history: [] });
   assert.deepEqual(restored.config, defaults); assert.deepEqual(restored.sound, defaultSound); assert.equal(restored.language, 'de');
+  assert.equal(restored.theme, 'dark');
+  for (const theme of ['', 'system', null]) assert.equal(restoreSnapshot({ version:2, game:newGame(defaults), theme }).theme, 'dark');
+  for (const theme of ['light', 'dark']) assert.equal(restoreSnapshot({ version:2, game:newGame(defaults), theme }).theme, theme);
   assert.equal(cleanConfig({ colorA: 'red;url(x)', limit: Infinity, signalCount: 100 }).signalCount, 3);
   assert.equal(cleanSound({ volume: 101, decay: NaN }).volume, 55);
   assert.deepEqual(Object.keys(texts.de).sort(), Object.keys(texts.en).sort());

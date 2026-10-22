@@ -74,7 +74,7 @@ export function restoreSnapshot(value) {
     teams.set(name.toLowerCase(), { name, color: team.color, defaultName: teamDefault(name, team.defaultName) });
   }
   return { version: 2, language: Object.hasOwn(locales, value.language) ? value.language : 'de',
-    theme: ['light', 'dark'].includes(value.theme) ? value.theme : '',
+    theme: ['light', 'dark'].includes(value.theme) ? value.theme : 'dark',
     teams: [...teams.values()],
     config: cleanConfig(value.config), sound: cleanSound(value.sound), game: { ...value.game },
     history: Array.isArray(value.history) ? value.history.filter(validGame).slice(-30).map(game => ({ ...game })) : [] };

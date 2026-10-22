@@ -9,7 +9,7 @@ const root = document.getElementById('jm-arena'), app = root.querySelector('.jm-
 const $ = selector => root.querySelector(selector), $$ = selector => [...root.querySelectorAll(selector)];
 const storageKey = 'juggermaster:state:v2';
 let config = { ...defaults }, sound = { ...defaultSound }, game = newGame(config), history = [], teams = [];
-let language = 'de', theme = '', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
+let language = 'de', theme = 'dark', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
 let countdown = -1, requestId = 0, currentDialog = null, lastFocus = null, wakeLock = null;
 let noticeKey = null, lastSave = '', storageError = false, freshState = true;
 let stoneHold = null, ignoreStoneClick = null;
@@ -372,7 +372,7 @@ root.addEventListener('click', async event => {
   let action = button.dataset.action;
   if (action === 'toggle') action = game.ended ? 'new' : game.setComplete || (finiteMatch(game) && game.consumed >= game.limit) ? 'next' : 'toggle';
   if (action === 'language-menu') openLanguages();
-  else if (action === 'theme') { theme = getComputedStyle(app).colorScheme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches) ? 'light' : 'dark'; render(); persist(); }
+  else if (action === 'theme') { theme = theme === 'dark' ? 'light' : 'dark'; render(); persist(); }
   else if (action === 'toggle') { if (running || countdown >= 0 || starting) pause(); else await start(); }
   else if (action === 'beat-preview') await togglePreview();
   else if (action === 'signal-preview') await endSignal();

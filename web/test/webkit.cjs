@@ -14,9 +14,11 @@ const path = require('node:path');
       server.once('exit', code => reject(Error(`Preview server exited: ${code}`)));
     });
     browser = await webkit.launch();
-    const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', serviceWorkers:'block' });
+    const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', colorScheme:'light', serviceWorkers:'block' });
     try {
       const page = await compact.newPage();
+      await page.goto('http://127.0.0.1:4178/lizenzen.html');
+      for (const selector of ['html', '.jm-app']) assert.equal(await page.locator(selector).evaluate(element => getComputedStyle(element).colorScheme), 'dark', 'Dokumente starten dunkel trotz hellem System');
       await page.goto('http://127.0.0.1:4178/');
       await page.locator('.jm-app[data-ready=true]').waitFor();
       for (const height of [400, 500, 550, 667, 850]) {
@@ -121,7 +123,7 @@ const path = require('node:path');
     const { locales } = await import(pathToFileURL(path.resolve('web/src/locale.mjs')).href);
     for (const device of ['iPhone 13', 'iPad Mini']) {
       for (const language of ['de', 'en', 'he', 'ja', 'zh-Hant']) {
-        const context = await browser.newContext({ ...devices[device], locale: locales[language].tag });
+        const context = await browser.newContext({ ...devices[device], locale: locales[language].tag, colorScheme:'light' });
         const errors = [];
         context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
         try {
@@ -131,11 +133,18 @@ const path = require('node:path');
           assert.equal(await page.locator('.jm-symbol').evaluateAll(icons => icons.every(icon => icon.namespaceURI === 'http://www.w3.org/2000/svg' && icon.getAttribute('stroke') === 'currentColor')), true, 'Bedienicons sind einfarbige SVGs');
           assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').count(), 0);
           assert.equal(await page.locator('.jm-statusbar').isHidden(), true, 'Kein Statusleisten-Overlay im normalen Browser');
-          await page.emulateMedia({ colorScheme: 'light' });
-          for (const scheme of ['dark', 'light', 'dark']) {
+          assert.equal(await page.locator('html').evaluate(element => getComputedStyle(element).colorScheme), 'dark', 'App startet dunkel trotz hellem System');
+          for (const scheme of ['light', 'dark']) {
             await page.locator('[data-action=theme]').click();
             assert.equal(await page.locator('html').evaluate(element => element.style.colorScheme), scheme);
             assert.equal(await page.locator('.jm-app').evaluate(element => element.style.colorScheme), scheme);
+            if (scheme === 'light' && device === 'iPhone 13' && language === 'de') {
+              await page.reload(); await page.locator('.jm-app[data-ready=true]').waitFor();
+              assert.equal(await page.locator('.jm-app').evaluate(element => getComputedStyle(element).colorScheme), 'light', 'Bewusste Hell-Auswahl bleibt nach Neuladen erhalten');
+              await page.goto('http://127.0.0.1:4178/lizenzen.html');
+              assert.equal(await page.locator('.jm-app').evaluate(element => getComputedStyle(element).colorScheme), 'light', 'Dokumente übernehmen die Hell-Auswahl');
+              await page.goto('http://127.0.0.1:4178/'); await page.locator('.jm-app[data-ready=true]').waitFor();
+            }
           }
           assert.equal(await page.locator('.jm-scroll>.jm-alert, .jm-home-hint').count(), 0, 'Keine Hinweiszeile unter dem Header');
           assert.equal(await page.locator('html').getAttribute('lang'), language);
