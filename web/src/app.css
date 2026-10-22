@@ -124,6 +124,13 @@
 
 html { color-scheme:light dark; background:light-dark(#eee9db,#181d1a); }
 body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
+#jm-arena .jm-statusbar { display:none; }
+@supports(-webkit-touch-callout:none) {
+  @media(display-mode:standalone) {
+    /* iOS 27 samples a real fixed background to avoid blurring the status bar. */
+    #jm-arena .jm-statusbar { display:block; position:fixed; top:0; left:0; right:0; height:6px; background:light-dark(#eee9db,#181d1a); z-index:1000; pointer-events:none; }
+  }
+}
 #jm-arena .jm-stage { padding:0; }
 #jm-arena .jm-app { max-width:none; min-height:100dvh; border:0; border-radius:0; box-shadow:none; overflow:visible; padding-top:env(safe-area-inset-top); }
 #jm-arena .jm-head { padding-top:16px; padding-bottom:16px; }

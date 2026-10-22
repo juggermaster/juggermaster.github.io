@@ -67,14 +67,14 @@ if (mode === 'source') {
   }
   for (const page of ['hilfe', 'impressum', 'datenschutz', 'lizenzen']) {
     const html = await readFile(`dist/${page}.html`, 'utf8');
-    assert.doesNotMatch(html, /jm-statusbar/, `${page}: no status bar overlay`);
+    assert.ok(html.includes('class="jm-statusbar"'), `${page}: status bar background`);
     for (const language of Object.keys(locales)) assert.ok(html.includes(`data-locale="${language}"`), `${page}/${language}`);
     assert.ok(html.includes('Content-Security-Policy'), page);
   }
   const worker = await readFile('dist/sw.js', 'utf8');
   const entry = await readFile('dist/index.html', 'utf8');
   assert.doesNotMatch(entry, /apple-mobile-web-app-status-bar-style/);
-  assert.doesNotMatch(entry, /jm-statusbar/);
+  assert.ok(entry.includes('class="jm-statusbar"'));
   const cached = JSON.parse(/const FILES = (\[.*\]);/.exec(worker)[1]);
   for (const file of cached) {
     assert.ok(!file.url.includes('..') && !file.url.startsWith('/'));
