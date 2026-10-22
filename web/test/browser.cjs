@@ -102,7 +102,19 @@ async function main() {
       await click('beat-preview');
       assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false');
     }
-    await tab('match');
+    for (const target of ['match', 'setup', 'info']) {
+      await tab('sound'); await resetAudio();
+      await page.locator('[data-preset=deep]').click(); await click('signal-preview');
+      await page.waitForFunction(() => window.__starts.length > 0);
+      await tab(target);
+      assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false', `${target}: Taktvorschau endet beim Tabwechsel`);
+      assert.ok((await audio()).cancelled > 0, 'Auch ausklingende Sounds werden gestoppt');
+      const stopped = (await audio()).starts.length;
+      await page.waitForTimeout(1600);
+      assert.equal((await audio()).starts.length, stopped, 'Keine weiteren Taktschläge nach Verlassen der Klangansicht');
+    }
+    await tab('sound'); await resetAudio(); await click('signal-preview'); await tab('match');
+    assert.ok((await audio()).cancelled > 0, 'Auch ohne Taktvorschau wird das Endsignal beim Tabwechsel gestoppt');
     assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
     assert.equal(await page.locator('.jm-feedback').count(), 0, 'Keine Toast-Oberfläche');
     assert.equal(await page.evaluate(() => window.__fullscreenRequests.length), 0, 'Tabwechsel aktiviert kein Vollbild');

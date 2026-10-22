@@ -211,7 +211,7 @@ async function togglePreview() {
   if (!unlocked) { noticeKey = 'audioFailed'; render(); return; }
   previewing = true; previewClock.start(config.pace, true); render(); keepAwake();
 }
-async function endSignal() { if (sound.signalVolume && await unlockAudio()) playEndSignal(sound, config.signalCount); }
+async function endSignal() { const token = requestId; if (sound.signalVolume && await unlockAudio() && token === requestId) playEndSignal(sound, config.signalCount); }
 function fitMatch() {
   const pane = $('.jm-scroll'), body = $('.jm-body'), match = $('[data-view=match]');
   if (match.hidden) { delete body.dataset.fitMatch; return; }
@@ -248,7 +248,7 @@ function dialog(title, text, label, action) {
 }
 function showView(next) {
   stopStoneHold(true);
-  if (running || countdown >= 0 || starting) pause();
+  if (running || countdown >= 0 || starting || (view === 'sound' && next !== view)) pause();
   view = next; closeLanguages(); f7.tab.show($(`#jm-${view}`), false); render(); $('.jm-scroll').scrollTop = 0;
   globalThis.history.replaceState(null, '', next === 'match' ? location.pathname + location.search : `#${next}`);
   ranges.forEach(range => { range.calcSize(); range.layout(); });
