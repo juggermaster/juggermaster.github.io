@@ -271,6 +271,14 @@ function showWinner() {
   const sets = game.periods === -1, a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
   dialog(t('matchEnded'), t('matchResult', { team: teamName(a > b ? 'teamA' : 'teamB'), a, b }), t('startNewMatch'), resetMatch, t('close'));
   currentDialog.el.classList.add('jm-result-dialog');
+  const message = currentDialog.el.querySelector('.jm-dialog-description');
+  message.classList.add('jm-winner-message');
+  const [before, after] = t('matchResult', { team:'\0', a, b }).split('\0').map(text => {
+    const part = document.createElement('span'); part.textContent = text; return part;
+  });
+  const winner = document.createElement('span'); winner.className = 'jm-result-team';
+  winner.textContent = teamName(a > b ? 'teamA' : 'teamB'); winner.title = winner.textContent;
+  message.replaceChildren(before, winner, after);
   const scoreboard = document.createElement('div'); scoreboard.className = 'jm-final-score';
   for (const [team, score] of [['teamA', a], ['teamB', b]]) {
     const name = document.createElement('strong'), points = document.createElement('b');

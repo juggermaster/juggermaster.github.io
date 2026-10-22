@@ -51,7 +51,7 @@
 #jm-arena .jm-team:first-child { --jm-team-color:#c9724f; }
 #jm-arena .jm-team:last-child { --jm-team-color:#76a38b; }
 #jm-arena .jm-team-name { display:flex; justify-content:center; align-items:center; gap:6px; font-size:11px; font-weight:800; letter-spacing:1.2px; min-width:0; min-height:19px; }
-#jm-arena .jm-team-name>span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#jm-arena .jm-team-name>span, #jm-arena .jm-result-team { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 #jm-arena .jm-team-name:before { content:''; background:var(--jm-team-color); width:6px; height:6px; display:block; transform:rotate(45deg); flex:none; }
 #jm-arena .jm-score { font:700 69px/1.1 var(--jm-title); font-variant-numeric:tabular-nums; }
 #jm-arena .jm-score-controls { display:flex; gap:6px; margin-top:4px; }
@@ -114,7 +114,9 @@
 #jm-arena .jm-app .dialog-title { font-family:var(--jm-title); line-height:1.1; }
 #jm-arena .jm-app .dialog-text { font-size:13px; line-height:1.6; }
 #jm-arena .jm-result-dialog .dialog-inner { max-height:calc(100dvh - 160px); overflow:auto; }
-#jm-arena .jm-result-dialog .jm-dialog-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
+#jm-arena .jm-result-dialog .jm-dialog-description:not(.jm-winner-message) { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
+#jm-arena .jm-winner-message { display:flex; align-items:baseline; justify-content:center; white-space:pre; }
+#jm-arena .jm-winner-message>span:not(.jm-result-team) { flex:none; }
 #jm-arena .jm-final-score { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px; margin:16px 0; text-align:start; }
 #jm-arena .jm-final-score strong { font-size:clamp(26px,7vw,36px); font-weight:900; line-height:1.15; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 #jm-arena .jm-final-score b { font-size:44px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }

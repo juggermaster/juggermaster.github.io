@@ -94,6 +94,12 @@ const path = require('node:path');
       });
       assert.deepEqual(await winner.locator('.jm-final-score strong').allTextContents(), names);
       assert.equal(await winner.locator('.jm-final-score strong').evaluateAll(elements => elements.every(element => getComputedStyle(element).textOverflow === 'ellipsis')), true);
+      const result = winner.locator('.jm-winner-message');
+      assert.equal(await result.locator('span').last().textContent(), ' gewinnt · 1 : 0');
+      assert.equal(await result.evaluate(element => {
+        const row = element.getBoundingClientRect(), suffix = element.lastElementChild.getBoundingClientRect();
+        return suffix.left >= row.left && suffix.right <= row.right + 1 && element.scrollWidth <= element.clientWidth + 1;
+      }), true, 'Gewinntext und Ergebnis bleiben neben dem gekürzten Teamnamen vollständig sichtbar');
       const dialogBox = await winner.boundingBox();
       assert.ok(dialogBox.y >= 0 && dialogBox.y + dialogBox.height <= 401, 'Siegerdialog mit langen Namen passt auf kleine Displays');
     } finally { await compact.close(); }
