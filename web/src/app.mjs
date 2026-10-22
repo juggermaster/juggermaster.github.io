@@ -315,7 +315,8 @@ for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) root.ad
 });
 for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
   root.addEventListener(type, event => {
-    if (!event.target.closest('input, textarea, select, [contenteditable], [data-view=info], .jm-legal')) event.preventDefault();
+    const target = event.target instanceof Element ? event.target : event.target.parentElement;
+    if (target && !target.closest('input, textarea, select, [contenteditable], [data-view=info], .jm-legal')) event.preventDefault();
   });
 }
 root.addEventListener('click', event => {

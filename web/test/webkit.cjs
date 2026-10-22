@@ -85,6 +85,7 @@ const path = require('node:path');
             if (view === 'match') {
               assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'none');
               assert.equal(await page.locator('[data-read=stones]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), false);
+              assert.equal(await page.locator('[data-read=stones]').evaluate(element => element.firstChild.dispatchEvent(new Event('selectstart', { bubbles:true, cancelable:true }))), false);
             }
             if (view === 'setup') assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
             if (view === 'info') assert.equal(await page.locator('[data-view=info]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');

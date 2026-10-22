@@ -90,6 +90,7 @@ async function main() {
     assert.ok(await page.locator('svg.jm-symbol').count() > 10);
     for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
       assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auf der Spielanzeige unterdrückt`);
+      assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.firstChild.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auch bei einem Textknoten unterdrückt`);
       assert.equal(await page.locator('[data-setting=teamA]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), true, `${type}: Eingabefelder bleiben nutzbar`);
     }
     assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).userSelect), 'none');
@@ -403,6 +404,7 @@ async function main() {
       await panel.locator('[data-locale=en]').waitFor({ state: 'visible' });
       assert.equal(await panel.locator('[data-locale=en] h1').textContent(), title, `${title} offline und lokalisiert verfügbar`);
       assert.equal(await panel.locator('[data-locale=en]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), true, 'Infotexte behalten das Kontextmenü');
+      assert.equal(await panel.locator('[data-locale=en] h1').evaluate(element => element.firstChild.dispatchEvent(new Event('selectstart', { bubbles:true, cancelable:true }))), true, 'Textknoten in Infotexten bleiben auswählbar');
       assert.equal(await panel.locator('[data-locale=en]').evaluate(element => getComputedStyle(element).userSelect), 'text');
       assert.equal(page.url(), infoUrl, 'Dokument wird ohne Seitenwechsel aufgeklappt');
       await panel.locator('summary').click();
