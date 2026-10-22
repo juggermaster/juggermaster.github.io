@@ -102,6 +102,10 @@ export function nextSection(game) {
   return game.a === game.b ? { ...game, golden: true, consumed: 0, periodTime: 0, playtime: 0 } : { ...game, ended: true };
 }
 
+export function finishTimedMatch(game) {
+  return finiteMatch(game) && game.period === game.periods && game.consumed >= game.limit && game.a !== game.b ? nextSection(game) : game;
+}
+
 export function adjustStones(game, displayedDelta, direction) {
   const down = direction === 'down' && finiteMatch(game);
   return { ...game, consumed: clamp(game.consumed + displayedDelta * (down ? -1 : 1), 0, finiteMatch(game) ? game.limit : 999999) };

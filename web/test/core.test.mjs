@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaults, defaultSound, newGame, awardPoint, nextSection, adjustStones, restoreSnapshot, cleanConfig, cleanSound } from '../src/core.mjs';
+import { defaults, defaultSound, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot, cleanConfig, cleanSound } from '../src/core.mjs';
 import { BeatClock } from '../src/clock.mjs';
 import { texts } from '../src/i18n.mjs';
 import { locales, resolveLanguage } from '../src/locale.mjs';
@@ -36,6 +36,25 @@ test('Zeitspiel mit frei wählbaren Runden', () => {
   }
   for (const invalid of [0, -1, 100, 1.5, Infinity, '3']) assert.equal(cleanConfig({ rounds:invalid }).rounds, 2);
   assert.equal(cleanConfig({ periods:3 }).periods, defaults.periods);
+});
+
+test('Zeitspiel endet nach der letzten Runde automatisch bei Führung', () => {
+  for (const rounds of [1, 2, 4]) for (const side of ['a', 'b']) {
+    const last = { ...newGame({ ...defaults, periods:2, rounds }), period:rounds, consumed:100, [side]:1 };
+    assert.equal(finishTimedMatch(last).ended, true);
+    assert.equal(last.ended, false, 'Vorheriger Spielstand bleibt für Rückgängig erhalten');
+    const unfinished = { ...last, consumed:99 }, tied = { ...last, a:1, b:1 };
+    assert.equal(finishTimedMatch(unfinished), unfinished);
+    assert.equal(finishTimedMatch(tied), tied, 'Gleichstand bleibt für Golden Jugg offen');
+    if (rounds > 1) {
+      const earlier = { ...last, period:rounds - 1 };
+      assert.equal(finishTimedMatch(earlier), earlier);
+    }
+  }
+  for (const periods of [-1, 0]) {
+    const game = { ...newGame({ ...defaults, periods }), a:1, consumed:100 };
+    assert.equal(finishTimedMatch(game), game);
+  }
 });
 
 test('Teamnamen bis 255 Zeichen vollständig speichern', () => {

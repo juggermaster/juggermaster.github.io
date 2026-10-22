@@ -1,4 +1,4 @@
-import { defaults, defaultSound, presets, clamp, finiteMatch, newGame, awardPoint, nextSection, adjustStones, restoreSnapshot } from './core.mjs';
+import { defaults, defaultSound, presets, clamp, finiteMatch, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot } from './core.mjs';
 import { texts, translate } from './i18n.mjs';
 import { locales, resolveLanguage, moveLanguageFocus } from './locale.mjs';
 import { BeatClock } from './clock.mjs';
@@ -206,8 +206,12 @@ const matchClock = new BeatClock({ now: audioTime,
       if (index === 5) { countdown = -1; beginMatchClock(); }
       render(); return;
     }
-    game.consumed++;
-    if (finiteMatch(game) && game.consumed >= game.limit) { pause(false); playEndSignal(sound, config.signalCount); }
+    const next = finishTimedMatch({ ...game, consumed:game.consumed + 1 });
+    if (next.ended) remember();
+    game = next;
+    if (finiteMatch(game) && game.consumed >= game.limit) {
+      pause(false); if (game.ended) showWinner(); playEndSignal(sound, config.signalCount);
+    }
     persist(); render();
   }, interrupted });
 let startConsumed = 0;
@@ -389,13 +393,15 @@ root.addEventListener('click', async event => {
     if (next.ended) currentDialog.el.classList.add('jm-result-dialog');
   } else if (action?.startsWith('score-')) {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
-    const next = awardPoint(game, key, delta); if (next === game) return;
+    const next = finishTimedMatch(awardPoint(game, key, delta)); if (next === game) return;
     remember(); if (config.pausePoint || game.golden || next.setComplete) pause(delta < 0);
     game = next; render(); persist();
     if (game.ended) showWinner();
     if (delta > 0) await endSignal();
-  } else if (action === 'stone-minus' || action === 'stone-plus') { pause(); remember(); game = adjustStones(game, action === 'stone-plus' ? 1 : -1, config.direction); persist(); render(); }
-  else if (action === 'offline-retry') setupOffline(render);
+  } else if (action === 'stone-minus' || action === 'stone-plus') {
+    pause(); remember(); game = finishTimedMatch(adjustStones(game, action === 'stone-plus' ? 1 : -1, config.direction));
+    persist(); render(); if (game.ended) showWinner();
+  } else if (action === 'offline-retry') setupOffline(render);
   else if (action === 'update') { if (running || previewing || countdown >= 0 || starting) return; persist(); if (!await applyUpdate()) { noticeKey = 'updateFailed'; render(); } }
 });
 document.addEventListener('click', event => { if (!event.target.closest('.jm-language-picker')) closeLanguages(); });

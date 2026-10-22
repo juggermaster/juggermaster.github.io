@@ -217,12 +217,24 @@ async function main() {
     await page.waitForFunction(() => Number(document.querySelector('[data-read=stones]').textContent) < 4);
     await click('score-a-plus'); await click('toggle');
     await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
-    assert.equal(await read('[data-read=start-label]'), 'Ergebnis bestätigen');
-    await click('toggle'); await page.locator('[data-dialog-action=confirm]').click();
     await dismissWinner(/gewinnt/);
     assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
-    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Ergebnis bestätigen startet kein beendetes Spiel');
-    await newMatch({ periods: 2, limit: 20, pace: .5, countdown: true });
+    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Zeitspiel endet ohne Ergebnisbestätigung');
+    await click('undo');
+    assert.equal(await read('[data-read=phase]'), 'Runde 2');
+    assert.equal(await read('[data-read=stones]'), '1', 'Rückgängig stellt den Stand vor dem letzten Stein wieder her');
+    await resetAudio(); await click('toggle');
+    await dismissWinner(/gewinnt/);
+    assert.equal((await audio()).starts.length, 3 * 7, 'Automatischer Siegerdialog erhält die drei Endschläge');
+    for (const direction of ['up', 'down']) {
+      await newMatch({ periods:2, rounds:1, limit:2, direction });
+      await click('score-b-plus');
+      const action = direction === 'up' ? 'stone-plus' : 'stone-minus';
+      await click(action);
+      assert.equal(await page.locator('.dialog').count(), 0, 'Vor Ablauf der Runde erscheint kein Siegerdialog');
+      await click(action); await dismissWinner(/gewinnt/);
+    }
+    await newMatch({ periods:2, rounds:2, direction:'down', limit:20, pace:.5, countdown:true });
     await click('toggle'); assert.equal(await read('[data-read=stones]'), '20');
     await page.waitForTimeout(700); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
     await click('toggle'); assert.equal(await read('[data-read=status]'), 'PAUSIERT');
