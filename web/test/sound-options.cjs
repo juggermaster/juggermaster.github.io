@@ -93,9 +93,25 @@ module.exports = async (browser, url) => {
     await page.locator('[data-sound-target=beat]').click();
     assert.equal(await page.locator('[data-instrument]').inputValue(), 'timpani');
     await upload('my-beat.wav', wave());
-    await page.waitForFunction(() => !document.querySelector('[data-audio-file]').disabled);
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.kind === 'custom' || document.querySelector('[data-read=sound-notice]').textContent === 'Audiodatei konnte nicht geladen oder gespeichert werden.');
     assert.equal((await state()).sound.kind, 'custom', JSON.stringify(importErrors));
     assert.equal((await state()).sound.end.instrument, 'largeGong');
+    if (browser.browserType().name() === 'chromium') {
+      const legacy = await page.evaluate(async () => {
+        const database = await new Promise((resolve, reject) => { const request = indexedDB.open('juggermaster:audio:v1', 1); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+        try {
+          await new Promise((resolve, reject) => {
+            const transaction = database.transaction('files', 'readwrite');
+            transaction.objectStore('files').put({ file: new File(['kept'], 'legacy.wav', { type: 'audio/wav' }), duration: .4 }, 'legacy');
+            transaction.oncomplete = resolve; transaction.onabort = () => reject(transaction.error);
+          });
+        } finally { database.close(); }
+        const { audioFile } = await import(new URL('audio-files.mjs', document.querySelector('script[type=module]').src));
+        const saved = await audioFile('legacy'); await audioFile('legacy', 'delete');
+        return { name: saved.file.name, contents: await saved.file.text(), duration: saved.duration };
+      });
+      assert.deepEqual(legacy, { name: 'legacy.wav', contents: 'kept', duration: .4 }, 'Bisher gespeicherte Dateiobjekte bleiben lesbar');
+    }
     await target('signal'); await page.locator('[data-audio-file]').setInputFiles(path.join(__dirname, 'fixtures/gong.mp3'));
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.end.kind === 'custom');
     await page.reload(); await ready(); await target('signal');
