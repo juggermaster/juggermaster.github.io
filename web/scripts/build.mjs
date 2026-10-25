@@ -10,7 +10,7 @@ const languageOptions = () => Object.entries(locales).map(([code, locale]) => `<
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const dist = join(root, 'dist'), src = join(root, 'web/src');
-const version = process.env.JUGGER_RELEASE || 'v37';
+const version = process.env.JUGGER_RELEASE || 'v38';
 if (!/^v[1-9]\d*(?:[.-][a-z0-9]+)*$/.test(version)) throw Error('Ungültige Versionsnummer.');
 if (resolve(dist) !== resolve(root, 'dist') || relative(root, dist) !== 'dist') throw Error('Ungültiges Build-Ziel.');
 const names = (await list(src)).map(path => relative(src, path).replaceAll('\\', '/')).filter(name => name !== 'service-worker.js' && !/^images\/icon-\d+\.png$/.test(name));
@@ -50,7 +50,7 @@ for (const [name, page] of Object.entries(pages)) {
   await writeFile(join(dist, `${name}.html`), html);
 }
 await writeFile(join(dist, 'manifest.webmanifest'), JSON.stringify({
-  id: './', name: 'JUGGERMASTER', short_name: 'JUGGERMASTER', description: 'Jugger-Taktgeber, Punkte und Spielzeit. Offline im Browser.',
+  id: './', name: 'JUGGERMASTER', short_name: 'JUGGERMASTER', description: 'Open Source Jugger Game Assistant – Jugger-Taktgeber, Punkte und Spielzeit. Offline im Browser.',
   lang: 'de', start_url: './', scope: './', display: 'standalone', background_color: '#181d1a', theme_color: '#181d1a',
   icons: [{ src: `./${assetPath}/images/icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' }, { src: `./${assetPath}/images/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
 }, null, 2) + '\n');

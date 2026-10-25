@@ -104,6 +104,26 @@ const path = require('node:path');
       }), true, 'Gewinntext und Ergebnis bleiben neben dem gekürzten Teamnamen vollständig sichtbar');
       const dialogBox = await winner.boundingBox();
       assert.ok(dialogBox.y >= 0 && dialogBox.y + dialogBox.height <= 401, 'Siegerdialog mit langen Namen passt auf kleine Displays');
+      await winner.locator('[data-dialog-action=cancel]').click(); await winner.waitFor({ state:'hidden' });
+      await page.locator('[data-tab=setup]').click();
+      await page.locator('[data-setting=periods]').selectOption('-2');
+      assert.equal(await page.locator('[data-setting=minutes]').inputValue(), '20');
+      assert.equal(await page.locator('[data-setting=limit]').isVisible(), false);
+      await page.locator('[data-view=setup] [data-action=new]').click();
+      await page.locator('[data-dialog-action=confirm]').click();
+      await page.locator('.dialog').waitFor({ state:'hidden' });
+      await page.locator('[data-action=toggle]').click();
+      for (const height of [400, 667]) {
+        await page.setViewportSize({ width:375, height });
+        await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
+        const clock = page.locator('[data-read=remaining-time]');
+        assert.match(await clock.textContent(), /^(20:00|19:59)$/);
+        assert.equal(await page.locator('[data-read=stones]').isVisible(), false);
+        assert.ok(await clock.evaluate(element => {
+          const box = element.getBoundingClientRect(), pane = document.querySelector('.jm-scroll').getBoundingClientRect();
+          return box.left >= pane.left && box.right <= pane.right + 1 && box.top >= pane.top && box.bottom <= pane.bottom + 1;
+        }), 'Minutenuhr passt auch auf kleine Displays');
+      }
     } finally { await compact.close(); }
     if (process.env.COMPACT_SCREENSHOT) {
       const preview = await browser.newContext({ ...devices['iPhone 8'], locale:'de-DE' });

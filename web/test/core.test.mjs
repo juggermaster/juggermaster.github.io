@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { defaults, defaultSound, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot, cleanConfig, cleanSound } from '../src/core.mjs';
+import { defaults, defaultSound, finiteMatch, setMatch, remainingTime, advanceTime, matchWinner, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot, cleanConfig, cleanSound } from '../src/core.mjs';
 import { BeatClock } from '../src/clock.mjs';
 import { texts } from '../src/i18n.mjs';
 import { locales, resolveLanguage } from '../src/locale.mjs';
@@ -74,6 +74,117 @@ test('Satzspiel mit fünf Punkten und zwei Gewinnsätzen', () => {
   for (let i = 0; i < 5; i++) game = awardPoint(game, 'a', 1);
   assert.equal(game.setsA, 2); assert.equal(game.ended, true);
 });
+test('Sätze auf Zeit behalten die Minutenuhr bei Satzwechseln bis zur Entscheidung', () => {
+  assert.equal(defaults.minutes, 20);
+  const config = cleanConfig({ ...defaults, periods:-2, targetPoints:1, setsToWin:4, minutes:10 });
+  assert.equal(config.periods, -2);
+  let game = advanceTime(newGame(config), 4500);
+  assert.equal(game.minutes, 10); assert.equal(remainingTime(game), 595500);
+  assert.equal(finiteMatch(game), false); assert.equal(setMatch(game), true);
+  for (let set = 1; set <= 3; set++) {
+    game = awardPoint(game, 'a', 1);
+    assert.equal(game.setsA, set); assert.equal(game.ended, false);
+    assert.equal(game.setComplete, true);
+    assert.equal(awardPoint(game, 'b', 1), game);
+    game = nextSection(game);
+    assert.equal(game.consumed, 0); assert.equal(game.elapsed, 4500);
+    assert.equal(remainingTime(game), 595500);
+    assert.equal(game.periodTime, 0); assert.equal(game.a, 0); assert.equal(game.setComplete, false);
+  }
+  const saved = { version:2, config, game, history:[game] };
+  assert.deepEqual(restoreSnapshot(saved).game, game);
+  assert.equal(restoreSnapshot(saved).history.length, 1);
+  assert.equal(restoreSnapshot({ ...saved, game:{ ...game, period:101 } }).game.period, 101);
+  assert.equal(restoreSnapshot({ ...saved, game:{ ...game, minutes:0 } }), null);
+  const legacy = { ...game }; delete legacy.minutes;
+  assert.equal(remainingTime(restoreSnapshot({ ...saved, game:legacy }).game), 20 * 60000 - 4500);
+  for (const minutes of [0, -1, 1000, 1.5, Infinity, '3']) assert.equal(cleanConfig({ minutes }).minutes, 20);
+  for (const direction of ['up', 'down']) assert.equal(adjustStones(game, 100, direction), game);
+  assert.equal(finishTimedMatch(game), game);
+  const ended = advanceTime(game, 600000);
+  assert.equal(ended.ended, true); assert.equal(ended.golden, false);
+  assert.equal(ended.elapsed, 600000); assert.equal(remainingTime(ended), 0);
+  assert.equal(advanceTime(ended, 1000), ended);
+  assert.equal(nextSection(ended), ended); assert.equal(awardPoint(ended, 'b', 1), ended);
+  assert.equal(game.ended, false, 'Vorheriger Stand bleibt für Rückgängig erhalten');
+});
+
+test('Gewinnsätze beenden beide Satzmodi regulär vor dem Zeitlimit', () => {
+  for (const periods of [-1, -2]) for (const side of ['a', 'b']) {
+    const start = 1000000, deadline = start + defaults.minutes * 60000;
+    let game = { ...newGame({ ...defaults, periods, targetPoints:2, setsToWin:2 }), deadline:periods === -2 ? deadline : null };
+    for (let set = 1; set <= 2; set++) {
+      game = advanceTime(game, 1000, start + set * 1000);
+      game = awardPoint(awardPoint(game, side, 1, start + set * 1000), side, 1, start + set * 1000);
+      assert.equal(game[side === 'a' ? 'setsA' : 'setsB'], set);
+      assert.equal(game.setComplete, true); assert.equal(game.ended, set === 2);
+      if (set === 1) game = nextSection(game, start + set * 1000);
+    }
+    const left = remainingTime(game, start + 2000);
+    assert.ok(left > 0); assert.equal(matchWinner(game), side);
+    assert.equal(remainingTime(game, deadline + 1000), left, 'Restzeit bleibt nach regulärem Spielende stehen');
+    assert.equal(advanceTime(game, 1000, deadline), game);
+    assert.equal(awardPoint(game, side, 1, deadline), game);
+    assert.equal(nextSection(game, deadline), game);
+    assert.deepEqual(restoreSnapshot({ version:2, game }).game, game);
+    assert.equal(finishTimedMatch({ ...game, ended:false }, start + 2000).ended, true, 'Ältere gespeicherte Satzsiege bleiben gültig');
+  }
+});
+
+test('Satz-Uhr läuft unabhängig vom Steintakt und stoppt genau am Minutenlimit', () => {
+  for (const pace of [.5, 1.5, 3]) {
+    let game = newGame({ ...defaults, periods:-2, minutes:1, pace, limit:1 });
+    for (let i = 0; i < 2399; i++) game = advanceTime(game, 25);
+    assert.equal(game.ended, false); assert.equal(remainingTime(game), 25);
+    game = advanceTime(game, 25);
+    assert.equal(game.ended, true); assert.equal(game.elapsed, 60000); assert.equal(game.consumed, 0);
+  }
+});
+
+test('Turnierslot läuft bei Pausen, Punkten, Satzwechsel und Wiederherstellen bis zur festen Endzeit', () => {
+  const start = 1000000, deadline = start + 60000;
+  let game = { ...newGame({ ...defaults, periods:-2, minutes:1, targetPoints:1 }), deadline };
+  game = advanceTime(game, 0, start + 10000);
+  assert.equal(game.elapsed, 10000); assert.equal(game.playtime, 0, 'Slot läuft bei angehaltenem Spiel');
+  game = awardPoint(game, 'a', 1, start + 10000);
+  const beforeNextSet = { ...game };
+  game = nextSection(game, start + 20000);
+  assert.equal(game.deadline, deadline); assert.equal(remainingTime(game, start + 20000), 40000);
+  const saved = restoreSnapshot({ version:2, config:defaults, game, history:[beforeNextSet] });
+  assert.equal(saved.game.deadline, deadline); assert.equal(saved.history[0].deadline, deadline);
+  game = advanceTime(saved.game, 5000, start + 30000);
+  assert.equal(game.elapsed, 30000, 'Spiel- und Slot-Uhr addieren Zeit nicht doppelt');
+  assert.equal(game.playtime, 5000);
+  const ended = advanceTime(game, 0, start + 70000);
+  assert.equal(ended.ended, true); assert.equal(ended.elapsed, 60000);
+  assert.equal(remainingTime(ended, start + 70000), 0);
+  assert.equal(awardPoint(game, 'b', 1, start + 70000).b, 0, 'Keine Punkte nach dem Slotende');
+  assert.equal(nextSection(beforeNextSet, start + 70000).ended, true);
+  assert.equal(advanceTime(beforeNextSet, 0, start + 70000).ended, true, 'Alter Undo-Stand verlängert den Slot nicht');
+  for (const invalid of [0, -1, Infinity, '1000', true]) assert.equal(restoreSnapshot({ version:2, game:{ ...game, deadline:invalid } }), null);
+  assert.ok(restoreSnapshot({ version:2, game:{ ...game, deadline:deadline + .5 } }));
+});
+
+test('Sätze auf Zeit werten Sätze zuerst, dann laufende Punkte, sonst unentschieden', () => {
+  const game = newGame({ ...defaults, periods:-2, minutes:1 });
+  for (const [score, winner] of [
+    [{ setsA:2, setsB:1, a:0, b:4 }, 'a'],
+    [{ setsA:1, setsB:2, a:4, b:0 }, 'b'],
+    [{ setsA:1, setsB:1, a:2, b:1 }, 'a'],
+    [{ setsA:1, setsB:1, a:1, b:2 }, 'b'],
+    [{ setsA:1, setsB:1, a:2, b:2 }, null],
+    [{ setsA:0, setsB:0, a:0, b:0 }, null],
+    [{ setsA:1, setsB:1, a:5, b:0, setComplete:true }, null]
+  ]) {
+    const ended = finishTimedMatch({ ...game, ...score, elapsed:60000 });
+    assert.equal(ended.ended, true); assert.equal(ended.golden, false);
+    assert.equal(matchWinner(ended), winner);
+    assert.equal(finishTimedMatch(ended), ended);
+  }
+  const finalPoint = finishTimedMatch(awardPoint({ ...game, a:4, elapsed:60000 }, 'a', 1));
+  assert.equal(finalPoint.setsA, 1); assert.equal(finalPoint.ended, true); assert.equal(matchWinner(finalPoint), 'a');
+});
+
 test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.equal(restoreSnapshot({ version:1, game:newGame(defaults) }), null);
   assert.equal(restoreSnapshot({ version: 2, game: { a: -1 } }), null);

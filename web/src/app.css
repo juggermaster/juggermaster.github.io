@@ -42,6 +42,7 @@
 #jm-arena .jm-counter { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 #jm-arena .jm-step { width:44px; height:44px; border:1px solid var(--jm-line); border-radius:50%; background:transparent; font-size:23px; }
 #jm-arena .jm-stone-number { font:700 clamp(100px,26vw,136px)/1 var(--jm-title); letter-spacing:-3px; font-variant-numeric:tabular-nums; }
+#jm-arena .jm-clock-number { font-size:clamp(56px,21vw,110px); white-space:nowrap; direction:ltr; }
 #jm-arena .jm-stone-caption { margin-top:2px; font-size:10px; font-weight:800; letter-spacing:2.6px; color:var(--jm-soft); }
 #jm-arena .jm-track { height:4px; background:var(--jm-panel-alt); margin:18px 0 0; border-radius:2px; overflow:hidden; }
 #jm-arena .jm-track span { display:block; height:100%; background:var(--jm-accent); width:73%; }

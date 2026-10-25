@@ -2,11 +2,11 @@
 
 [Open the app](https://juggermaster.github.io/) · [Source](https://github.com/juggermaster/juggermaster.github.io) · [MIT licence](LICENSE)
 
-Jugger match timing and scoring in a mobile web app. Open the website online once and wait for the offline-file message to disappear. The browser caches the complete app automatically. Reopen the same address offline afterwards; no separate download or installation is required. A home-screen shortcut is optional.
+Open Source Jugger Game Assistant. Jugger match timing and scoring in a mobile web app. Open the website online once and wait for the offline-file message to disappear. The browser caches the complete app automatically. Reopen the same address offline afterwards; no separate download or installation is required. A home-screen shortcut is optional.
 
 ## Features
 
-- Sets by default, plus timed matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats.
+- Sets by default, plus sets with a match-wide time limit in minutes (20 minutes by default), stone-based matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats. Normal set rules end timed sets as soon as the selected sets-to-win target is reached. If the time limit expires first, rank won sets first, then points in the current unfinished set; a complete tie ends in a draw. A countdown clock replaces the stone counter in timed sets. Timed sets use a fixed wall-clock deadline: points, fouls, pauses, set changes, reloads and undo never extend the tournament slot.
 - Configurable stones, interval, teams, colours, countdown and up/down counting.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
 - Synthesised stone-on-metal, gong and drum sounds, with drum as the default. Separate beat and Jugg/period-end volume and optional volume levelling for each; one to ten overlapping end beats.
@@ -48,7 +48,7 @@ Before pushing: finish local changes and checks, commit locally, inspect the act
 
 After every push, monitor GitHub Actions through the checks and deployment, fix any failures, and verify that the live site serves the checked release build. Publication is complete only after those checks succeed.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v37`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v38`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 

@@ -1,4 +1,4 @@
-import { defaults, defaultSound, presets, clamp, finiteMatch, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot } from './core.mjs';
+import { defaults, defaultSound, presets, clamp, finiteMatch, setMatch, remainingTime, advanceTime, matchWinner, newGame, awardPoint, nextSection, finishTimedMatch, adjustStones, restoreSnapshot } from './core.mjs';
 import { texts, translate } from './i18n.mjs';
 import { locales, resolveLanguage, moveLanguageFocus } from './locale.mjs';
 import { BeatClock } from './clock.mjs';
@@ -73,7 +73,7 @@ function phase() {
   if (game.ended) return t('matchEnded');
   if (game.golden) return t('goldenJugg');
   if (game.periods === 0) return t('freeDrumming');
-  return t(game.periods === -1 ? 'setNumber' : 'roundNumber', { number: game.period });
+  return t(setMatch(game) ? 'setNumber' : 'roundNumber', { number: game.period });
 }
 root.addEventListener('toggle', async event => {
   const details = event.target;
@@ -109,18 +109,21 @@ root.addEventListener('toggle', async event => {
   } finally { delete details.dataset.loading; content.removeAttribute('aria-busy'); }
 }, true);
 function render() {
-  const finite = finiteMatch(game), remaining = Math.max(0, game.limit - game.consumed);
+  const finite = finiteMatch(game), timedSets = game.periods === -2, remaining = Math.max(0, game.limit - game.consumed);
   const complete = finite && remaining === 0;
   const next = complete ? nextSection(game) : null;
   const sectionLabel = next?.golden ? 'startGolden' : next?.ended ? 'confirmResult' : 'startPeriod';
   app.style.colorScheme = theme;
   document.documentElement.style.colorScheme = theme;
-  setText('format', game.periods === -1 ? t('setFormat', { sets: game.setsToWin, points: game.targetPoints }) : game.periods === 0 ? t('freeFormat') : t('limitedFormat', { periods: game.periods, limit: game.limit }));
+  setText('format', timedSets ? t('timedSetFormat', { minutes: game.minutes ?? defaults.minutes, sets: game.setsToWin, points: game.targetPoints }) : setMatch(game) ? t('setFormat', { sets: game.setsToWin, points: game.targetPoints }) : game.periods === 0 ? t('freeFormat') : t('limitedFormat', { periods: game.periods, limit: game.limit }));
   setText('phase', phase());
   setText('status', t(game.ended ? 'statusEnded' : countdown >= 0 ? 'counting' : running ? 'statusRunning' : 'statusPaused'));
   $('[data-read=status]').dataset.running = String(running || countdown >= 0);
   setText('stones', config.direction === 'down' && finite ? remaining : game.consumed);
-  setText('caption', t(config.direction === 'down' && finite ? 'stonesLeft' : 'stonesPlayed'));
+  $('.jm-counter').hidden = timedSets;
+  $('[data-read=match-clock]').hidden = !timedSets;
+  setText('remaining-time', time(Math.ceil(remainingTime(game) / 1000) * 1000));
+  setText('caption', t(timedSets ? 'timeRemaining' : config.direction === 'down' && finite ? 'stonesLeft' : 'stonesPlayed'));
   const track = $('.jm-track'); track.hidden = !finite;
   track.setAttribute('aria-valuemax', game.limit); track.setAttribute('aria-valuenow', remaining);
   track.firstElementChild.style.width = `${remaining / game.limit * 100}%`;
@@ -130,19 +133,19 @@ function render() {
   setText('score-a', game.a); setText('score-b', game.b);
   $$('.jm-team').forEach((team, index) => team.style.setProperty('--jm-team-color', index ? config.colorB : config.colorA));
   setText('elapsed', time(game.elapsed)); setText('period-time', time(game.periodTime)); setText('playtime', time(game.playtime)); setText('pace', `${decimal(config.pace)} s`);
-  const blocked = game.ended || game.setComplete, nextSetReady = game.periods === -1 && game.setComplete && !game.ended;
+  const blocked = game.ended || game.setComplete, nextSetReady = setMatch(game) && game.setComplete && !game.ended;
   $('[data-action=score-a-plus]').disabled = blocked; $('[data-action=score-b-plus]').disabled = blocked;
   $('[data-action=score-a-minus]').disabled = blocked || !game.a; $('[data-action=score-b-minus]').disabled = blocked || !game.b;
-  $('[data-action=stone-minus]').disabled = (config.direction === 'down' && finite ? remaining : game.consumed) === 0 || game.ended;
-  $('[data-action=stone-plus]').disabled = game.ended;
+  $('[data-action=stone-minus]').disabled = timedSets || (config.direction === 'down' && finite ? remaining : game.consumed) === 0 || game.ended;
+  $('[data-action=stone-plus]').disabled = timedSets || game.ended;
   $('[data-action=toggle]').disabled = !game.ended && blocked && !nextSetReady;
-  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : complete ? sectionLabel : game.period === 1 && game.consumed === 0 && !game.golden ? 'startMatch' : 'resumeMatch'));
+  setText('start-label', t(countdown >= 0 ? 'cancelCountdown' : running ? 'pauseMatch' : game.ended ? 'newMatch' : nextSetReady ? 'nextSet' : complete ? sectionLabel : game.period === 1 && (timedSets ? game.elapsed === 0 : game.consumed === 0) && !game.golden ? 'startMatch' : 'resumeMatch'));
   $('[data-action=toggle] [data-icon=play]').toggleAttribute('hidden', running || countdown >= 0);
   $('[data-action=toggle] [data-icon=pause]').toggleAttribute('hidden', !running && countdown < 0);
   $('[data-action=undo]').disabled = !history.length;
   $('[data-read=countdown]').hidden = countdown < 0;
   if (countdown >= 0) setText('countdown', [t('attention'), '3', '2', '1', t('jugg')][countdown]);
-  $('[data-read=sets]').hidden = game.periods !== -1;
+  $('[data-read=sets]').hidden = !setMatch(game);
   setText('sets', t('setsScore', { a: game.setsA, b: game.setsB }));
   $$('[data-view]').forEach(element => { element.hidden = element.dataset.view !== view; element.classList.toggle('tab-active', element.dataset.view === view); });
   $$('[data-tab]').forEach(element => {
@@ -157,9 +160,13 @@ function render() {
     select.value = saved?.name || '';
   });
   $$('[data-team-delete]').forEach(button => { button.disabled = !teams.some(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase()); });
-  $('[data-read=set-settings]').hidden = config.periods !== -1;
-  $('[data-setting=limit]').closest('.jm-fields-pair').hidden = config.periods <= 0;
-  $('[data-setting=direction]').closest('.jm-field').hidden = config.periods <= 0;
+  $('[data-read=set-settings]').hidden = !setMatch(config);
+  $('[data-setting=setsToWin]').closest('.jm-field').hidden = !setMatch(config);
+  $('[data-setting=minutes]').closest('.jm-field').hidden = config.periods !== -2;
+  $('[data-setting=limit]').closest('.jm-fields-pair').hidden = !finiteMatch(config);
+  $('[data-setting=rounds]').closest('.jm-field').hidden = config.periods <= 0;
+  $('[data-setting=direction]').closest('.jm-field').hidden = !finiteMatch(config);
+  $('[data-i18n=timedSetDescription]').hidden = config.periods !== -2;
   $('[data-output=pace]').textContent = `${decimal(config.pace)} s`;
   $$('[data-sound]').forEach(input => { if (input.type === 'checkbox') input.checked = sound[input.dataset.sound]; else input.value = sound[input.dataset.sound]; });
   for (const key of ['pitch', 'metal', 'attack', 'decay', 'volume', 'signalVolume']) $(`[data-output=${key}]`).textContent = `${decimal(sound[key])}${key === 'pitch' ? ' Hz' : key === 'decay' ? ' s' : ' %'}`;
@@ -177,19 +184,35 @@ function render() {
 }
 
 async function keepAwake() {
+  if (wakeLock) return;
   const token = requestId;
   try {
     if (!navigator.wakeLock) throw Error('Wake lock unavailable');
     const lock = await navigator.wakeLock.request('screen');
-    if (token !== requestId || (!running && !previewing && countdown < 0)) { await lock.release(); return; }
+    if (token !== requestId || (!running && !previewing && countdown < 0 && !slotActive())) { await lock.release(); return; }
     wakeLock = lock;
     lock.addEventListener('release', () => {
       if (wakeLock === lock) wakeLock = null;
-      if (!document.hidden && (running || previewing || countdown >= 0)) { noticeKey = 'wakeFailed'; render(); }
+      if (!document.hidden && (running || previewing || countdown >= 0 || slotActive())) { noticeKey = 'wakeFailed'; render(); }
     });
-  } catch { if (running || previewing || countdown >= 0) { noticeKey = 'wakeFailed'; render(); } }
+  } catch { if (running || previewing || countdown >= 0 || slotActive()) { noticeKey = 'wakeFailed'; render(); } }
 }
 function releaseWake() { const lock = wakeLock; wakeLock = null; lock?.release().catch(() => {}); }
+function slotActive() { return game.periods === -2 && game.deadline != null && !game.ended; }
+function announceTimeEnd() {
+  pause(false);
+  if (currentDialog) { currentDialog.once('closed', showWinner); currentDialog.close(); }
+  else showWinner();
+  playEndSignal(sound, config.signalCount);
+}
+function updateSlotClock() {
+  if (!slotActive()) return;
+  const next = advanceTime(game, 0);
+  if (next.ended) remember();
+  game = next;
+  if (game.ended) announceTimeEnd();
+  render();
+}
 const interrupted = () => { if (running || previewing || countdown >= 0) pause(); };
 onAudioInterruption(interrupted);
 const matchClock = new BeatClock({ now: audioTime,
@@ -197,13 +220,21 @@ const matchClock = new BeatClock({ now: audioTime,
     if (countdown >= 0) { if (config.beatEnabled) playBeat(sound, at); }
     else if (config.beatEnabled && (!finiteMatch(game) || startConsumed + index < game.limit)) playBeat(sound, at);
   },
-  frame(seconds) { if (running && countdown < 0) { const ms = seconds * 1000; game.elapsed += ms; game.periodTime += ms; game.playtime += ms; render(); } },
+  frame(seconds) {
+    if (!running || countdown >= 0) return;
+    const next = advanceTime(game, seconds * 1000);
+    if (next.ended) remember();
+    game = next;
+    if (game.ended) announceTimeEnd();
+    render();
+  },
   tick({ index }) {
     if (countdown >= 0) {
       countdown = index - 1;
       if (index === 5) { countdown = -1; beginMatchClock(); }
       render(); return;
     }
+    if (game.periods === -2) { persist(); return; }
     const next = finishTimedMatch({ ...game, consumed:game.consumed + 1 });
     if (next.ended) remember();
     game = next;
@@ -214,10 +245,13 @@ const matchClock = new BeatClock({ now: audioTime,
   }, interrupted });
 let startConsumed = 0;
 const previewClock = new BeatClock({ now: audioTime, schedule: ({ at }) => playBeat(sound, at), interrupted });
-function beginMatchClock() { running = true; startConsumed = game.consumed; matchClock.start(config.pace); }
+function beginMatchClock() {
+  if (game.periods === -2 && game.deadline == null) { game = { ...game, deadline: Date.now() + remainingTime(game) }; persist(); }
+  running = true; startConsumed = game.consumed; matchClock.start(config.pace);
+}
 function pause(silence = true) {
   requestId++; running = false; starting = false; countdown = -1; previewing = false;
-  matchClock.stop(); previewClock.stop(); stopAudio(!silence); releaseWake(); persist(); render();
+  matchClock.stop(); previewClock.stop(); stopAudio(!silence); if (!slotActive()) releaseWake(); persist(); render();
 }
 async function start() {
   if (starting || running || countdown >= 0 || game.ended || game.setComplete || (finiteMatch(game) && game.consumed >= game.limit)) return;
@@ -270,17 +304,26 @@ function resetMatch() {
   start();
 }
 function showWinner() {
-  const sets = game.periods === -1, a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
-  dialog(t('matchEnded'), t('matchResult', { team: teamName(a > b ? 'teamA' : 'teamB'), a, b }), t('startNewMatch'), resetMatch, t('close'));
+  const sets = setMatch(game), a = sets ? game.setsA : game.a, b = sets ? game.setsB : game.b;
+  const winnerSide = matchWinner(game), team = teamName(winnerSide === 'a' ? 'teamA' : 'teamB');
+  const resultKey = winnerSide ? 'matchResult' : 'drawResult';
+  dialog(t('matchEnded'), t(resultKey, { team, a, b }), t('startNewMatch'), resetMatch, t('close'));
   currentDialog.el.classList.add('jm-result-dialog');
   const message = currentDialog.el.querySelector('.jm-dialog-description');
   message.classList.add('jm-winner-message');
-  const [before, after] = t('matchResult', { team:'\0', a, b }).split('\0').map(text => {
-    const part = document.createElement('span'); part.textContent = text; return part;
-  });
-  const winner = document.createElement('span'); winner.className = 'jm-result-team';
-  winner.textContent = teamName(a > b ? 'teamA' : 'teamB'); winner.title = winner.textContent;
-  message.replaceChildren(before, winner, after);
+  if (winnerSide) {
+    const [before, after] = t(resultKey, { team:'\0', a, b }).split('\0').map(text => {
+      const part = document.createElement('span'); part.textContent = text; return part;
+    });
+    const winner = document.createElement('span'); winner.className = 'jm-result-team';
+    winner.textContent = team; winner.title = winner.textContent;
+    message.replaceChildren(before, winner, after);
+  }
+  if (game.periods === -2) {
+    const points = document.createElement('p'); points.className = 'jm-note';
+    points.textContent = t('setPointsScore', { a: game.setComplete ? 0 : game.a, b: game.setComplete ? 0 : game.b });
+    message.after(points);
+  }
   const scoreboard = document.createElement('div'); scoreboard.className = 'jm-final-score';
   for (const [team, score] of [['teamA', a], ['teamB', b]]) {
     const name = document.createElement('strong'), points = document.createElement('b');
@@ -353,6 +396,8 @@ window.addEventListener('blur', () => stopStoneHold(true));
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopStoneHold(true); });
 root.addEventListener('click', async event => {
   const button = event.target.closest('button'); if (!button || button.disabled) return;
+  const wasEnded = game.ended; updateSlotClock();
+  if (!wasEnded && game.ended) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
   if (button.dataset.preset) { stopAudio(true); Object.assign(sound, presets[button.dataset.preset]); if (previewing) previewClock.start(config.pace, true); else await togglePreview(); render(); persist(); return; }
@@ -374,16 +419,21 @@ root.addEventListener('click', async event => {
   else if (action === 'toggle') { if (running || countdown >= 0 || starting) pause(); else await start(); }
   else if (action === 'beat-preview') await togglePreview();
   else if (action === 'signal-preview') await endSignal();
-  else if (action === 'undo') { pause(); game = history.pop() || game; persist(); render(); }
+  else if (action === 'undo') {
+    pause(); const deadline = game.deadline; game = history.pop() || game;
+    if (game.periods === -2 && deadline != null) game = advanceTime({ ...game, deadline }, 0);
+    persist(); render(); if (game.ended) showWinner();
+  }
   else if (action === 'defaults') { pause(); config = { ...defaults }; render(); persist(); }
   else if (action === 'sound-defaults') { pause(); sound = { ...defaultSound }; config.signalCount = defaults.signalCount; render(); persist(); }
   else if (action === 'new') dialog(t('newMatchQuestion'), t('newMatchDescription'), t('startNewMatch'), resetMatch);
   else if (action === 'next') {
-    const sets = game.periods === -1, next = nextSection(game);
+    const sets = setMatch(game), next = nextSection(game);
     if (next === game) return;
     const title = sets ? 'nextSetQuestion' : next.golden ? 'tieQuestion' : next.ended ? 'finishQuestion' : 'nextPeriodQuestion';
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${teamName('teamA')} ${game.a} : ${game.b} ${teamName('teamB')}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
+      updateSlotClock(); if (game.ended) return;
       remember(); game = next; persist(); render();
       currentDialog.once('closed', () => { if (game.ended) showWinner(); else focusMatchButton(); });
       if (!game.ended) start();
@@ -442,7 +492,7 @@ root.addEventListener('input', event => {
     else if (key === 'direction') config[key] = input.value;
     else {
       const value = Number(input.value); if (!Number.isFinite(value) || input.value === '') return;
-      if (key === 'periods') { if (![-1, 0, 2].includes(value)) return; config[key] = value; }
+      if (key === 'periods') { if (![-2, -1, 0, 2].includes(value)) return; config[key] = value; }
       else config[key] = key === 'pace' ? clamp(value, .5, 3) : clamp(Math.round(value), Number(input.min), Number(input.max));
       if (key === 'pace' && previewing) previewClock.interval = config.pace;
     }
@@ -450,7 +500,10 @@ root.addEventListener('input', event => {
   }
 });
 root.addEventListener('focusout', event => { if (event.target.dataset.setting) render(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && (running || previewing || countdown >= 0)) pause(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && (running || previewing || countdown >= 0)) pause();
+  updateSlotClock(); if (!document.hidden && slotActive()) keepAwake();
+});
 window.addEventListener('pagehide', () => pause());
 window.addEventListener('online', () => { render(); setupOffline(render); });
 window.addEventListener('offline', render);
@@ -468,4 +521,6 @@ setupOffline(render);
 const matchLayout = new ResizeObserver(fitMatch);
 ['.jm-scroll', '[data-view=match]', '.jm-update', '.jm-offline'].forEach(selector => matchLayout.observe($(selector)));
 fitMatch();
+setInterval(updateSlotClock, 100);
+updateSlotClock(); if (slotActive()) keepAwake();
 console.assert(Object.values(texts).every(value => JSON.stringify(Object.keys(value).sort()) === JSON.stringify(Object.keys(texts.de).sort())), 'Übersetzungen vollständig');
