@@ -111,7 +111,7 @@ async function main() {
     await tab('info');
     assert.equal(await page.locator('.jm-release-notes').getAttribute('open'), null);
     await page.locator('.jm-release-notes summary').click();
-    assert.match(await page.locator('.jm-release-notes p').textContent(), /Endsignal.*sichtbaren Browser-Tab/);
+    assert.match(await page.locator('.jm-release-notes p').textContent(), /3, 2, 1, JUGGER.*Sekunde/);
     await page.locator('.jm-release-notes summary').click();
     for (const [index, count] of [3, 5, 4].entries()) {
       const details = page.locator('.jm-home-guide details').nth(index);

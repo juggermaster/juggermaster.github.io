@@ -10,7 +10,7 @@ const languageOptions = () => Object.entries(locales).map(([code, locale]) => `<
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const dist = join(root, 'dist'), src = join(root, 'web/src');
-const version = process.env.JUGGER_RELEASE || 'v40';
+const version = process.env.JUGGER_RELEASE || 'v41';
 if (!/^v[1-9]\d*(?:[.-][a-z0-9]+)*$/.test(version)) throw Error('Ungültige Versionsnummer.');
 if (resolve(dist) !== resolve(root, 'dist') || relative(root, dist) !== 'dist') throw Error('Ungültiges Build-Ziel.');
 const names = (await list(src)).map(path => relative(src, path).replaceAll('\\', '/')).filter(name => name !== 'service-worker.js' && !/^images\/icon-\d+\.png$/.test(name));
