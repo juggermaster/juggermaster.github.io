@@ -520,7 +520,10 @@ async function main() {
     await tab('setup');
     assert.equal(await page.locator('[data-team-choice=teamA] option[value=Falken]').count(), 1, 'Gespeicherte Teams bleiben offline verfügbar');
     await tab('sound'); assert.equal(await read('[data-output=pitch]'), '204.5 %'); assert.equal(await read('[data-output=signalVolume]'), '80 %');
-    await tab('match'); await click('toggle'); await page.waitForTimeout(650); await click('toggle');
+    await tab('match'); await click('toggle');
+    await page.locator('[data-read=status][data-running=true]').waitFor();
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '99');
+    await click('toggle');
     assert.equal(await read('[data-read=stones]'), '99', 'Offline-Spiel läuft nach erneutem URL-Aufruf');
     await tab('info');
     for (const [filename, title] of [['datenschutz.html', 'Privacy'], ['impressum.html', 'Legal notice'], ['hilfe.html', 'Help']]) {
