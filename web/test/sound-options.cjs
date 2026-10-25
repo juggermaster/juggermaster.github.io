@@ -15,7 +15,7 @@ module.exports = async (browser, url) => {
   page.on('console', message => { if (message.type() === 'warning' && message.text().startsWith('Audio import failed:')) importErrors.push(message.text()); });
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => { if (new URL(request.url()).origin !== new URL(url).origin) external.push(request.url()); });
-  await page.addInitScript(() => {
+  await context.addInitScript(() => {
     window.__samples = []; window.__sampleStops = []; window.__sampleSequence = 0;
     if (!window.AudioContext) return;
     const original = AudioContext.prototype.createBufferSource;
@@ -155,6 +155,38 @@ module.exports = async (browser, url) => {
     await page.locator('[data-action=beat-preview]').click();
     await target('signal'); await page.locator('[data-instrument]').selectOption('smallGong');
     await page.waitForFunction(() => window.__samples.some(sample => sample.duration === 12));
+    await upload('slot-end.wav', wave(4));
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.end.kind === 'custom');
+    const deadline = await page.evaluate(async () => {
+      const { newGame } = await import(new URL('core.mjs', document.querySelector('script[type=module]').src));
+      const saved = JSON.parse(localStorage.getItem('juggermaster:state:v2'));
+      saved.config = { ...saved.config, periods: -2, minutes: 1 };
+      const deadline = Date.now() + 60000;
+      saved.game = { ...newGame(saved.config), deadline };
+      localStorage.setItem('juggermaster:state:v2', JSON.stringify(saved));
+      return deadline;
+    });
+    await page.reload(); await ready(); await target('signal');
+    await page.locator('[data-action=signal-preview]').click(); await page.waitForFunction(() => window.__samples.length === 3);
+    await target('beat'); await page.evaluate(() => { window.__samples = []; });
+    const background = await context.newPage(); await background.goto(url + '#sound');
+    background.on('pageerror', error => errors.push(error.message));
+    await background.locator('.jm-app[data-ready=true]').waitFor();
+    await background.locator('[data-sound-target=signal]').click(); await background.locator('[data-action=signal-preview]').click();
+    await background.waitForFunction(() => window.__samples.length === 3);
+    await background.evaluate(() => { window.__sampleStops = []; });
+    await page.bringToFront();
+    await background.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    assert.equal(await background.evaluate(() => window.__sampleStops.filter(stop => stop.at === undefined).length), 3, 'Verdecken beendet auch allein laufende Endsignale');
+    await background.evaluate(() => { window.__samples = []; });
+    await Promise.all([page, background].map(tab => tab.evaluate(deadline => { Date.now = () => deadline + 1; }, deadline)));
+    await page.locator('.jm-result-dialog').waitFor({ state: 'visible' }); await background.locator('.jm-result-dialog').waitFor({ state: 'visible' });
+    assert.equal(await page.evaluate(() => window.__samples.length), 3, 'Ein Slotende erzeugt genau drei WAV-Schläge');
+    assert.equal(await background.evaluate(() => window.__samples.length), 0, 'Die verdeckte zweite Ansicht erzeugt keine weiteren Schläge');
+    assert.equal(await background.locator('[data-read=remaining-time]').textContent(), '00:00', 'Slot-Uhr endet auch in der verdeckten Ansicht');
     assert.deepEqual(errors, []); assert.deepEqual(external, []);
     console.log('OK: 82 percussion instruments, separate beat/end sounds and volume, WAV/MP3 persistence, validation, offline playback.');
   } finally { await context.close(); }

@@ -202,8 +202,8 @@ function render() {
   $('[data-action=use-custom]').textContent = customFiles[soundTarget]?.name || '';
   $('[data-action=use-custom]').setAttribute('aria-pressed', String(profile.kind === 'custom'));
   for (const action of ['use-custom', 'delete-custom', 'beat-preview', 'signal-preview']) $(`[data-action=${action}]`).disabled = soundBusy;
-  $('[data-read=sound-notice]').hidden = !soundError && !soundBusy && !starting;
-  $('[data-read=sound-notice]').textContent = t(soundError || 'soundLoading');
+  $('[data-read=sound-notice]').hidden = !soundError;
+  $('[data-read=sound-notice]').textContent = soundError ? t(soundError) : '';
   $('[data-action=beat-preview]').setAttribute('aria-pressed', String(previewing));
   $('[data-action=beat-preview]').hidden = soundTarget !== 'beat';
   $('[data-action=signal-preview]').hidden = soundTarget !== 'signal';
@@ -238,7 +238,7 @@ function announceTimeEnd() {
   pause(false);
   if (currentDialog) { currentDialog.once('closed', showWinner); currentDialog.close(); }
   else showWinner();
-  playEndSignal(sound, config.signalCount);
+  if (!document.hidden) playEndSignal(sound, config.signalCount);
 }
 function updateSlotClock() {
   if (!slotActive()) return;
@@ -585,6 +585,7 @@ root.addEventListener('input', event => {
 root.addEventListener('focusout', event => { if (event.target.dataset.setting) render(); });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && (running || previewing || countdown >= 0)) pause();
+  else if (document.hidden) { requestId++; stopAudio(); }
   updateSlotClock(); if (!document.hidden && slotActive()) keepAwake();
 });
 window.addEventListener('pagehide', () => pause());
