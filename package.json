@@ -4,8 +4,13 @@
   "private": true,
   "license": "MIT",
   "homepage": "https://juggermaster.github.io/",
-  "repository": { "type": "git", "url": "https://github.com/juggermaster/juggermaster.github.io.git" },
-  "bugs": { "url": "https://github.com/juggermaster/juggermaster.github.io/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juggermaster/juggermaster.github.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/juggermaster/juggermaster.github.io/issues"
+  },
   "type": "module",
   "scripts": {
     "build": "node web/scripts/build.mjs",
@@ -21,6 +26,7 @@
   },
   "devDependencies": {
     "playwright": "1.64.1",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "spessasynth_core": "4.3.22"
   }
 }

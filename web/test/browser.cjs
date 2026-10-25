@@ -7,7 +7,7 @@ const { spawnSync } = require('node:child_process');
 const playwright = require('playwright');
 const root = path.resolve(__dirname, '../..'), dist = path.join(root, 'dist');
 const executablePath = process.env.CHROME_PATH || undefined;
-const csp = "default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const csp = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const types = { '.html': 'text/html', '.mjs': 'text/javascript', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
 function build(version) {
   const result = spawnSync(process.execPath, [path.join(root, 'web/scripts/build.mjs')], { cwd: root, env: { ...process.env, JUGGER_RELEASE: version }, encoding: 'utf8' });
@@ -47,8 +47,14 @@ async function main() {
   });
   let page = await context.newPage(); page.setDefaultTimeout(10000);
   const read = selector => page.locator(selector).textContent();
-  const click = action => page.locator(`[data-action=${action}]:visible`).click();
-  const tab = async view => { await page.locator(`[data-tab=${view}]`).click(); await page.locator(`[data-view=${view}]`).waitFor({ state: 'visible' }); };
+  const click = async action => {
+    if (['beat-preview', 'signal-preview'].includes(action)) {
+      const target = action === 'beat-preview' ? 'beat' : 'signal';
+      if (await page.locator(`[data-sound-target=${target}]`).getAttribute('aria-selected') !== 'true') await page.locator(`[data-sound-target=${target}]`).click();
+    }
+    await page.locator(`[data-action=${action}]:visible`).click();
+  };
+  const tab = async view => { await page.locator(`[data-tab=${view}]`).click(); await page.locator(`[data-view=${view}]`).waitFor({ state: 'visible' }); if (view === 'sound') await page.locator('[data-sound-target=beat]').click(); };
   const range = (key, value, type = 'sound') => page.locator(`[data-${type}=${key}]`).evaluate((input, value) => { input.value = String(value); input.dispatchEvent(new Event('input', { bubbles: true })); }, value);
   const chooseLanguage = async language => { await click('language-menu'); await page.locator(`[data-language-option=${language}]`).click(); };
   const resetAudio = () => page.evaluate(() => { window.__starts = []; window.__ends = []; window.__cancelled = 0; });
@@ -83,6 +89,7 @@ async function main() {
   };
   try {
     await require('./audio.cjs')(browser, url);
+    await require('./sound-options.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
     assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
@@ -101,6 +108,10 @@ async function main() {
     assert.equal(await page.locator('.jm-scroll>.jm-alert').count(), 0, 'Keine Statusmeldungen unter dem Header');
     assert.equal(await page.locator('.jm-home-hint').count(), 0, 'Kein Homescreen-Hinweis unter dem Header');
     await tab('info');
+    assert.equal(await page.locator('.jm-release-notes').getAttribute('open'), null);
+    await page.locator('.jm-release-notes summary').click();
+    assert.match(await page.locator('.jm-release-notes p').textContent(), /SpessaSynth.*WAV\/MP3/);
+    await page.locator('.jm-release-notes summary').click();
     for (const [index, count] of [3, 5, 4].entries()) {
       const details = page.locator('.jm-home-guide details').nth(index);
       await details.locator('summary').click();
@@ -135,21 +146,22 @@ async function main() {
     await page.locator('[data-action=defaults]').click();
     await newMatch({ periods:-1 });
     await tab('sound');
-    assert.equal(await page.locator('[data-preset=drum]').getAttribute('aria-pressed'), 'true', 'Trommel ist die frische Klangvorgabe');
-    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), true);
-    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true);
+    assert.equal(await page.locator('[data-instrument]').inputValue(), 'timpani', 'Pauke ist die frische Klangvorgabe');
+    assert.equal(await page.locator('[data-sound=beatNormalize], [data-sound=signalNormalize]').count(), 0);
     for (const preset of ['stone', 'drum', 'deep']) {
       await resetAudio();
-      await page.locator(`[data-preset=${preset}]`).click();
+      await page.locator('[data-instrument]').selectOption(preset);
       await page.waitForFunction(() => window.__starts.length > 0);
       assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'true', `${preset}: Klangwahl startet den Takt`);
       assert.equal(await read('[data-read=stones]'), '0', 'Hörprobe verändert keine Spielsteine');
       await click('beat-preview');
       assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false');
     }
+    await page.locator('[data-sound-target=signal]').click(); await page.locator('[data-instrument]').selectOption('deep');
+    await page.locator('[data-sound-target=beat]').click();
     for (const target of ['match', 'setup', 'info']) {
       await tab('sound'); await resetAudio();
-      await page.locator('[data-preset=deep]').click(); await click('signal-preview');
+      await page.locator('[data-instrument]').selectOption('deep'); await click('signal-preview');
       await page.waitForFunction(() => window.__starts.length > 0);
       await tab(target);
       assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false', `${target}: Taktvorschau endet beim Tabwechsel`);
@@ -189,14 +201,14 @@ async function main() {
     await tab('sound'); await resetAudio(); await click('beat-preview');
     await page.waitForFunction(() => window.__starts.length >= 21);
     const times = [...new Set((await audio()).starts)]; assert.ok(Math.abs(times[1] - times[0] - .5) < .001);
-    await resetAudio(); await page.locator('[data-preset=drum]').click();
+    await resetAudio(); await page.locator('[data-instrument]').selectOption('drum');
     assert.ok((await audio()).cancelled >= 7, 'Klangwechsel beendet die ausklingenden Gong-Takttöne');
     assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'true');
     await page.waitForFunction(() => window.__starts.length >= 4);
     const drumTimes = [...new Set((await audio()).starts)];
     assert.ok(Math.abs(drumTimes[1] - drumTimes[0] - .5) < .001, 'Hörprobe startet mit dem neuen Klang im eingestellten Takt');
     assert.equal(await read('[data-read=stones]'), '4', 'Klangwechsel verändert den Spielzähler nicht');
-    await page.locator('[data-preset=deep]').click();
+    await page.locator('[data-instrument]').selectOption('deep');
     await range('pitch', 220); await chooseLanguage('en'); assert.equal(await read('[data-i18n=previewBeat]'), 'Stop beat');
     await chooseLanguage('de'); await click('beat-preview');
     const stopped = (await audio()).starts.length; await page.waitForTimeout(700); assert.equal((await audio()).starts.length, stopped);
@@ -448,24 +460,19 @@ async function main() {
     assert.equal(await page.locator('[data-setting=teamA]').inputValue(), 'Falken', 'Gespeicherten Namen direkt im kombinierten Feld eingeben');
     assert.equal(await page.locator('[data-setting=colorA]').inputValue(), '#123456');
     await tab('sound'); await range('pitch', 300); await range('volume', 12); await range('signalVolume', 20);
-    await page.locator('[data-sound=beatNormalize]').uncheck();
-    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true, 'Takt-Schalter verändert das Endsignal nicht');
-    await page.locator('[data-sound=signalNormalize]').uncheck();
     await page.reload(); await ready(); await tab('sound');
-    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), false);
-    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), false, 'Beide Schalter bleiben nach Neustart gespeichert');
-    await page.locator('[data-preset=stone]').click();
-    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), false, 'Klangwahl setzt die Schalter nicht zurück');
-    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), false);
+    assert.equal(await page.locator('[data-sound=volume]').inputValue(), '12');
+    assert.equal(await page.locator('[data-sound=signalVolume]').inputValue(), '20', 'Getrennte Lautstärken bleiben gespeichert');
+    await page.locator('[data-instrument]').selectOption('stone');
+    await page.locator('[data-sound-target=signal]').click();
     await page.locator('[data-setting=signalCount]').fill('7');
+    await page.locator('[data-sound-target=beat]').click();
     const beforeSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
     await click('beat-preview'); await click('sound-defaults');
     const afterSoundDefaults = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
     const { defaultSound } = await import(pathToFileURL(path.join(root, 'web/src/core.mjs')).href);
     assert.deepEqual(afterSoundDefaults.sound, defaultSound);
-    assert.equal(await page.locator('[data-preset=drum]').getAttribute('aria-pressed'), 'true');
-    assert.equal(await page.locator('[data-sound=beatNormalize]').isChecked(), true);
-    assert.equal(await page.locator('[data-sound=signalNormalize]').isChecked(), true);
+    assert.equal(await page.locator('[data-instrument]').inputValue(), 'timpani');
     assert.deepEqual(afterSoundDefaults.config, { ...beforeSoundDefaults.config, signalCount: defaults.signalCount });
     assert.deepEqual(afterSoundDefaults.teams, beforeSoundDefaults.teams);
     assert.deepEqual(afterSoundDefaults.game, beforeSoundDefaults.game);
@@ -493,7 +500,7 @@ async function main() {
         assert.equal(navAfter.y, navBefore.y, `Tabs bleiben beim Scrollen sichtbar: ${view}/${width}`);
         assert.ok(await page.locator('.jm-body').evaluate(element => element.getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top + 1), 'Inhalt überlappt keine Tabs');
         if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
-        if (view === 'sound') await page.locator('[data-action=signal-preview]').click({ trial: true });
+        if (view === 'sound') { await page.locator('[data-sound-target=signal]').click(); await page.locator('[data-action=signal-preview]').click({ trial: true }); }
       }
     }
     await page.locator('.jm-brand').evaluate(element => { element.style.fontFamily = ''; });
@@ -512,7 +519,7 @@ async function main() {
     assert.equal(await page.locator('.jm-offline').isHidden(), true, 'Auch nach Offline-Neustart kein Hinweis unter der Navigation');
     await tab('setup');
     assert.equal(await page.locator('[data-team-choice=teamA] option[value=Falken]').count(), 1, 'Gespeicherte Teams bleiben offline verfügbar');
-    await tab('sound'); assert.equal(await read('[data-output=pitch]'), '225 Hz'); assert.equal(await read('[data-output=signalVolume]'), '80 %');
+    await tab('sound'); assert.equal(await read('[data-output=pitch]'), '204.5 %'); assert.equal(await read('[data-output=signalVolume]'), '80 %');
     await tab('match'); await click('toggle'); await page.waitForTimeout(650); await click('toggle');
     assert.equal(await read('[data-read=stones]'), '99', 'Offline-Spiel läuft nach erneutem URL-Aufruf');
     await tab('info');
@@ -531,7 +538,7 @@ async function main() {
     await licenses.locator('summary').click();
     const documents = licenses.locator('[data-locale=en] [data-license]');
     await documents.first().waitFor({ state:'visible' });
-    assert.equal(await documents.count(), 9, 'Projektlizenz, Hinweise und alle Komponenten aufklappbar');
+    assert.equal(await documents.count(), 14, 'Projektlizenz, Hinweise und alle Komponenten aufklappbar');
     for (const panel of await documents.all()) {
       const filename = await panel.getAttribute('data-license');
       let requests = 0;
@@ -614,7 +621,7 @@ async function main() {
           }
           if (view === 'sound') {
             assert.equal(await sample.locator('[data-action=sound-defaults]').textContent(), texts[language].loadDefaults);
-            for (const key of ['beatNormalize', 'signalNormalize']) assert.equal(await sample.locator(`[data-sound=${key}]`).evaluate(input => input.labels[0].textContent.trim()), texts[language][key]);
+            assert.equal(await sample.locator('[data-sound-target=signal]').textContent(), texts[language].endSound);
           }
           if (view === 'info') {
             assert.equal(await sample.locator('#jm-home-title').textContent(), texts[language].homeTitle);

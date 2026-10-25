@@ -85,6 +85,7 @@ if (mode === 'source') {
   }
   assert.ok(cached.some(file => file.url === 'LICENSE.txt'));
   assert.ok(cached.some(file => file.url === 'THIRD_PARTY_NOTICES.txt'));
-  assert.equal(cached.filter(file => /LICENSE-.*\.txt$/.test(file.url)).length, 7);
+  assert.equal(cached.filter(file => /LICENSE-.*\.txt$/.test(file.url)).length, 12);
+  assert.ok(cached.some(file => file.url.endsWith('/percussion.sf2')));
   console.log(`OK: generated PNG sizes, 23-language pages, licence files and ${cached.length} offline integrity hashes.`);
 } else throw Error('Use source, build or history [commit].');

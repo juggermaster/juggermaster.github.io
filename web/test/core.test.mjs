@@ -198,15 +198,23 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.deepEqual(Object.keys(texts.de).sort(), Object.keys(texts.en).sort());
 });
 
-test('Trommel als Vorgabe und unabhängiger Lautstärkeausgleich', () => {
-  assert.equal(defaultSound.kind, 'drum');
-  assert.equal(defaultSound.beatNormalize, true); assert.equal(defaultSound.signalNormalize, true);
-  assert.equal(cleanSound({ beatNormalize: false }).beatNormalize, false);
-  assert.equal(cleanSound({ signalNormalize: false }).signalNormalize, false);
-  assert.equal(cleanSound({ beatNormalize: 'false', signalNormalize: 0 }).beatNormalize, true);
-  assert.equal(cleanSound({ beatNormalize: 'false', signalNormalize: 0 }).signalNormalize, true);
+test('Getrennte Klangprofile und Lautstärken, ältere Klangwahl erhalten', () => {
+  assert.equal(defaultSound.kind, 'spessa');
+  assert.equal(cleanSound().instrument, 'timpani');
+  assert.equal(cleanSound().end.instrument, 'smallGong');
+  assert.deepEqual(cleanSound(), defaultSound);
+  assert.equal(cleanSound({ beatNormalize: false }).beatNormalize, undefined);
+  assert.equal(cleanSound({ signalNormalize: false }).signalNormalize, undefined);
   const oldGong = { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2, volume: 40, signalVolume: 80 };
-  assert.deepEqual(cleanSound(oldGong), { ...oldGong, beatNormalize: true, signalNormalize: true }, 'Gespeicherte Klangwahl bleibt erhalten');
+  assert.deepEqual(cleanSound(oldGong).end, { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2 }, 'Alter gemeinsamer Klang wird für beide Profile übernommen');
+  const separate = cleanSound({ ...oldGong, end: { kind: 'spessa', instrument: 'largeGong', decay: 6 } });
+  assert.equal(separate.kind, 'gong'); assert.equal(separate.end.kind, 'spessa'); assert.equal(separate.end.instrument, 'largeGong');
+  assert.equal(separate.volume, 40); assert.equal(separate.signalVolume, 80);
+  assert.equal(cleanSound({ kind: 'spessa', instrument: '../invalid' }).instrument, 'timpani');
+  assert.equal(cleanSound({ kind: 'custom', decay: 30 }).decay, 30);
+  assert.equal(cleanSound({ kind: 'drum', decay: 30 }).decay, .5);
+  const sound = cleanSound(); sound.end.pitch = 200;
+  assert.equal(sound.pitch, 110); assert.equal(cleanSound().end.pitch, 110, 'Profile teilen keine veränderlichen Objekte');
 });
 
 test('Gespeicherte Teams validieren', () => {

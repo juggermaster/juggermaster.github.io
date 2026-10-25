@@ -9,7 +9,8 @@ Open Source Jugger Game Assistant. Jugger match timing and scoring in a mobile w
 - Sets by default, plus sets with a match-wide time limit in minutes (20 minutes by default), stone-based matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats. Normal set rules end timed sets as soon as the selected sets-to-win target is reached. If the time limit expires first, rank won sets first, then points in the current unfinished set; a complete tie ends in a draw. A countdown clock replaces the stone counter in timed sets. Timed sets use a fixed wall-clock deadline: points, fouls, pauses, set changes, reloads and undo never extend the tournament slot.
 - Configurable stones, interval, teams, colours, countdown and up/down counting.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
-- Synthesised stone-on-metal, gong and drum sounds, with drum as the default. Separate beat and Jugg/period-end volume and optional volume levelling for each; one to ten overlapping end beats.
+- Independent beat and Jugg/period-end sound profiles: 82 SpessaSynth percussion instruments (including triangle, claves and the complete GM/GS percussion set), the original stone-on-metal, gong and drum synthesis, or your own WAV/MP3 for either profile. Separate volumes, always-on volume levelling, and one to ten overlapping end beats. Defaults: timpani for the beat and small gong for the end signal.
+- Own audio files stay in this browser's IndexedDB and work offline; up to 10 MiB and 30 seconds per profile. Removing a file affects only that profile. Clearing site data removes these files too.
 - Continuous sound preview, local match state and 30 undo steps. Reopening always restores a paused match.
 - 23 languages, automatic browser-language selection, saved manual choice and original SVG flags. Hebrew uses right-to-left text.
 - Responsive layout, always-visible bottom tabs, foreground screen wake lock, home-screen instructions in Info, offline help, legal pages and licence notices.
@@ -48,7 +49,7 @@ Before pushing: finish local changes and checks, commit locally, inspect the act
 
 After every push, monitor GitHub Actions through the checks and deployment, fix any failures, and verify that the live site serves the checked release build. Publication is complete only after those checks succeed.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v38`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v39`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 
@@ -64,6 +65,6 @@ Use [Issues](https://github.com/juggermaster/juggermaster.github.io/issues) for 
 
 The project's own code, documentation and original graphics are under the [MIT licence](LICENSE). Commercial use, modification and redistribution are allowed provided copyright and licence notices remain. The licence includes warranty and liability disclaimers.
 
-Third-party code retains its own licences. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `web/vendor/LICENSE-*.txt`, all included in the offline build. Flags and canine-skull artwork are original geometric drawings. Sounds are synthesised; no external artwork, fonts or audio files are loaded.
+Third-party code and recordings retain their own licences. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `web/vendor/LICENSE-*.txt`, all included in the offline build. Flags and canine-skull artwork are original geometric drawings. Sound libraries and recordings ship locally; runtime playback needs no external service. User-selected audio is not uploaded.
 
 `private: true` in `package.json` prevents accidental npm publishing. It does not make the GitHub repository or website private.

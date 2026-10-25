@@ -14,6 +14,7 @@ const path = require('node:path');
       server.once('exit', code => reject(Error(`Preview server exited: ${code}`)));
     });
     browser = await webkit.launch();
+    await require('./sound-options.cjs')(browser, 'http://127.0.0.1:4178/');
     const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', colorScheme:'light', serviceWorkers:'block' });
     try {
       const page = await compact.newPage();
@@ -187,7 +188,7 @@ const path = require('node:path');
             if (view === 'setup') assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
             if (view === 'info') assert.equal(await page.locator('[data-view=info]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
             if (['setup', 'sound'].includes(view) && device === 'iPhone 13' && language === 'de') {
-              for (const input of await page.locator(`[data-view=${view}] input[type=range]`).all()) {
+              for (const input of await page.locator(`[data-view=${view}] input[type=range]:visible`).all()) {
                 await input.locator('..').scrollIntoViewIfNeeded();
                 const value = await input.inputValue();
                 const fraction = await input.evaluate(element => (Number(element.value) - Number(element.min)) / (Number(element.max) - Number(element.min)));
@@ -198,12 +199,9 @@ const path = require('node:path');
               }
             }
             if (view === 'sound') {
+              await page.locator('[data-sound-target=signal]').click();
               await page.locator('[data-action=signal-preview]').click({ trial: true });
-              for (const key of ['beatNormalize', 'signalNormalize']) {
-                const input = page.locator(`[data-sound=${key}]`);
-                assert.equal(await input.isChecked(), true); await input.uncheck();
-                assert.equal(await input.isChecked(), false); await input.check();
-              }
+              assert.equal(await page.locator('[data-sound=beatNormalize], [data-sound=signalNormalize]').count(), 0);
             }
           }
           await page.locator('[data-tab=info]').click();

@@ -41,13 +41,14 @@ module.exports = async (browser, url) => {
         for (const signal of [false, true]) {
           const active = signal ? 'signalNormalize' : 'beatNormalize', other = signal ? 'beatNormalize' : 'signalNormalize', volume = signal ? 'signalVolume' : 'volume';
           for (const enabled of [false, true]) {
-            const sound = { ...defaultSound, ...presets.deep, [active]: enabled, [volume]: 50 };
+            const sound = { ...defaultSound, ...presets.deep, end: { ...presets.deep }, [active]: enabled, [volume]: 50 };
             const measured = await render(sound, .22, signal), half = await render({ ...sound, [volume]: 25 }, .22, signal);
             const independent = await render({ ...sound, [other]: false }, .22, signal);
             switches.push({ signal, enabled, changeDb: 20 * Math.log10(measured.last / measured.first), volumeRatio: measured.last / half.last, otherSwitchDb: 20 * Math.log10(measured.last / independent.last) });
           }
         }
-        const stress = await render({ ...defaultSound, ...presets.deep, pitch: 70, metal: 0, attack: 100, decay: 6, volume: 100, signalVolume: 100, beatNormalize: false, signalNormalize: false }, .22, true, true);
+        const loud = { ...presets.deep, pitch:70, metal:0, attack:100, decay:6 };
+        const stress = await render({ ...defaultSound, ...loud, end: { ...loud }, volume: 100, signalVolume: 100 }, .22, true, true);
         return { cadence, switches, stress };
       } finally { window.AudioContext = original; Math.random = random; }
     });
@@ -55,9 +56,9 @@ module.exports = async (browser, url) => {
     for (const row of result.switches) {
       assert.ok(Math.abs(row.otherSwitchDb) < .001, `Takt- und Endsignal-Ausgleich sind voneinander unabhängig: ${JSON.stringify(row)}`);
       assert.ok(Math.abs(row.volumeRatio - 2) < .01, 'Lautstärkeregler bleiben proportional');
-      assert.ok(row.enabled ? Math.abs(row.changeDb) < 1.2 : row.changeDb > 2, `Ausgleich lässt sich hörbar abschalten: ${JSON.stringify(row)}`);
+      assert.ok(Math.abs(row.changeDb) < 1.2, `Ausgleich bleibt auch mit alten gespeicherten Schaltern aktiv: ${JSON.stringify(row)}`);
     }
     assert.ok(result.stress.peak < 1, 'Auch zahlreiche überlagerte Endsignale bleiben unter der Übersteuerungsgrenze');
-    console.log('OK: gerenderte Audiowellen, gleichmäßiger erster Schlag, getrennt abschaltbarer Ausgleich, proportionale Lautstärke, überlagerte Endsignale.');
+    console.log('OK: gerenderte Audiowellen, immer aktiver Ausgleich, getrennte proportionale Lautstärken, überlagerte Endsignale.');
   } finally { await context.close(); }
 };

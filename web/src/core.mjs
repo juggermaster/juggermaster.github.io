@@ -1,4 +1,5 @@
 import { locales } from './locale.mjs';
+import { instruments } from './instruments.mjs';
 
 export const defaults = Object.freeze({
   teamA: 'Raben', teamB: 'Wölfe', colorA: '#c9724f', colorB: '#76a38b',
@@ -12,7 +13,8 @@ export const presets = Object.freeze({
   deep: { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2 },
   drum: { kind: 'drum', pitch: 110, metal: 15, attack: 75, decay: .5 }
 });
-export const defaultSound = Object.freeze({ ...presets.drum, volume: 55, signalVolume: 90, beatNormalize: true, signalNormalize: true });
+const defaultBeat = Object.freeze({ ...presets.drum, kind: 'spessa', instrument: 'timpani', decay: instruments.timpani.decay });
+export const defaultSound = Object.freeze({ ...defaultBeat, end: Object.freeze({ ...presets.drum, kind: 'spessa', instrument: 'smallGong', decay: instruments.smallGong.decay }), volume: 55, signalVolume: 90 });
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const finiteMatch = game => game.periods > 0 && !game.golden;
 export const setMatch = game => game.periods < 0;
@@ -40,10 +42,20 @@ export function cleanConfig(raw = {}) {
 
 export function cleanSound(raw = {}) {
   if (!raw || typeof raw !== 'object') raw = {};
-  const result = { ...defaultSound };
-  if (['gong', 'stone', 'drum'].includes(raw.kind)) result.kind = raw.kind;
-  for (const [key, min, max] of [['pitch', 70, 400], ['metal', 0, 100], ['attack', 0, 100], ['decay', .4, 6], ['volume', 0, 100], ['signalVolume', 0, 100]]) if (number(raw[key], min, max)) result[key] = raw[key];
-  for (const key of ['beatNormalize', 'signalNormalize']) if (typeof raw[key] === 'boolean') result[key] = raw[key];
+  const profile = (value, fallback) => {
+    if (!value || typeof value !== 'object') value = {};
+    const validKind = ['gong', 'stone', 'drum', 'spessa', 'custom'].includes(value.kind);
+    const result = validKind ? { ...presets.drum, kind: value.kind } : { ...fallback };
+    if (result.kind === 'spessa') {
+      result.instrument = Object.hasOwn(instruments, value.instrument) ? value.instrument : fallback.instrument || 'timpani';
+      result.decay = instruments[result.instrument].decay;
+    }
+    for (const [key, min, max] of [['pitch', 70, 400], ['metal', 0, 100], ['attack', 0, 100], ['decay', .4, result.kind === 'custom' ? 30 : 6]]) if (number(value[key], min, max)) result[key] = value[key];
+    return result;
+  };
+  const legacy = ['gong', 'stone', 'drum', 'spessa', 'custom'].includes(raw.kind) ? raw : undefined;
+  const result = { ...defaultSound, ...profile(raw, defaultBeat), end: profile(raw.end ?? legacy, defaultSound.end) };
+  for (const key of ['volume', 'signalVolume']) if (number(raw[key], 0, 100)) result[key] = raw[key];
   return result;
 }
 
