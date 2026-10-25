@@ -31,9 +31,10 @@ jobs:
       - name: Use the Ubuntu archive for browser dependencies
         run: sudo find /etc/apt -maxdepth 2 -type f \( -name '*.list' -o -name '*.sources' -o -name 'apt-mirrors.txt' \) -exec sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' {} +
       - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:browser
       - run: npm run build
       - run: npm run test:webkit
+      - run: npm run test:browser
+      - run: npm run build
       - run: npm run check:build
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'

@@ -15,6 +15,18 @@ module.exports = async (browser, url) => {
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => { if (new URL(request.url()).origin !== new URL(url).origin) external.push(request.url()); });
   await page.addInitScript(() => {
+    window.__importErrors = [];
+    const observe = (prototype, method) => {
+      const original = prototype?.[method]; if (!original) return;
+      const failed = error => { window.__importErrors.push(`${method}: ${error.name}: ${error.message}`); throw error; };
+      prototype[method] = function (...args) {
+        try { const result = original.apply(this, args); return result?.then ? result.catch(failed) : result; }
+        catch (error) { return failed(error); }
+      };
+    };
+    observe((window.OfflineAudioContext || window.webkitOfflineAudioContext)?.prototype, 'decodeAudioData');
+    observe(Blob.prototype, 'arrayBuffer');
+    observe(IDBObjectStore.prototype, 'put');
     window.__samples = []; window.__sampleStops = []; window.__sampleSequence = 0;
     if (!window.AudioContext) return;
     const original = AudioContext.prototype.createBufferSource;
@@ -92,7 +104,8 @@ module.exports = async (browser, url) => {
     await page.locator('[data-sound-target=beat]').click();
     assert.equal(await page.locator('[data-instrument]').inputValue(), 'timpani');
     await upload('my-beat.wav', wave());
-    await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.kind === 'custom');
+    await page.waitForFunction(() => !document.querySelector('[data-audio-file]').disabled);
+    assert.equal((await state()).sound.kind, 'custom', JSON.stringify(await page.evaluate(() => ({ errors: window.__importErrors, notice: document.querySelector('[data-read=sound-notice]').textContent, offline: typeof (window.OfflineAudioContext || window.webkitOfflineAudioContext) }))));
     assert.equal((await state()).sound.end.instrument, 'largeGong');
     await target('signal'); await page.locator('[data-audio-file]').setInputFiles(path.join(__dirname, 'fixtures/gong.mp3'));
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.end.kind === 'custom');
