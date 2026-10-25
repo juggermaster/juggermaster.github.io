@@ -66,7 +66,7 @@ export async function importAudioFile(target, file) {
   const Offline = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
   if (!Offline) throw Error('audioFailed');
   let buffer;
-  try { buffer = await new Offline(1, 1, 44100).decodeAudioData(await file.arrayBuffer()); } catch { throw Error('customInvalid'); }
+  try { buffer = await new Offline(1, 1, 44100).decodeAudioData(await file.arrayBuffer()); } catch (cause) { throw Error('customInvalid', { cause }); }
   if (buffer.duration > 30) throw Error('customTooLong');
   await audioFile(target, 'put', { file, duration: buffer.duration });
   custom.set(target, levelSample(buffer));

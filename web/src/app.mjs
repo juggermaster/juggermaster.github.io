@@ -554,7 +554,10 @@ root.addEventListener('change', async event => {
     customFiles[target] = { name: file.name, duration };
     Object.assign(target === 'beat' ? sound : sound.end, { kind: 'custom', pitch: 110, attack: 75, decay: duration });
     persist();
-  } catch { soundError = 'customFileFailed'; }
+  } catch (error) {
+    console.warn('Audio import failed:', error.cause?.name || error.name, error.cause?.message || error.message);
+    soundError = 'customFileFailed';
+  }
   finally { input.value = ''; soundBusy = false; render(); }
 });
 root.addEventListener('input', event => {
