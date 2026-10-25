@@ -90,6 +90,7 @@ async function main() {
   try {
     await require('./audio.cjs')(browser, url);
     await require('./sound-options.cjs')(browser, url);
+    await require('./countdown.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
     assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
@@ -249,8 +250,10 @@ async function main() {
     }
     await newMatch({ periods:2, rounds:2, direction:'down', limit:20, pace:.5, countdown:true });
     await click('toggle'); assert.equal(await read('[data-read=stones]'), '20');
-    await page.waitForTimeout(700); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
-    await click('toggle'); assert.equal(await read('[data-read=status]'), 'PAUSIERT');
+    await page.locator('.jm-countdown-dialog').waitFor({ state: 'visible' });
+    await page.waitForTimeout(500); assert.equal(await read('[data-read=stones]'), '20', 'Countdown verbraucht keine Steine');
+    await page.keyboard.press('Escape');
+    assert.equal(await read('[data-read=status]'), 'PAUSIERT');
     for (const height of [600, 1000]) {
       await page.setViewportSize({ width: 390, height });
       await page.emulateMedia({ reducedMotion: height === 600 ? 'reduce' : 'no-preference' });
@@ -292,7 +295,7 @@ async function main() {
       await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
       assert.equal(await read('[data-read=phase]'), '1. Satz');
       await page.locator('[data-read=status][data-running=true]').waitFor();
-      assert.equal(await read('[data-read=start-label]'), height === 1000 ? 'Start abbrechen' : 'Spiel pausieren', 'Neustart aus dem Siegerdialog beginnt sofort, optional mit Countdown');
+      assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren', 'Neustart aus dem Siegerdialog läuft nach dem optionalen Countdown');
       await click('toggle');
       assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
       assert.match(await read('[data-read=sets]'), /0 : 0/);
@@ -307,9 +310,10 @@ async function main() {
     assert.equal(await bottomNew.textContent(), 'Neues Spiel');
     await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
-    await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog:not(.jm-countdown-dialog)').waitFor({ state: 'hidden' });
     await page.locator('[data-read=status][data-running=true]').waitFor();
-    assert.equal(await read('[data-read=start-label]'), 'Start abbrechen', 'Auch der normale Neustart startet sofort mit dem eingestellten Countdown');
+    await page.locator('.jm-countdown-dialog').waitFor({ state:'hidden' });
+    assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren', 'Auch der normale Neustart läuft nach dem eingestellten Countdown');
     await click('toggle');
     const afterNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
     assert.deepEqual(afterNew.config, beforeNew.config, 'Neues Spiel im Spiel-Tab behält Teams, Farben und Einstellungen');

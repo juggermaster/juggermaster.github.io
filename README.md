@@ -7,7 +7,7 @@ Open Source Jugger Game Assistant. Jugger match timing and scoring in a mobile w
 ## Features
 
 - Sets by default, plus sets with a match-wide time limit in minutes (20 minutes by default), stone-based matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats. Normal set rules end timed sets as soon as the selected sets-to-win target is reached. If the time limit expires first, rank won sets first, then points in the current unfinished set; a complete tie ends in a draw. A countdown clock replaces the stone counter in timed sets. Timed sets use a fixed wall-clock deadline: points, fouls, pauses, set changes, reloads and undo never extend the tournament slot.
-- Configurable stones, interval, teams, colours, countdown and up/down counting.
+- Configurable stones, interval, teams, colours and up/down counting. The optional start countdown shows 3, 2, 1, JUGGER in a one-second dialog, independently of the stone interval.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
 - Independent beat and Jugg/period-end sound profiles: 82 SpessaSynth percussion instruments (including triangle, claves and the complete GM/GS percussion set), the original stone-on-metal, gong and drum synthesis, or your own WAV/MP3 for either profile. Separate volumes, always-on volume levelling, and one to ten overlapping end beats. Defaults: timpani for the beat and small gong for the end signal.
 - Own audio files stay in this browser's IndexedDB and work offline; up to 10 MiB and 30 seconds per profile. Removing a file affects only that profile. Clearing site data removes these files too.

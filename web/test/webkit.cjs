@@ -15,6 +15,7 @@ const path = require('node:path');
     });
     browser = await webkit.launch();
     await require('./sound-options.cjs')(browser, 'http://127.0.0.1:4178/');
+    await require('./countdown.cjs')(browser, 'http://127.0.0.1:4178/');
     const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', colorScheme:'light', serviceWorkers:'block' });
     try {
       const page = await compact.newPage();

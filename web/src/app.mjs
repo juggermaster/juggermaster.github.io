@@ -15,7 +15,7 @@ let soundTarget = 'beat', soundBusy = false, soundError = null;
 const customFiles = { beat: null, signal: null }, profileKeys = ['pitch', 'metal', 'attack', 'decay'];
 const editedSound = () => soundTarget === 'beat' ? sound : sound.end;
 let language = 'de', theme = 'dark', view = ['info', 'sound', 'setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'match', running = false, starting = false, previewing = false;
-let countdown = -1, requestId = 0, currentDialog = null, lastFocus = null, wakeLock = null;
+let countdown = -1, requestId = 0, currentDialog = null, countdownDialog = null, lastFocus = null, wakeLock = null;
 let noticeKey = null, lastSave = '', storageError = false, freshState = true;
 let stoneHold = null, ignoreStoneClick = null;
 const ranges = new Map(), t = (key, values) => translate(language, key, values);
@@ -152,8 +152,7 @@ function render() {
   $('[data-action=toggle] [data-icon=play]').toggleAttribute('hidden', running || countdown >= 0);
   $('[data-action=toggle] [data-icon=pause]').toggleAttribute('hidden', !running && countdown < 0);
   $('[data-action=undo]').disabled = !history.length;
-  $('[data-read=countdown]').hidden = countdown < 0;
-  if (countdown >= 0) setText('countdown', [t('attention'), '3', '2', '1', t('jugg')][countdown]);
+  if (countdownDialog && countdown >= 0) setText('countdown', ['3', '2', '1', 'JUGGER'][countdown]);
   $('[data-read=sets]').hidden = !setMatch(game);
   setText('sets', t('setsScore', { a: game.setsA, b: game.setsB }));
   $$('[data-view]').forEach(element => { element.hidden = element.dataset.view !== view; element.classList.toggle('tab-active', element.dataset.view === view); });
@@ -252,7 +251,7 @@ const interrupted = () => { if (running || previewing || countdown >= 0) pause()
 onAudioInterruption(interrupted);
 const matchClock = new BeatClock({ now: audioTime,
   schedule({ at, index }) {
-    if (countdown >= 0) { if (config.beatEnabled) playBeat(sound, at); }
+    if (countdown >= 0) { if (config.beatEnabled && index <= 4) playBeat(sound, at); }
     else if (config.beatEnabled && (!finiteMatch(game) || startConsumed + index < game.limit)) playBeat(sound, at);
   },
   frame(seconds) {
@@ -266,7 +265,7 @@ const matchClock = new BeatClock({ now: audioTime,
   tick({ index }) {
     if (countdown >= 0) {
       countdown = index - 1;
-      if (index === 5) { countdown = -1; beginMatchClock(); }
+      if (index === 5) { countdown = -1; countdownDialog?.close(false); beginMatchClock(); }
       render(); return;
     }
     if (game.periods === -2) { persist(); return; }
@@ -284,8 +283,15 @@ function beginMatchClock() {
   if (game.periods === -2 && game.deadline == null) { game = { ...game, deadline: Date.now() + remainingTime(game) }; persist(); }
   running = true; startConsumed = game.consumed; matchClock.start(config.pace);
 }
+function showCountdown() {
+  countdownDialog = f7.dialog.create({ title: '', cssClass: 'jm-countdown-dialog', text: '<div class="jm-countdown" data-read="countdown" role="status" aria-live="assertive">3</div>', destroyOnClose: true,
+    on: { opened(instance) { instance.el.focus(); matchClock.start(.25, true); }, closed() { countdownDialog = null; focusMatchButton(); } } });
+  countdownDialog.el.setAttribute('role', 'dialog'); countdownDialog.el.setAttribute('aria-modal', 'true'); countdownDialog.el.setAttribute('aria-label', t('startCountdown')); countdownDialog.el.tabIndex = -1;
+  countdownDialog.open(false);
+}
 function pause(silence = true) {
   requestId++; running = false; starting = false; countdown = -1; previewing = false;
+  countdownDialog?.close(false);
   matchClock.stop(); previewClock.stop(); stopAudio(!silence); if (!slotActive()) releaseWake(); persist(); render();
 }
 async function start() {
@@ -295,7 +301,11 @@ async function start() {
   if (token !== requestId || view !== 'match') return;
   starting = false;
   if (!unlocked && (config.beatEnabled || sound.signalVolume)) { noticeKey = 'audioFailed'; render(); return; }
-  if (config.countdown) { countdown = 0; matchClock.start(config.pace, true); }
+  if (config.countdown) {
+    countdown = 0;
+    if (currentDialog) currentDialog.once('closed', () => { if (token === requestId) showCountdown(); });
+    else showCountdown();
+  }
   else beginMatchClock();
   render(); keepAwake(); navigator.storage?.persist?.().catch(() => {});
 }
@@ -521,6 +531,11 @@ root.addEventListener('keydown', event => {
     else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) { event.preventDefault(); moveLanguageFocus($$('[data-language-option]'), event.key, document.activeElement); }
     else if (event.key === 'Tab') closeLanguages();
   }
+  if (countdownDialog?.opened) {
+    if (event.key === 'Escape') { event.preventDefault(); pause(); }
+    else if (event.key === 'Tab') event.preventDefault();
+    return;
+  }
   if (!currentDialog?.opened) return;
   if (event.key === 'Escape') { event.preventDefault(); currentDialog.close(); }
   if (event.key === 'Tab') { const a = $('[data-dialog-action=confirm]'), b = $('[data-dialog-action=cancel]'); if (event.shiftKey && document.activeElement === a) { event.preventDefault(); b.focus(); } else if (!event.shiftKey && document.activeElement === b) { event.preventDefault(); a.focus(); } }
@@ -606,7 +621,7 @@ $$('.jm-range').forEach(input => {
 setText('version', '__VERSION__');
 app.dataset.ready = 'true'; app.inert = false; app.removeAttribute('aria-busy');
 setupOffline(render);
-const matchLayout = new ResizeObserver(fitMatch);
+const matchLayout = new ResizeObserver(() => requestAnimationFrame(fitMatch));
 ['.jm-scroll', '[data-view=match]', '.jm-update', '.jm-offline'].forEach(selector => matchLayout.observe($(selector)));
 fitMatch();
 setInterval(updateSlotClock, 100);
