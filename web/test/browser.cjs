@@ -90,6 +90,7 @@ async function main() {
   try {
     await require('./audio.cjs')(browser, url);
     await require('./sound-options.cjs')(browser, url);
+    await require('./results.cjs')(browser, url);
     await require('./countdown.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), 'JUGGERMASTER');
@@ -160,6 +161,7 @@ async function main() {
       assert.equal(await page.locator('[data-action=beat-preview]').getAttribute('aria-pressed'), 'false');
     }
     await page.locator('[data-sound-target=signal]').click(); await page.locator('[data-instrument]').selectOption('deep');
+    await page.locator('[data-setting=signalCount]').fill('3');
     await page.locator('[data-sound-target=beat]').click();
     for (const target of ['match', 'setup', 'info']) {
       await tab('sound'); await resetAudio();

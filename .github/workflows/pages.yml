@@ -17,6 +17,9 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      notes: ${{ steps.release.outputs.notes }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -36,6 +39,19 @@ jobs:
       - run: npm run test:browser
       - run: npm run build
       - run: npm run check:build
+      - name: Read checked release metadata
+        id: release
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import { texts } from './web/src/i18n.mjs';
+          const version = /data-read="version">([^<]+)</.exec(readFileSync('dist/index.html', 'utf8'))?.[1];
+          assert.match(version, /^v[1-9]\d*(?:[.-][a-z0-9]+)*$/);
+          const notes = texts.en.releaseNotes;
+          assert.doesNotMatch(notes, /[\r\n]/);
+          appendFileSync(process.env.GITHUB_OUTPUT, 'version=' + version + '\nnotes=' + notes + '\n');
+          NODE
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
         with:
@@ -57,3 +73,31 @@ jobs:
       - name: Publish checked build
         id: deployment
         uses: actions/deploy-pages@v5
+
+  release:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [check, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.check.outputs.version }}
+          RELEASE_NOTES: ${{ needs.check.outputs.notes }}
+        run: |
+          tag_refs=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$RELEASE_VERSION" --jq '.[].ref')
+          if printf '%s\n' "$tag_refs" | grep -Fxq "refs/tags/$RELEASE_VERSION"; then
+            tag_commit=$(gh api "repos/$GITHUB_REPOSITORY/commits/$RELEASE_VERSION" --jq .sha)
+            if [ "$tag_commit" != "$GITHUB_SHA" ]; then
+              printf 'Release %s already belongs to another commit. Use a new version.\n' "$RELEASE_VERSION" >&2
+              exit 1
+            fi
+          fi
+          if ! gh release view "$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            printf '%s\n' "$RELEASE_NOTES" > "$RUNNER_TEMP/release-notes.txt"
+            gh release create "$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" --title "JUGGERMASTER $RELEASE_VERSION" \
+              --notes-file "$RUNNER_TEMP/release-notes.txt" --latest
+          fi

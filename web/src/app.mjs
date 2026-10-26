@@ -5,12 +5,14 @@ import { BeatClock } from './clock.mjs';
 import { unlockAudio, importAudioFile, deleteAudioFile, audioTime, playBeat, playEndSignal, stopAudio, onAudioInterruption } from './audio.mjs';
 import { audioFile } from './audio-files.mjs';
 import { instruments } from './instruments.mjs';
+import { restoreResults, saveResult } from './results.mjs';
 import { setupOffline, applyUpdate, offlineState } from './offline.mjs';
 
 const root = document.getElementById('jm-arena'), app = root.querySelector('.jm-app');
 const $ = selector => root.querySelector(selector), $$ = selector => [...root.querySelectorAll(selector)];
 const storageKey = 'juggermaster:state:v2';
 let config = { ...defaults }, sound = cleanSound(), game = newGame(config), history = [], teams = [];
+let results = restoreResults();
 let soundTarget = 'beat', soundBusy = false, soundError = null;
 const customFiles = { beat: null, signal: null }, profileKeys = ['pitch', 'metal', 'attack', 'decay'];
 const editedSound = () => soundTarget === 'beat' ? sound : sound.end;
@@ -27,6 +29,7 @@ try {
     const snapshot = JSON.parse(saved), restored = restoreSnapshot(snapshot);
     if (!restored) throw Error('Invalid saved match');
     ({ config, sound, game, history, language, theme, teams } = restored);
+    results = restoreResults(snapshot.results || snapshot.matchLog);
     freshState = false;
   }
   const preferred = localStorage.getItem('juggermaster:language');
@@ -40,13 +43,17 @@ const f7 = new Framework7({ el: app, name: 'JUGGERMASTER', theme: 'ios', darkMod
   dialog: { closeByBackdropClick: false }, touch: { fastClicks: false, tapHold: false } });
 
 function persist() {
-  const json = JSON.stringify({ version: 2, language, theme, config, sound, game, history, teams });
+  const json = JSON.stringify({ version: 2, language, theme, config, sound, game, history, teams, results });
   if (json === lastSave) return;
   try { localStorage.setItem(storageKey, json); lastSave = json; storageError = false; }
   catch { storageError = true; noticeKey = 'storageFailed'; }
 }
 
 function remember() { history.push({ ...game }); if (history.length > 30) history.shift(); }
+function applyGame(next) {
+  if (game.ended || next.ended) saveResult(results, game, next, [teamName('teamA'), teamName('teamB')]);
+  game = next;
+}
 function rememberTeam(side) {
   const name = config[side], color = config[side === 'teamA' ? 'colorA' : 'colorB'], defaultName = config[`${side}Default`];
   if (!name) return;
@@ -83,6 +90,28 @@ function phase() {
   if (game.golden) return t('goldenJugg');
   if (game.periods === 0) return t('freeDrumming');
   return t(setMatch(game) ? 'setNumber' : 'roundNumber', { number: game.period });
+}
+function showResults() {
+  stopStoneHold(true); pause(); closeLanguages(); lastFocus = $('[data-action=results]');
+  const title = t('resultsTitle');
+  currentDialog = f7.dialog.create({ title, cssClass: 'jm-history-dialog', text: '<div class="jm-results-list" tabindex="0" role="region"></div>', destroyOnClose: true,
+    buttons: [{ text: t('close'), strong: true }],
+    on: { opened(instance) { instance.el.querySelector('.dialog-button').focus(); }, closed() { currentDialog = null; lastFocus?.focus(); } } });
+  currentDialog.el.setAttribute('role', 'dialog'); currentDialog.el.setAttribute('aria-modal', 'true'); currentDialog.el.setAttribute('aria-label', title);
+  const list = currentDialog.el.querySelector('.jm-results-list'); list.setAttribute('aria-label', title);
+  const entries = document.createElement('ul');
+  for (const result of [...results.archive].reverse()) {
+    const row = document.createElement('li'), teams = document.createElement('strong'), detail = document.createElement('small');
+    teams.textContent = result.teams.join(' — ');
+    let score = result.periods < 0 ? t('setsScore', { a: result.setsA, b: result.setsB }) : result.a + ' : ' + result.b;
+    if (result.periods === -2 && !result.setComplete) score += ' · ' + t('setPointsScore', { a: result.a, b: result.b });
+    detail.textContent = new Date(result.at).toLocaleString(locales[language].tag, { dateStyle: 'short', timeStyle: 'short' }) + ' · ' + score;
+    row.append(teams, detail); entries.append(row);
+  }
+  if (entries.childElementCount) list.append(entries);
+  else { const empty = document.createElement('p'); empty.textContent = t('emptyResults'); list.append(empty); }
+  currentDialog.el.querySelector('.dialog-button').dataset.dialogAction = 'close';
+  currentDialog.open();
 }
 root.addEventListener('toggle', async event => {
   const details = event.target;
@@ -245,7 +274,7 @@ function updateSlotClock() {
   if (!slotActive()) return;
   const next = advanceTime(game, 0);
   if (next.ended) remember();
-  game = next;
+  applyGame(next);
   if (game.ended) announceTimeEnd();
   render();
 }
@@ -260,7 +289,7 @@ const matchClock = new BeatClock({ now: audioTime,
     if (!running || countdown >= 0) return;
     const next = advanceTime(game, seconds * 1000);
     if (next.ended) remember();
-    game = next;
+    applyGame(next);
     if (game.ended) announceTimeEnd();
     render();
   },
@@ -273,7 +302,7 @@ const matchClock = new BeatClock({ now: audioTime,
     if (game.periods === -2) { persist(); return; }
     const next = finishTimedMatch({ ...game, consumed:game.consumed + 1 });
     if (next.ended) remember();
-    game = next;
+    applyGame(next);
     if (finiteMatch(game) && game.consumed >= game.limit) {
       pause(false); if (game.ended) showWinner(); playEndSignal(sound, config.signalCount);
     }
@@ -355,7 +384,7 @@ function focusMatchButton() {
 }
 function resetMatch() {
   rememberTeam('teamA'); rememberTeam('teamB');
-  history = []; game = newGame(config); noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
+  history = []; game = newGame(config); results.currentId = null; noticeKey = storageError ? 'storageFailed' : null; persist(); showView('match');
   currentDialog.once('closed', focusMatchButton);
   start();
 }
@@ -475,9 +504,11 @@ root.addEventListener('click', async event => {
   else if (action === 'toggle') { if (running || countdown >= 0 || starting) pause(); else await start(); }
   else if (action === 'beat-preview') await togglePreview();
   else if (action === 'signal-preview') await endSignal();
+  else if (action === 'results') showResults();
   else if (action === 'undo') {
-    pause(); const deadline = game.deadline; game = history.pop() || game;
-    if (game.periods === -2 && deadline != null) game = advanceTime({ ...game, deadline }, 0);
+    pause(); const deadline = game.deadline; let next = history.pop() || game;
+    if (next.periods === -2 && deadline != null) next = advanceTime({ ...next, deadline }, 0);
+    applyGame(next);
     persist(); render(); if (game.ended) showWinner();
   }
   else if (action === 'defaults') { pause(); config = { ...defaults }; render(); persist(); }
@@ -500,7 +531,7 @@ root.addEventListener('click', async event => {
     const description = sets ? t('nextSetDescription') : next.golden ? t('goldenDescription') : next.ended ? `${teamName('teamA')} ${game.a} : ${game.b} ${teamName('teamB')}` : t('nextPeriodDescription');
     dialog(t(title), description, t(sets ? 'nextSet' : next.golden ? 'startGolden' : next.ended ? 'confirmResult' : 'startPeriod'), () => {
       updateSlotClock(); if (game.ended) return;
-      remember(); game = next; persist(); render();
+      remember(); applyGame(next); persist(); render();
       currentDialog.once('closed', () => { if (game.ended) showWinner(); else focusMatchButton(); });
       if (!game.ended) start();
     });
@@ -509,11 +540,11 @@ root.addEventListener('click', async event => {
     const key = action.includes('-a-') ? 'a' : 'b', delta = action.endsWith('plus') ? 1 : -1;
     const next = finishTimedMatch(awardPoint(game, key, delta)); if (next === game) return;
     remember(); if (config.pausePoint || game.golden || next.setComplete) pause(delta < 0);
-    game = next; render(); persist();
+    applyGame(next); render(); persist();
     if (game.ended) showWinner();
     if (delta > 0) await endSignal();
   } else if (action === 'stone-minus' || action === 'stone-plus') {
-    pause(); remember(); game = finishTimedMatch(adjustStones(game, action === 'stone-plus' ? 1 : -1, config.direction));
+    pause(); remember(); applyGame(finishTimedMatch(adjustStones(game, action === 'stone-plus' ? 1 : -1, config.direction)));
     persist(); render(); if (game.ended) showWinner();
   } else if (action === 'offline-retry') setupOffline(render);
   else if (action === 'update') { if (running || previewing || countdown >= 0 || starting) return; persist(); if (!await applyUpdate()) { noticeKey = 'updateFailed'; render(); } }
@@ -540,7 +571,7 @@ root.addEventListener('keydown', event => {
   }
   if (!currentDialog?.opened) return;
   if (event.key === 'Escape') { event.preventDefault(); currentDialog.close(); }
-  if (event.key === 'Tab') { const a = $('[data-dialog-action=confirm]'), b = $('[data-dialog-action=cancel]'); if (event.shiftKey && document.activeElement === a) { event.preventDefault(); b.focus(); } else if (!event.shiftKey && document.activeElement === b) { event.preventDefault(); a.focus(); } }
+  if (event.key === 'Tab') { const items = currentDialog.el.querySelectorAll('.dialog-button, [tabindex="0"]'), first = items[0], last = items[items.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } }
 });
 root.addEventListener('change', event => {
   const input = event.target, key = input.dataset.setting;

@@ -751,7 +751,7 @@ export function translatedLegal(contact) {
     const heading = value => `<h2>${value}</h2>`;
     const dir = locales[language].dir || 'ltr', p = doc.privacy;
     result.impressum[language] = { title: t('imprint'), dir, body: `<h1>${t('imprint')}</h1>${heading(h[0])}${contact}${heading('JUGGERMASTER')}${paragraph(doc.imprint[0])}${heading(h[1])}${paragraph(doc.imprint[1])}${paragraph(t('soundAssets'))}` };
-    result.datenschutz[language] = { title: t('privacy'), dir, body: `<h1>${t('privacy')}</h1>${paragraph(p[0])}${heading(h[2])}${paragraph(p[1])}${heading(h[3])}${contact}${heading(h[4])}${paragraph(p[2])}${paragraph(t('soundStorage'))}${paragraph(p[3])}${heading(h[5])}${paragraph(p[4])}${paragraph(p[5])}${heading('GitHub')}${paragraph(p[6])}${paragraph(p[7])}${heading('GitHub Discussions')}${doc.discussions.map(paragraph).join('')}${heading(h[6])}${paragraph(p[8])}${paragraph(p[9])}` };
+    result.datenschutz[language] = { title: t('privacy'), dir, body: `<h1>${t('privacy')}</h1>${paragraph(p[0])}${heading(h[2])}${paragraph(p[1])}${heading(h[3])}${contact}${heading(h[4])}${paragraph(p[2])}${paragraph(t('soundStorage'))}${paragraph(t('archiveStorage'))}${paragraph(p[3])}${heading(h[5])}${paragraph(p[4])}${paragraph(p[5])}${heading('GitHub')}${paragraph(p[6])}${paragraph(p[7])}${heading('GitHub Discussions')}${doc.discussions.map(paragraph).join('')}${heading(h[6])}${paragraph(p[8])}${paragraph(p[9])}` };
   }
   return result;
 }

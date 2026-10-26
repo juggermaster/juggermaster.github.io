@@ -5,7 +5,7 @@ export const defaults = Object.freeze({
   teamA: 'Raben', teamB: 'Wölfe', colorA: '#c9724f', colorB: '#76a38b',
   teamADefault: 'defaultTeamA', teamBDefault: 'defaultTeamB',
   periods: -1, rounds: 2, limit: 100, direction: 'down', pace: 1.5,
-  pausePoint: true, beatEnabled: true, signalCount: 3, countdown: false,
+  pausePoint: true, beatEnabled: true, signalCount: 1, countdown: false,
   targetPoints: 5, setsToWin: 2, minutes: 20
 });
 export const presets = Object.freeze({
@@ -14,7 +14,7 @@ export const presets = Object.freeze({
   drum: { kind: 'drum', pitch: 110, metal: 15, attack: 75, decay: .5 }
 });
 const defaultBeat = Object.freeze({ ...presets.drum, kind: 'spessa', instrument: 'timpani', decay: instruments.timpani.decay });
-export const defaultSound = Object.freeze({ ...defaultBeat, end: Object.freeze({ ...presets.drum, kind: 'spessa', instrument: 'smallGong', decay: instruments.smallGong.decay }), volume: 55, signalVolume: 90 });
+export const defaultSound = Object.freeze({ ...defaultBeat, end: Object.freeze({ ...presets.drum, kind: 'spessa', instrument: 'largeGong', decay: instruments.largeGong.decay }), volume: 55, signalVolume: 90 });
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export const finiteMatch = game => game.periods > 0 && !game.golden;
 export const setMatch = game => game.periods < 0;

@@ -249,3 +249,15 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
   #jm-arena .jm-timing strong { margin-top:2px; }
   #jm-arena .jm-sets { padding:5px; margin:0; }
 }
+
+#jm-arena [data-view=match]>.jm-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+#jm-arena [data-view=match]>.jm-actions button { min-width:0; padding-inline:6px; gap:4px; }
+#jm-arena .jm-app .jm-history-dialog { --f7-dialog-width:min(420px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); display:flex; flex-direction:column; }
+#jm-arena .jm-history-dialog .dialog-inner, #jm-arena .jm-history-dialog .dialog-text { display:flex; flex-direction:column; min-height:0; }
+#jm-arena .jm-history-dialog .dialog-buttons { flex-shrink:0; }
+#jm-arena .jm-results-list { max-height:55dvh; min-height:0; overflow-y:auto; overscroll-behavior:contain; text-align:start; overflow-wrap:anywhere; }
+#jm-arena .jm-results-list ul { list-style:none; margin:0; padding:0; }
+#jm-arena .jm-results-list li { padding:14px 0; border-bottom:1px solid var(--jm-line); }
+#jm-arena .jm-results-list small { display:block; margin-top:4px; color:var(--jm-soft); }
+@media(max-width:699px) and (max-height:740px) { #jm-arena [data-view=match]>.jm-actions { margin-top:0; } }
+@media(max-width:359px) { #jm-arena [data-view=match]>.jm-actions svg { display:none; } }

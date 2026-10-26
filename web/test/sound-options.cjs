@@ -80,13 +80,15 @@ module.exports = async (browser, url) => {
     assert.equal(await page.locator('#jm-sound-editor > :first-child [data-action=signal-preview]').isVisible(), true);
     assert.equal(await page.locator('[data-action=beat-preview]').isVisible(), false);
     assert.equal(await page.locator('#jm-sound-editor > .jm-sound-preview + .jm-field [data-setting=signalCount]').isVisible(), true);
+    assert.equal(await page.locator('[data-setting=signalCount]').inputValue(), '1');
+    assert.equal(await page.locator('[data-instrument]').inputValue(), 'largeGong');
     await page.locator('[data-sound-target=signal]').press('Home');
     assert.equal(await page.locator('[data-sound-target=beat]').getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('[data-sound-target=signal]').getAttribute('tabindex'), '-1');
     for (const [preset,kind] of [['stone','stone'],['deep','gong'],['drum','drum']]) {
       await page.locator('[data-instrument]').selectOption(preset);
       assert.equal((await state()).sound.kind, kind);
-      assert.equal((await state()).sound.end.instrument, 'smallGong', 'Instrumentwahl bleibt auf den aktiven Reiter beschränkt');
+      assert.equal((await state()).sound.end.instrument, 'largeGong', 'Instrumentwahl bleibt auf den aktiven Reiter beschränkt');
     }
     await target('signal'); await target('beat');
     assert.equal(await page.locator('[data-sound=beatNormalize], [data-sound=signalNormalize]').count(), 0);
@@ -103,7 +105,7 @@ module.exports = async (browser, url) => {
     }
     await page.waitForFunction(() => window.__samples.length > 0);
     assert.equal((await state()).sound.kind, 'spessa');
-    assert.equal((await state()).sound.end.instrument, 'smallGong');
+    assert.equal((await state()).sound.end.instrument, 'largeGong');
     await target('signal'); await page.locator('[data-instrument]').selectOption('largeGong');
     await page.waitForFunction(() => window.__samples.some(sample => sample.duration === 12));
     await page.locator('[data-sound-target=beat]').click();

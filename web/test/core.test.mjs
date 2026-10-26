@@ -193,7 +193,8 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
   assert.equal(restored.theme, 'dark');
   for (const theme of ['', 'system', null]) assert.equal(restoreSnapshot({ version:2, game:newGame(defaults), theme }).theme, 'dark');
   for (const theme of ['light', 'dark']) assert.equal(restoreSnapshot({ version:2, game:newGame(defaults), theme }).theme, theme);
-  assert.equal(cleanConfig({ colorA: 'red;url(x)', limit: Infinity, signalCount: 100 }).signalCount, 3);
+  assert.equal(cleanConfig({ colorA: 'red;url(x)', limit: Infinity, signalCount: 100 }).signalCount, 1);
+  assert.equal(cleanConfig({ signalCount: 3 }).signalCount, 3);
   assert.equal(cleanSound({ volume: 101, decay: NaN }).volume, 55);
   assert.deepEqual(Object.keys(texts.de).sort(), Object.keys(texts.en).sort());
 });
@@ -201,14 +202,14 @@ test('Speicherstände validieren, Grenzen und Übersetzungen', () => {
 test('Getrennte Klangprofile und Lautstärken, ältere Klangwahl erhalten', () => {
   assert.equal(defaultSound.kind, 'spessa');
   assert.equal(cleanSound().instrument, 'timpani');
-  assert.equal(cleanSound().end.instrument, 'smallGong');
+  assert.equal(cleanSound().end.instrument, 'largeGong');
   assert.deepEqual(cleanSound(), defaultSound);
   assert.equal(cleanSound({ beatNormalize: false }).beatNormalize, undefined);
   assert.equal(cleanSound({ signalNormalize: false }).signalNormalize, undefined);
   const oldGong = { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2, volume: 40, signalVolume: 80 };
   assert.deepEqual(cleanSound(oldGong).end, { kind: 'gong', pitch: 140, metal: 70, attack: 60, decay: 3.2 }, 'Alter gemeinsamer Klang wird für beide Profile übernommen');
-  const separate = cleanSound({ ...oldGong, end: { kind: 'spessa', instrument: 'largeGong', decay: 6 } });
-  assert.equal(separate.kind, 'gong'); assert.equal(separate.end.kind, 'spessa'); assert.equal(separate.end.instrument, 'largeGong');
+  const separate = cleanSound({ ...oldGong, end: { kind: 'spessa', instrument: 'smallGong', decay: 6 } });
+  assert.equal(separate.kind, 'gong'); assert.equal(separate.end.kind, 'spessa'); assert.equal(separate.end.instrument, 'smallGong');
   assert.equal(separate.volume, 40); assert.equal(separate.signalVolume, 80);
   assert.equal(cleanSound({ kind: 'spessa', instrument: '../invalid' }).instrument, 'timpani');
   assert.equal(cleanSound({ kind: 'custom', decay: 30 }).decay, 30);

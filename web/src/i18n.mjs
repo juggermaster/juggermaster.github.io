@@ -1,5 +1,6 @@
 import { translations } from './translations.mjs';
 import { soundTexts } from './sound-translations.mjs';
+import { resultTexts } from './results-translations.mjs';
 export const texts = {
   "de": {
     "homeTitle": "JUGGERMASTER als App auf dem Startbildschirm einrichten",
@@ -290,6 +291,7 @@ export const texts = {
 };
 Object.assign(texts, translations);
 for (const [language, labels] of Object.entries(soundTexts)) Object.assign(texts[language], labels);
+for (const [language, labels] of Object.entries(resultTexts)) Object.assign(texts[language], labels);
 const closeLabels = {
   de:'Schließen', en:'Close', es:'Cerrar', fr:'Fermer', it:'Chiudi', pt:'Fechar', nl:'Sluiten', da:'Luk', sv:'Stäng', fi:'Sulje',
   pl:'Zamknij', cs:'Zavřít', hu:'Bezárás', ro:'Închide', lv:'Aizvērt', lt:'Uždaryti', ru:'Закрыть', uk:'Закрити', he:'סגירה',

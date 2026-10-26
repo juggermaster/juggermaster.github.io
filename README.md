@@ -9,9 +9,10 @@ Open Source Jugger Game Assistant. Jugger match timing and scoring in a mobile w
 - Sets by default, plus sets with a match-wide time limit in minutes (20 minutes by default), stone-based matches with configurable stones and rounds (100 stones × 2 rounds by default), Golden Jugg and continuous beats. Normal set rules end timed sets as soon as the selected sets-to-win target is reached. If the time limit expires first, rank won sets first, then points in the current unfinished set; a complete tie ends in a draw. A countdown clock replaces the stone counter in timed sets. Timed sets use a fixed wall-clock deadline: points, fouls, pauses, set changes, reloads and undo never extend the tournament slot.
 - Configurable stones, interval, teams, colours and up/down counting. The optional start countdown shows 3, 2, 1, JUGGER in a one-second dialog, independently of the stone interval.
 - Editable team fields with saved-team selection, local colours and removal. Separate setup and sound defaults.
-- Independent beat and Jugg/period-end sound profiles: 82 SpessaSynth percussion instruments (including triangle, claves and the complete GM/GS percussion set), the original stone-on-metal, gong and drum synthesis, or your own WAV/MP3 for either profile. Separate volumes, always-on volume levelling, and one to ten overlapping end beats. Defaults: timpani for the beat and small gong for the end signal.
+- Independent beat and Jugg/period-end sound profiles: 82 SpessaSynth percussion instruments (including triangle, claves and the complete GM/GS percussion set), the original stone-on-metal, gong and drum synthesis, or your own WAV/MP3 for either profile. Separate volumes, always-on volume levelling, and one to ten overlapping end beats. Defaults: timpani for the beat and one strike on a large gong for the end signal.
 - Own audio files stay in this browser's IndexedDB and work offline; up to 10 MiB and 30 seconds per profile. Removing a file affects only that profile. Clearing site data removes these files too.
 - Continuous sound preview plus one test beat when releasing a sound slider, local match state and 30 undo steps. Reopening always restores a paused match.
+- Match results in a scrollable History dialog between Undo and New match. The latest 20 completed results with dates and team names are saved locally. Undo updates an archived result; no individual match events are recorded.
 - 23 languages, automatic browser-language selection, saved manual choice and original SVG flags. Hebrew uses right-to-left text.
 - Responsive layout, always-visible bottom tabs, foreground screen wake lock, home-screen instructions in Info, offline help, legal pages and licence notices.
 
@@ -43,13 +44,13 @@ npm run check:build
 
 ## Publishing
 
-GitHub Actions checks the sources, runs automated tests, builds the app and publishes only `dist/` from `main`. Pull requests are checked without publishing. Select **GitHub Actions** in the repository's Pages settings, leave the custom domain empty and use HTTPS. No own server credentials or manually embedded tokens are needed.
+GitHub Actions checks the sources, runs automated tests, builds the app and publishes only `dist/` from `main`. After successful deployment it creates a matching GitHub release and version tag for the checked commit, using the app's English release notes. Re-running the same commit keeps its existing release; a version already tagged to another commit requires a fresh version. Pull requests are checked without publishing. Select **GitHub Actions** in the repository's Pages settings, leave the custom domain empty and use HTTPS. No own server credentials or manually embedded tokens are needed.
 
 Before pushing: finish local changes and checks, commit locally, inspect the actual commit and all outgoing history, then push only the checked revision. `node web/scripts/check.mjs history HEAD` checks committed file versions for private files and known secret patterns. It supplements review; it does not detect every possible credential.
 
 After every push, monitor GitHub Actions through the checks and deployment, fix any failures, and verify that the live site serves the checked release build. Publication is complete only after those checks succeed.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v42`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v43`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 
