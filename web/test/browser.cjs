@@ -111,7 +111,8 @@ async function main() {
     await tab('info');
     assert.equal(await page.locator('.jm-release-notes').getAttribute('open'), null);
     await page.locator('.jm-release-notes summary').click();
-    assert.match(await page.locator('.jm-release-notes p').textContent(), /3, 2, 1, JUGGER.*Sekunde/);
+    const { texts } = await import(pathToFileURL(path.join(root, 'web/src/i18n.mjs')).href);
+    assert.equal(await page.locator('.jm-release-notes p').textContent(), texts.de.releaseNotes);
     await page.locator('.jm-release-notes summary').click();
     for (const [index, count] of [3, 5, 4].entries()) {
       const details = page.locator('.jm-home-guide details').nth(index);
@@ -600,7 +601,6 @@ async function main() {
     assert.equal(await failed.locator('.jm-feedback').count(), 0);
     await fresh.close();
     const { locales } = await import(pathToFileURL(path.join(root, 'web/src/locale.mjs')).href);
-    const { texts } = await import(pathToFileURL(path.join(root, 'web/src/i18n.mjs')).href);
     for (const [language, locale] of Object.entries(locales)) {
       const translated = await browser.newContext({ locale: locale.tag, viewport: { width: 390, height: 1000 } });
       try {

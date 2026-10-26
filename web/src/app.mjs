@@ -188,7 +188,7 @@ function render() {
     $(`[data-output=${key}]`).textContent = `${decimal(key === 'pitch' && sampled ? value / 110 * 100 : value)}${key === 'pitch' ? sampled ? ' %' : ' Hz' : key === 'decay' ? ' s' : ' %'}`;
   }
   $('[data-sound=metal]').closest('.jm-field').hidden = sampled;
-  ranges.forEach((range, input) => { if (range.getValue() !== Number(input.value)) range.setValue(Number(input.value)); });
+  ranges.forEach((range, input) => { if (range.getValue() !== Number(input.value)) range.setValue(Number(input.value), true); });
   $$('[data-sound-target]').forEach(button => {
     const selected = button.dataset.soundTarget === soundTarget;
     button.setAttribute('aria-selected', String(selected)); button.tabIndex = selected ? 0 : -1; button.disabled = soundBusy;
@@ -207,6 +207,8 @@ function render() {
   $('[data-action=beat-preview]').hidden = soundTarget !== 'beat';
   $('[data-action=signal-preview]').hidden = soundTarget !== 'signal';
   $('[data-setting=signalCount]').closest('.jm-field').hidden = soundTarget !== 'signal';
+  $('[data-sound=volume]').closest('.jm-volume').hidden = soundTarget !== 'beat';
+  $('[data-sound=signalVolume]').closest('.jm-volume').hidden = soundTarget !== 'signal';
   $('[data-i18n=previewBeat]').textContent = t(previewing ? 'stopBeat' : 'previewBeat');
   $$('.jm-wave span').forEach((bar, index) => { bar.style.height = `${6 + Math.abs(Math.sin(index * 1.9 + sound.pitch / 60)) * 40 * Math.exp(-index / (sound.decay * 7 + 4))}px`; });
   const notice = $('[data-read=notice]'); notice.hidden = !noticeKey; if (noticeKey) notice.textContent = t(noticeKey);
@@ -454,7 +456,7 @@ root.addEventListener('click', async event => {
   if (!wasEnded && game.ended) return;
   if (button.dataset.languageOption) { language = button.dataset.languageOption; try { localStorage.setItem('juggermaster:language', language); } catch {} closeLanguages(true); renderLanguage(); render(); persist(); return; }
   if (button.dataset.tab) { showView(button.dataset.tab); return; }
-  if (button.dataset.soundTarget) { pause(); soundTarget = button.dataset.soundTarget; soundError = null; render(); return; }
+  if (button.dataset.soundTarget) { pause(); soundTarget = button.dataset.soundTarget; soundError = null; render(); ranges.forEach(range => { range.calcSize(); range.layout(); }); return; }
   if (button.dataset.teamDelete) {
     const index = teams.findIndex(team => team.name.toLowerCase() === config[button.dataset.teamDelete].toLowerCase());
     if (index < 0) return;
@@ -555,6 +557,15 @@ root.addEventListener('change', event => {
 });
 root.addEventListener('change', async event => {
   const input = event.target;
+  if (input.dataset.sound) {
+    if (view !== 'sound' || document.hidden || soundBusy) return;
+    pause(); soundError = null; const token = requestId, target = soundTarget; render();
+    const unlocked = await unlockAudio(sound, target);
+    if (token !== requestId) return;
+    if (unlocked) playBeat(sound, audioTime(), target === 'signal');
+    else { soundError = 'audioFailed'; render(); }
+    return;
+  }
   if (input.matches('[data-instrument]') && Object.hasOwn(presets, input.value)) { await selectSound(presets[input.value]); return; }
   if (input.matches('[data-instrument]') && Object.hasOwn(instruments, input.value)) {
     const instrument = input.value;

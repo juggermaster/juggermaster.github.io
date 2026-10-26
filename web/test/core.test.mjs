@@ -296,11 +296,11 @@ test('Rechtstexte sind in jeder zusätzlichen Sprache vollständig verknüpft', 
       assert.equal(content.dir, locales[language].dir || 'ltr');
       assert.ok(content.body.includes(contact), language);
       assert.ok(content.body.includes('juggermaster.github.io'), language);
-      assert.doesNotMatch(content.body, /undefined|\{(?:license|projectLicense|thirdParty|github|authority)\}/);
+      assert.doesNotMatch(content.body, /undefined|\{(?:license|projectLicense|thirdParty|github|authority|discussions)\}/);
       if (page === 'impressum') {
         assert.ok(content.body.includes('__ASSETS__/LICENSE-Framework7.txt'), language);
       } else {
-        for (const required of ['TDDDG', 'localStorage', 'Cache Storage', 'GitHub Pages', 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', 'https://www.lfd.niedersachsen.de/']) {
+        for (const required of ['TDDDG', 'localStorage', 'Cache Storage', 'GitHub Pages', '<h2>GitHub Discussions</h2>', 'https://github.com/juggermaster/juggermaster.github.io/discussions', 'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement', 'https://www.lfd.niedersachsen.de/']) {
           assert.ok(content.body.includes(required), `${language}: ${required}`);
         }
       }

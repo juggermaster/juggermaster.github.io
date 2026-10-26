@@ -30,6 +30,22 @@ module.exports = async (browser, url) => {
   const target = value => page.locator(`[data-sound-target=${value}]`).click();
   const upload = (name, buffer) => page.locator('[data-audio-file]').setInputFiles({ name, mimeType: 'audio/wav', buffer });
   const ready = () => page.locator('.jm-app[data-ready=true]').waitFor();
+  const adjustOnce = async key => {
+    const input = page.locator(`[data-sound=${key}]`), control = input.locator('..');
+    await control.scrollIntoViewIfNeeded();
+    const before = await input.inputValue(), bar = await control.boundingBox(), knob = await control.locator('.range-knob').boundingBox();
+    const x = knob.x + knob.width / 2, y = knob.y + knob.height / 2;
+    await page.evaluate(() => { window.__samples = []; });
+    await page.mouse.move(x, y); await page.mouse.down();
+    await page.mouse.move(x + (x > bar.x + bar.width / 2 ? -1 : 1) * bar.width * .15, y, { steps: 8 });
+    assert.notEqual(await input.inputValue(), before, 'Der Regler wurde tatsächlich bewegt');
+    assert.equal(await page.evaluate(() => window.__samples.length), 0, 'Beim Ziehen startet kein Probeklang');
+    await page.mouse.up();
+    await page.waitForFunction(() => window.__samples.length > 0);
+    assert.equal(await page.evaluate(() => window.__samples.length), 1, 'Loslassen startet genau einen Probeklang');
+    await page.waitForTimeout(1700);
+    assert.equal(await page.evaluate(() => window.__samples.length), 1, 'Der Probeklang wiederholt sich nicht');
+  };
   const renderInstruments = () => page.evaluate(async () => {
     const base = document.querySelector('script[type=module]').src;
     const { instrumentBuffer } = await import(new URL('soundbank.mjs', base));
@@ -96,6 +112,7 @@ module.exports = async (browser, url) => {
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).sound.kind === 'custom' || document.querySelector('[data-read=sound-notice]').textContent === 'Audiodatei konnte nicht geladen oder gespeichert werden.');
     assert.equal((await state()).sound.kind, 'custom', JSON.stringify(importErrors));
     assert.equal((await state()).sound.end.instrument, 'largeGong');
+    await adjustOnce('volume');
     if (browser.browserType().name() === 'chromium') {
       const legacy = await page.evaluate(async () => {
         const database = await new Promise((resolve, reject) => { const request = indexedDB.open('juggermaster:audio:v1', 1); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
@@ -117,6 +134,12 @@ module.exports = async (browser, url) => {
     await page.reload(); await ready(); await target('signal');
     await page.locator('[data-action=use-custom]').waitFor({ state: 'visible' });
     assert.equal(await page.locator('[data-action=use-custom]').textContent(), 'gong.mp3');
+    await adjustOnce('pitch');
+    const beatVolume = (await state()).sound.volume;
+    await page.locator('[data-setting=signalCount]').fill('10');
+    await adjustOnce('signalVolume');
+    assert.equal((await state()).sound.volume, beatVolume, 'Endsignal-Probeklang verändert die Taktlautstärke nicht');
+    await page.locator('[data-setting=signalCount]').fill('3');
     const saved = (await state()).sound;
     await upload('broken.wav', Buffer.from('invalid audio'));
     await page.locator('[data-read=sound-notice]').waitFor({ state:'visible' });
