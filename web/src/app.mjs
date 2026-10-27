@@ -79,6 +79,9 @@ function renderLanguage() {
   $$('.jm-document [data-locale]').forEach(section => { section.hidden = section.dataset.locale !== language; });
   $$('[data-home-steps]').forEach(list => list.replaceChildren(...t(list.dataset.homeSteps).split('\n').map(text => { const item = document.createElement('li'); setLocalizedText(item, text); return item; })));
   root.lang = language; document.documentElement.lang = language; document.documentElement.dir = locales[language].dir || 'ltr';
+  document.title = t('appTitle');
+  document.head.querySelectorAll('[data-i18n-content]').forEach(meta => { meta.content = t(meta.dataset.i18nContent); });
+  document.head.querySelector('meta[property="og:locale"]').content = locales[language].tag.replace('-', '_');
   $$('[data-i18n]').forEach(element => { setLocalizedText(element, t(element.dataset.i18n)); });
   $$('[data-i18n-aria]').forEach(element => { element.setAttribute('aria-label', t(element.dataset.i18nAria)); });
   $('[data-read=language-flag]').dataset.language = language;

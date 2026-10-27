@@ -81,7 +81,7 @@ if (mode === 'source') {
     const data = await readFile('dist/' + file.url);
     assert.equal('sha256-' + createHash('sha256').update(data).digest('base64'), file.integrity, file.url);
     inspect(file.url, data);
-    if (textFile(file.url)) assert.doesNotMatch(data.toString(), /__(?:ASSETS|VERSION|BUILD|FILES|LANGUAGE_OPTIONS|BODY_DE|BODY_EN|EXTRA_LOCALES)__/, file.url);
+    if (textFile(file.url)) assert.doesNotMatch(data.toString(), /__(?:ASSETS|VERSION|BUILD|FILES|LANGUAGE_OPTIONS|BODY_DE|BODY_EN|EXTRA_LOCALES|SOCIAL_IMAGE|CANONICAL)__/, file.url);
   }
   assert.ok(cached.some(file => file.url === 'LICENSE.txt'));
   assert.ok(cached.some(file => file.url === 'THIRD_PARTY_NOTICES.txt'));

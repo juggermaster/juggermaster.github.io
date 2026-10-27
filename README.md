@@ -2,7 +2,9 @@
 
 [Open the app](https://juggermaster.github.io/) · [Source](https://github.com/juggermaster/juggermaster.github.io) · [MIT licence](LICENSE)
 
-Open Source Jugger Game Assistant. Jugger match timing and scoring in a mobile web app. Open the website online once and wait for the offline-file message to disappear. The browser caches the complete app automatically. Reopen the same address offline afterwards; no separate download or installation is required. A home-screen shortcut is optional.
+JUGGERMASTER is an open-source **Jugger Game Assistant** for training and tournaments: a Jugger beat timer, stone counter and scoreboard in a mobile web app. Open the website online once and wait for the offline-file message to disappear. The browser caches the complete app automatically. Reopen the same address offline afterwards; no separate download or installation is required. A home-screen shortcut is optional.
+
+**Deutsch:** JUGGERMASTER ist ein quelloffener **Jugger-Spielassistent**, **Jugger-Taktgeber** und **Steinezähler** für Training und Turniere. Punkte, Sätze und Spielzeit direkt im Browser verwalten. Nach dem ersten vollständigen Laden auch offline nutzbar; keine Installation nötig.
 
 ## Features
 
@@ -50,7 +52,7 @@ Before pushing: finish local changes and checks, commit locally, inspect the act
 
 After every push, monitor GitHub Actions through the checks and deployment, fix any failures, and verify that the live site serves the checked release build. Publication is complete only after those checks succeed.
 
-For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v43`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
+For a new release, set `JUGGER_RELEASE` to a fresh release identifier (default `v44`). For rollback, restore working sources in a new commit and release with a fresh identifier. Repeat checks and commit review before pushing. Updates wait for acceptance while playback is stopped and retain local match state. Old caches are cleared only with one current app window open.
 
 ## Browser and storage limits
 

@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { pages } from '../info-content.mjs';
 import { locales } from '../src/locale.mjs';
+import { texts } from '../src/i18n.mjs';
 import sharp from 'sharp';
 
 const languageOptions = () => Object.entries(locales).map(([code, locale]) => `<button role="option" data-language-option="${code}" aria-label="${locale.name}" aria-selected="false"><img class="jm-flag" data-language="${code}" src="__ASSETS__/images/flag-${locale.flag}.svg" alt="" aria-hidden="true"></button>`).join('');
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const dist = join(root, 'dist'), src = join(root, 'web/src');
-const version = process.env.JUGGER_RELEASE || 'v43';
+const version = process.env.JUGGER_RELEASE || 'v44';
 if (!/^v[1-9]\d*(?:[.-][a-z0-9]+)*$/.test(version)) throw Error('Ungültige Versionsnummer.');
 if (resolve(dist) !== resolve(root, 'dist') || relative(root, dist) !== 'dist') throw Error('Ungültiges Build-Ziel.');
 const names = (await list(src)).map(path => relative(src, path).replaceAll('\\', '/')).filter(name => name !== 'service-worker.js' && !/^images\/icon-\d+\.png$/.test(name));
@@ -39,18 +40,18 @@ for (const [name, value] of [...sources.filter(([name]) => !name.endsWith('.html
   await writeFile(join(dist, assetPath, name), text);
 }
 for (const [name, value] of sources.filter(([name]) => name.endsWith('.html'))) {
-  const html = value.toString().replaceAll('__LANGUAGE_OPTIONS__', languageOptions()).replaceAll('__ASSETS__', `./${assetPath}`).replaceAll('__VERSION__', version);
+  const html = value.toString().replaceAll('__LANGUAGE_OPTIONS__', languageOptions()).replaceAll('__ASSETS__', `./${assetPath}`).replaceAll('__SOCIAL_IMAGE__', `https://juggermaster.github.io/${assetPath}/images/icon-512.png`).replaceAll('__VERSION__', version);
   if (/window\.openai|\bTweak\b|<script[^>]+src="https?:/i.test(html)) throw Error('Unerwartete externe Vorschau-Abhängigkeit.');
   await writeFile(join(dist, name), html);
 }
 const template = await readFile(join(root, 'web/info-template.html'), 'utf8');
 for (const [name, page] of Object.entries(pages)) {
   const extra = Object.entries(page.locales || {}).map(([language, content]) => `<section data-locale="${language}" lang="${language}" dir="${content.dir}" hidden>${content.body}</section>`).join('');
-  const html = template.replaceAll('__LANGUAGE_OPTIONS__', languageOptions()).replaceAll('__TITLE_DE__', page.title.de).replaceAll('__TITLE_EN__', page.title.en).replace('__BODY_DE__', page.de).replace('__BODY_EN__', page.en).replace('__EXTRA_LOCALES__', extra).replaceAll('__ASSETS__', `./${assetPath}`);
+  const html = template.replaceAll('__LANGUAGE_OPTIONS__', languageOptions()).replaceAll('__TITLE_DE__', page.title.de).replaceAll('__TITLE_EN__', page.title.en).replaceAll('__CANONICAL__', `https://juggermaster.github.io/${name}.html`).replace('__BODY_DE__', page.de).replace('__BODY_EN__', page.en).replace('__EXTRA_LOCALES__', extra).replaceAll('__ASSETS__', `./${assetPath}`);
   await writeFile(join(dist, `${name}.html`), html);
 }
 await writeFile(join(dist, 'manifest.webmanifest'), JSON.stringify({
-  id: './', name: 'JUGGERMASTER', short_name: 'JUGGERMASTER', description: 'Open Source Jugger Game Assistant – Jugger-Taktgeber, Punkte und Spielzeit. Offline im Browser.',
+  id: './', name: 'JUGGERMASTER', short_name: 'JUGGERMASTER', description: texts.de.appDescription,
   lang: 'de', start_url: './', scope: './', display: 'standalone', background_color: '#181d1a', theme_color: '#181d1a',
   icons: [{ src: `./${assetPath}/images/icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' }, { src: `./${assetPath}/images/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
 }, null, 2) + '\n');
@@ -62,6 +63,8 @@ async function list(folder) {
   }
   return result;
 }
+await writeFile(join(dist, 'robots.txt'), 'User-agent: *\nAllow: /\nSitemap: https://juggermaster.github.io/sitemap.xml\n');
+await writeFile(join(dist, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ['', 'hilfe.html'].map(name => `  <url><loc>https://juggermaster.github.io/${name}</loc></url>`).join('\n') + '\n</urlset>\n');
 const files = [];
 for (const path of await list(dist)) files.push({ url: relative(dist, path).replaceAll('\\', '/'), integrity: `sha256-${createHash('sha256').update(await readFile(path)).digest('base64')}` });
 const worker = (await readFile(join(src, 'service-worker.js'), 'utf8')).replaceAll('__BUILD__', build).replace('__FILES__', JSON.stringify(files));

@@ -14,6 +14,7 @@ function build(version) {
   assert.equal(result.status, 0, result.stderr);
 }
 async function main() {
+  const { texts } = await import(pathToFileURL(path.join(root, 'web/src/i18n.mjs')).href);
   build('v1');
   let corruptIcon = false;
   const server = createServer(async (request, response) => {
@@ -93,7 +94,7 @@ async function main() {
     await require('./results.cjs')(browser, url);
     await require('./countdown.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
-    assert.equal(await page.title(), 'JUGGERMASTER');
+    assert.equal(await page.title(), texts.de.appTitle);
     assert.equal(await page.locator('[data-action=fullscreen]').count(), 0);
     assert.equal(await page.locator('[data-action=next]').count(), 0, 'Satz- und Rundenwechsel nutzen den großen Spielbutton');
     assert.equal(await page.locator('.jm-symbol:not(svg)').count(), 0, 'Alle Bedienicons sind SVG statt Schriftzeichen');
@@ -112,7 +113,6 @@ async function main() {
     await tab('info');
     assert.equal(await page.locator('.jm-release-notes').getAttribute('open'), null);
     await page.locator('.jm-release-notes summary').click();
-    const { texts } = await import(pathToFileURL(path.join(root, 'web/src/i18n.mjs')).href);
     assert.equal(await page.locator('.jm-release-notes p').textContent(), texts.de.releaseNotes);
     await page.locator('.jm-release-notes summary').click();
     for (const [index, count] of [3, 5, 4].entries()) {
@@ -214,7 +214,10 @@ async function main() {
     assert.equal(await read('[data-read=stones]'), '4', 'Klangwechsel verändert den Spielzähler nicht');
     await page.locator('[data-instrument]').selectOption('deep');
     await range('pitch', 220); await chooseLanguage('en'); assert.equal(await read('[data-i18n=previewBeat]'), 'Stop beat');
+    assert.equal(await page.title(), texts.en.appTitle);
+    assert.equal(await page.locator('meta[name=description]').getAttribute('content'), texts.en.appDescription);
     await chooseLanguage('de'); await click('beat-preview');
+    assert.equal(await page.title(), texts.de.appTitle);
     const stopped = (await audio()).starts.length; await page.waitForTimeout(700); assert.equal((await audio()).starts.length, stopped);
     assert.equal(await read('[data-read=stones]'), '4');
     await tab('match'); await resetAudio(); await click('toggle');
@@ -603,6 +606,17 @@ async function main() {
     assert.equal(await failed.locator('.jm-feedback').count(), 0);
     await fresh.close();
     const { locales } = await import(pathToFileURL(path.join(root, 'web/src/locale.mjs')).href);
+    const noScript = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      const sample = await noScript.newPage(); await sample.goto(url);
+      assert.equal(await sample.title(), texts.de.appTitle);
+      assert.equal(await sample.locator('meta[name=description]').getAttribute('content'), texts.de.appDescription);
+      assert.equal(await sample.locator('link[rel=canonical]').getAttribute('href'), 'https://juggermaster.github.io/');
+      assert.equal(await sample.locator('.jm-app').isVisible(), false, 'Ohne JavaScript keine funktionslose Spielsteuerung');
+      assert.equal(await sample.locator('.jm-noscript [lang=de] p').first().textContent(), texts.de.appDescription);
+      assert.equal(await sample.locator('.jm-noscript [lang=en] p').first().textContent(), texts.en.appDescription);
+      assert.equal(await sample.locator('.jm-noscript a').first().isVisible(), true, 'Hilfe ohne JavaScript erreichbar');
+    } finally { await noScript.close(); }
     for (const [language, locale] of Object.entries(locales)) {
       const translated = await browser.newContext({ locale: locale.tag, viewport: { width: 390, height: 1000 } });
       try {
@@ -610,6 +624,11 @@ async function main() {
         await sample.locator('.jm-app[data-ready=true]').waitFor();
         assert.equal(await sample.locator('html').getAttribute('lang'), language, `Browsersprache ${locale.tag}`);
         assert.equal(await sample.locator('html').getAttribute('dir'), locale.dir || 'ltr');
+        assert.equal(await sample.title(), texts[language].appTitle);
+        for (const selector of ['meta[name=description]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) assert.equal(await sample.locator(selector).getAttribute('content'), texts[language].appDescription);
+        for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) assert.equal(await sample.locator(selector).getAttribute('content'), texts[language].appTitle);
+        assert.equal(await sample.locator('.jm-tagline').textContent(), texts[language].appAssistant);
+        assert.equal(await sample.locator('meta[property="og:locale"]').getAttribute('content'), locale.tag.replace('-', '_'));
         assert.equal(await sample.locator('[data-read=start-label]').textContent(), texts[language].startMatch);
         assert.equal(await sample.locator('[data-read=team-a]').textContent(), texts[language].defaultTeamA.toLocaleUpperCase(language));
         assert.equal(await sample.locator('[data-read=team-b]').textContent(), texts[language].defaultTeamB.toLocaleUpperCase(language));
@@ -633,6 +652,8 @@ async function main() {
             assert.equal(await sample.locator('[data-sound-target=signal]').textContent(), texts[language].endSound);
           }
           if (view === 'info') {
+            assert.equal(await sample.locator('.jm-intro p').textContent(), texts[language].appDescription);
+            assert.equal(await sample.locator('.jm-intro').isVisible(), true);
             assert.equal(await sample.locator('#jm-home-title').textContent(), texts[language].homeTitle);
             for (const key of ['homeAndroid', 'homeIos', 'homeDesktop']) assert.deepEqual(await sample.locator(`[data-home-steps=${key}] li`).allTextContents(), texts[language][key].split('\n'));
             assert.equal(await sample.locator('.jm-home-guide').evaluate(element => {
@@ -666,6 +687,7 @@ async function main() {
     try {
       let sample = await preferred.newPage(); await sample.goto(url); await sample.locator('.jm-app[data-ready=true]').waitFor();
       assert.equal(await sample.locator('html').getAttribute('lang'), 'es');
+      assert.equal(await sample.title(), texts.es.appTitle);
       await sample.locator('[data-tab=setup]').click();
       assert.equal(await sample.locator('[data-setting=teamA]').inputValue(), 'Cuervos');
       await sample.locator('[data-action=language-menu]').click(); await sample.locator('[data-language-option=fr]').click();
