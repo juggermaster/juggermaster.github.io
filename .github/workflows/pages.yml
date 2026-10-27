@@ -38,6 +38,8 @@ jobs:
       - run: npm run test:webkit
       - run: npm run test:browser
       - run: npm run build
+      - name: Capture current README screenshots
+        run: npm run screenshots
       - run: npm run check:build
       - name: Read checked release metadata
         id: release

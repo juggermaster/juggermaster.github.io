@@ -14,6 +14,7 @@
   "type": "module",
   "scripts": {
     "build": "node web/scripts/build.mjs",
+    "screenshots": "node web/scripts/screenshots.mjs",
     "start": "node web/scripts/serve.mjs",
     "test": "node --test web/test/*.test.mjs",
     "test:browser": "node web/test/browser.cjs",
