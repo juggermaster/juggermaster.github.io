@@ -156,7 +156,7 @@ export function translatedHelp() {
   return Object.fromEntries(Object.entries(paragraphs).map(([language, p]) => {
     const t = key => texts[language][key];
     const step = keys => keys.map(t).join(' → ');
-    const body = `<h1>${t('help')}</h1><p>${p[0]}</p><h2>${t('prepareMatch')}</h2><p>${step(['setupTab', 'nameTeamA', 'nameTeamB', 'gameMode', 'stonesPerPeriod', 'newMatch'])}</p><p>${t('settingsNote')}</p><p>${t('timedSetMatch')}: ${t('timedSetDescription')}</p><h2>${t('match')}</h2><p>${p[1]}</p><p>${step(['startMatch', 'pauseMatch', 'resumeMatch'])} · ${t('undo')}</p><h2>${t('sound')}</h2><p>${step(['previewBeat', 'stopBeat'])}</p><p>${p[2]}</p><p>${p[4]}</p><h2>${t('offlineReady')}</h2><p>${p[3]}</p>`;
+    const body = `<h1>${t('help')}</h1><p>${p[0]}</p><h2>${t('prepareMatch')}</h2><p>${step(['setupTab', 'nameTeamA', 'nameTeamB', 'gameMode', 'stonesPerPeriod', 'newMatch'])}</p><p>${t('uploadTeamLogo')}: ${t('teamLogoHint')}</p><p>${t('settingsNote')}</p><p>${t('timedSetMatch')}: ${t('timedSetDescription')}</p><h2>${t('match')}</h2><p>${p[1]}</p><p>${step(['startMatch', 'pauseMatch', 'resumeMatch'])} · ${t('undo')}</p><h2>${t('sound')}</h2><p>${step(['previewBeat', 'stopBeat'])}</p><p>${p[2]}</p><p>${p[4]}</p><h2>${t('offlineReady')}</h2><p>${p[3]}</p>`;
     return [language, { title: t('help'), body: body + `<h2>${t('sound')}</h2><p>${t('beatSound')} / ${t('endSound')}: ${t('spessaInstruments')}. ${t('soundAssets')}</p><p>${t('customAudio')}: ${t('customHint')}</p><p>${t('soundStorage')}</p>`, dir: locales[language].dir || 'ltr' }];
   }));
 }

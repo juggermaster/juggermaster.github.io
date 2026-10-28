@@ -2,6 +2,7 @@ import { translations } from './translations.mjs';
 import { soundTexts } from './sound-translations.mjs';
 import { resultTexts } from './results-translations.mjs';
 import { seoTexts } from './seo-translations.mjs';
+import { teamTexts } from './team-translations.mjs';
 export const texts = {
   "de": {
     "homeTitle": "JUGGERMASTER als App auf dem Startbildschirm einrichten",
@@ -44,8 +45,8 @@ export const texts = {
     "signalVolume": "Jugg/Rundenende-Lautstärke",
     "beatNormalize": "Lautstärkeausgleich beim Takt",
     "signalNormalize": "Lautstärkeausgleich beim Endsignal",
-    "previewBeat": "Takt hören",
-    "previewSignal": "Endsignal hören",
+    "previewBeat": "Takt anhören",
+    "previewSignal": "Endsignal anhören",
     "prepareMatch": "SPIEL VORBEREITEN",
     "setupTitle": "Bereit fürs Feld.",
     "teamA": "Team A",
@@ -294,6 +295,47 @@ Object.assign(texts, translations);
 for (const [language, labels] of Object.entries(soundTexts)) Object.assign(texts[language], labels);
 for (const [language, labels] of Object.entries(resultTexts)) Object.assign(texts[language], labels);
 for (const [language, labels] of Object.entries(seoTexts)) Object.assign(texts[language], labels);
+for (const [language, labels] of Object.entries(teamTexts)) Object.assign(texts[language], labels);
+const pointSoundLabels = {
+  de:'Signalton bei einem Punkt', en:'Sound when a point is scored', es:'Sonido al marcar un punto', fr:'Signal sonore à chaque point',
+  it:'Suono quando si segna un punto', pt:'Som ao marcar um ponto', nl:'Geluid bij een punt', da:'Lyd ved et point', sv:'Ljud vid poäng',
+  fi:'Ääni pisteestä', pl:'Dźwięk przy zdobyciu punktu', cs:'Zvuk při získání bodu', hu:'Hang pontszerzéskor', ro:'Sunet la marcarea unui punct',
+  lv:'Skaņa, gūstot punktu', lt:'Garsas pelnius tašką', ru:'Звук при получении очка', uk:'Звук при здобутті очка', he:'צליל בעת צבירת נקודה',
+  ja:'得点時に音を鳴らす', ko:'득점 시 소리', 'zh-Hans':'得分时播放声音', 'zh-Hant':'得分時播放聲音'
+};
+for (const [language, pointSoundEnabled] of Object.entries(pointSoundLabels)) texts[language].pointSoundEnabled = pointSoundEnabled;
+const hapticLabels = {
+  de:['Bei Steinen vibrieren','Bei Punkten vibrieren','Dieser Browser unterstützt kein Vibrationsfeedback.'],
+  en:['Vibrate on stones','Vibrate on points','This browser does not support vibration feedback.'],
+  es:['Vibrar con las piedras','Vibrar con los puntos','Este navegador no admite vibración.'],
+  fr:['Vibrer à chaque pierre','Vibrer à chaque point','Ce navigateur ne prend pas en charge les vibrations.'],
+  it:['Vibra a ogni pietra','Vibra a ogni punto','Questo browser non supporta la vibrazione.'],
+  pt:['Vibrar nas pedras','Vibrar nos pontos','Este navegador não suporta vibração.'],
+  nl:['Trillen bij stenen','Trillen bij punten','Deze browser ondersteunt geen trillingen.'],
+  da:['Vibrer ved sten','Vibrer ved point','Denne browser understøtter ikke vibration.'],
+  sv:['Vibrera vid stenar','Vibrera vid poäng','Den här webbläsaren stöder inte vibration.'],
+  fi:['Värinä kivillä','Värinä pisteillä','Tämä selain ei tue värinäpalautetta.'],
+  pl:['Wibracje przy kamieniach','Wibracje przy punktach','Ta przeglądarka nie obsługuje wibracji.'],
+  cs:['Vibrace při kamenech','Vibrace při bodech','Tento prohlížeč nepodporuje vibrace.'],
+  hu:['Rezgés köveknél','Rezgés pontoknál','Ez a böngésző nem támogatja a rezgést.'],
+  ro:['Vibrează la pietre','Vibrează la puncte','Acest browser nu acceptă vibrații.'],
+  lv:['Vibrēt pie akmeņiem','Vibrēt pie punktiem','Šī pārlūkprogramma neatbalsta vibrāciju.'],
+  lt:['Vibruoti ties akmenimis','Vibruoti pelnius tašką','Ši naršyklė nepalaiko vibracijos.'],
+  ru:['Вибрация на камнях','Вибрация при очках','Этот браузер не поддерживает вибрацию.'],
+  uk:['Вібрація на каменях','Вібрація при очках','Цей браузер не підтримує вібрацію.'],
+  he:['רטט באבנים','רטט בנקודות','דפדפן זה אינו תומך ברטט.'],
+  ja:['石のカウントで振動','得点で振動','このブラウザーは振動に対応していません。'],
+  ko:['스톤마다 진동','득점 시 진동','이 브라우저는 진동을 지원하지 않습니다.'],
+  'zh-Hans':['计石时振动','得分时振动','此浏览器不支持振动反馈。'],
+  'zh-Hant':['計石時震動','得分時震動','此瀏覽器不支援震動回饋。']
+};
+for (const [language, [hapticStones, hapticPoints, hapticsUnavailable]] of Object.entries(hapticLabels)) Object.assign(texts[language], { hapticStones, hapticPoints, hapticsUnavailable });
+const stoneApplyLabels = {
+  de:'Übernehmen', en:'Apply', es:'Aplicar', fr:'Appliquer', it:'Applica', pt:'Aplicar', nl:'Toepassen', da:'Anvend',
+  sv:'Använd', fi:'Käytä', pl:'Zastosuj', cs:'Použít', hu:'Alkalmaz', ro:'Aplică', lv:'Lietot', lt:'Taikyti',
+  ru:'Применить', uk:'Застосувати', he:'החל', ja:'適用', ko:'적용', 'zh-Hans':'应用', 'zh-Hant':'套用'
+};
+for (const [language, stoneApply] of Object.entries(stoneApplyLabels)) texts[language].stoneApply = stoneApply;
 const closeLabels = {
   de:'Schließen', en:'Close', es:'Cerrar', fr:'Fermer', it:'Chiudi', pt:'Fechar', nl:'Sluiten', da:'Luk', sv:'Stäng', fi:'Sulje',
   pl:'Zamknij', cs:'Zavřít', hu:'Bezárás', ro:'Închide', lv:'Aizvērt', lt:'Uždaryti', ru:'Закрыть', uk:'Закрити', he:'סגירה',

@@ -243,6 +243,37 @@ test('Standardnamen markieren und eigene Namen erhalten', () => {
   assert.equal(cleanConfig({ ...defaults, teamADefault: 'unknown' }).teamADefault, '');
 });
 
+test('Teamfarben dürfen bewusst leer bleiben', () => {
+  const config = cleanConfig({ colorA: '', colorB: '' });
+  assert.equal(config.colorA, ''); assert.equal(config.colorB, '');
+  const restored = restoreSnapshot({ version: 2, config, game: newGame(config), teams: [{ name: 'Falken', color: '' }] });
+  assert.equal(restored.config.colorA, ''); assert.equal(restored.teams[0].color, '');
+  assert.equal(cleanConfig({ colorA: 'transparent' }).colorA, defaults.colorA, 'Nur ausdrücklich leer oder ein gültiger Farbwert ist erlaubt');
+});
+
+test('Haptik ist standardmäßig aus und nur mit booleschen Optionen aktiv', () => {
+  assert.equal(defaults.hapticStones, false); assert.equal(defaults.hapticPoints, false);
+  assert.equal(cleanConfig({ hapticStones: true }).hapticStones, true);
+  assert.equal(cleanConfig({ hapticPoints: true }).hapticPoints, true);
+  assert.equal(cleanConfig({ hapticStones: 'true', hapticPoints: 1 }).hapticPoints, false);
+});
+
+test('Punktsignal ist separat schaltbar und bei älteren Einstellungen eingeschaltet', () => {
+  assert.equal(cleanConfig().pointSoundEnabled, true);
+  assert.equal(cleanConfig({ pointSoundEnabled: false }).pointSoundEnabled, false);
+  assert.equal(cleanConfig({ pointSoundEnabled: 'false' }).pointSoundEnabled, true);
+});
+
+test('Teamlogos wiederherstellen und fremde oder übergroße Bildquellen verwerfen', () => {
+  const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+  const saved = { version: 2, game: newGame(defaults), teams: [{ name: 'Raben', color: '#123456', defaultName: 'defaultTeamA', logo }] };
+  assert.equal(restoreSnapshot(saved).teams[0].logo, logo);
+  assert.equal(restoreSnapshot({ ...saved, teams: [{ ...saved.teams[0], logo: '' }] }).teams[0].logo, '', 'Ein bewusst entferntes Standardlogo bleibt entfernt');
+  for (const invalid of ['https://example.com/logo.png', 'data:image/svg+xml;base64,PHN2Zy8+', 'data:image/png;base64,' + 'A'.repeat(400000), {}, null]) {
+    assert.equal(restoreSnapshot({ ...saved, teams: [{ ...saved.teams[0], logo: invalid }] }).teams[0].logo, undefined);
+  }
+});
+
 test('Alle Sprachfassungen, Platzhalter und lokale SVG-Flaggen sind vollständig', () => {
   assert.equal(Object.keys(locales).length, 23);
   assert.deepEqual(Object.keys(texts).sort(), Object.keys(locales).sort());

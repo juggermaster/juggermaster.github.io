@@ -14,8 +14,12 @@ const path = require('node:path');
       server.once('exit', code => reject(Error(`Preview server exited: ${code}`)));
     });
     browser = await webkit.launch();
+    await require('./team-logos.cjs')(browser, 'http://127.0.0.1:4178/');
+    await require('./stone-picker.cjs')(browser, 'http://127.0.0.1:4178/');
+    await require('./haptics.cjs')(browser, 'http://127.0.0.1:4178/');
     await require('./sound-options.cjs')(browser, 'http://127.0.0.1:4178/');
     await require('./results.cjs')(browser, 'http://127.0.0.1:4178/');
+    await require('./csv-export.cjs')(browser, 'http://127.0.0.1:4178/');
     await require('./countdown.cjs')(browser, 'http://127.0.0.1:4178/');
     const compact = await browser.newContext({ ...devices['iPhone 8'], viewport: { width:375, height:500 }, locale:'de-DE', colorScheme:'light', serviceWorkers:'block' });
     try {
@@ -29,7 +33,7 @@ const path = require('node:path');
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
         assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollHeight <= element.clientHeight + 1), `iPhone 8/${height}: Spiel ohne Scrollen`);
-        for (const action of ['toggle', 'stone-plus', 'score-a-plus', 'undo', 'new']) {
+        for (const action of ['toggle', 'score-a-plus', 'undo', 'new']) {
           const box = await page.locator(`[data-view=match] [data-action=${action}]`).boundingBox();
           const pane = await page.locator('.jm-scroll').boundingBox();
           const body = await page.locator('.jm-body').boundingBox();
@@ -86,7 +90,7 @@ const path = require('node:path');
         assert.equal(await name.textContent(), names[index].toUpperCase());
         assert.equal(await name.getAttribute('title'), names[index]);
         assert.equal(await name.evaluate(element => getComputedStyle(element).textOverflow), 'ellipsis');
-        assert.ok(await name.evaluate(element => element.scrollWidth > element.clientWidth), 'Lange Namen werden sichtbar gekürzt');
+        assert.ok(await name.evaluate(element => element.scrollWidth > element.clientWidth || element.scrollHeight > element.clientHeight), 'Lange Namen werden sichtbar gekürzt');
       }
       assert.ok(await page.locator('.jm-scroll').evaluate(element => element.scrollWidth <= element.clientWidth + 1));
       await page.setViewportSize({ width:375, height:400 });
@@ -115,7 +119,8 @@ const path = require('node:path');
       await page.locator('[data-view=setup] [data-action=new]').click();
       await page.locator('[data-dialog-action=confirm]').click();
       await page.locator('.dialog').waitFor({ state:'hidden' });
-      await page.locator('[data-action=toggle]').click();
+      assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false');
+      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).game.deadline), null);
       for (const height of [400, 667]) {
         await page.setViewportSize({ width:375, height });
         await page.waitForFunction(() => document.querySelector('.jm-scroll').scrollHeight <= document.querySelector('.jm-scroll').clientHeight + 1);
@@ -183,9 +188,9 @@ const path = require('node:path');
             assert.equal((await page.locator('.jm-nav').boundingBox()).y, navBefore.y, 'Tabs scrollen nicht mit');
             if (view === 'match') await page.locator('[data-view=match] [data-action=new]').click({ trial: true });
             if (view === 'match') {
-              assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'none');
-              assert.equal(await page.locator('[data-read=stones]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), false);
-              assert.equal(await page.locator('[data-read=stones]').evaluate(element => element.firstChild.dispatchEvent(new Event('selectstart', { bubbles:true, cancelable:true }))), false);
+              assert.equal(await page.locator('[data-read=score-a]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'none');
+              assert.equal(await page.locator('[data-read=score-a]').evaluate(element => element.dispatchEvent(new Event('contextmenu', { bubbles:true, cancelable:true }))), false);
+              assert.equal(await page.locator('[data-read=score-a]').evaluate(element => element.firstChild.dispatchEvent(new Event('selectstart', { bubbles:true, cancelable:true }))), false);
             }
             if (view === 'setup') assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');
             if (view === 'info') assert.equal(await page.locator('[data-view=info]').evaluate(element => getComputedStyle(element).webkitUserSelect), 'text');

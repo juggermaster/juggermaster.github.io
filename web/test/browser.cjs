@@ -47,8 +47,13 @@ async function main() {
     Object.defineProperty(navigator, 'wakeLock', { configurable: true, value: { async request() { window.__wakeRequested++; const lock = new EventTarget(); lock.release = async () => { window.__wakeReleased++; lock.dispatchEvent(new Event('release')); }; return lock; } } });
   });
   let page = await context.newPage(); page.setDefaultTimeout(10000);
-  const read = selector => page.locator(selector).textContent();
+  const read = selector => selector === '[data-read=stones]' ? page.locator(selector).inputValue() : page.locator(selector).textContent();
   const click = async action => {
+    if (['stone-plus', 'stone-minus'].includes(action)) {
+      const input = page.locator('[data-read=stones]');
+      await input.fill(String(Number(await input.inputValue()) + (action === 'stone-plus' ? 1 : -1)));
+      await input.press('Enter'); return;
+    }
     if (['beat-preview', 'signal-preview'].includes(action)) {
       const target = action === 'beat-preview' ? 'beat' : 'signal';
       if (await page.locator(`[data-sound-target=${target}]`).getAttribute('aria-selected') !== 'true') await page.locator(`[data-sound-target=${target}]`).click();
@@ -80,18 +85,21 @@ async function main() {
       else if (key === 'pace') await range(key, value, 'setting');
       else await input.fill(String(value));
     }
-    await click('new'); await page.locator('[data-dialog-action=confirm]').click();
-    await page.locator('[data-read=status][data-running=true]').waitFor();
-    assert.equal(await page.locator('[data-icon=pause]').isVisible(), true, 'Laufendes Spiel zeigt das Pause-SVG');
-    // Pause the automatic start before testing individual match controls.
-    await page.locator('[data-action=toggle]').evaluate(button => button.click());
+    await click('new');
+    assert.equal(await page.locator('[data-dialog-action=confirm]').textContent(), 'Neues Spiel');
+    await page.locator('[data-dialog-action=confirm]').click();
     await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false');
     assert.equal(await page.locator('[data-icon=play]').isVisible(), true, 'Pausiertes Spiel zeigt das Start-SVG');
   };
   try {
+    await require('./team-logos.cjs')(browser, url);
+    await require('./stone-picker.cjs')(browser, url);
+    await require('./haptics.cjs')(browser, url);
     await require('./audio.cjs')(browser, url);
     await require('./sound-options.cjs')(browser, url);
     await require('./results.cjs')(browser, url);
+    await require('./csv-export.cjs')(browser, url);
     await require('./countdown.cjs')(browser, url);
     await page.goto(url); await ready(); await offlineReady();
     assert.equal(await page.title(), texts.de.appTitle);
@@ -100,11 +108,11 @@ async function main() {
     assert.equal(await page.locator('.jm-symbol:not(svg)').count(), 0, 'Alle Bedienicons sind SVG statt Schriftzeichen');
     assert.ok(await page.locator('svg.jm-symbol').count() > 10);
     for (const type of ['contextmenu', 'selectstart', 'dragstart']) {
-      assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auf der Spielanzeige unterdrückt`);
-      assert.equal(await page.locator('[data-read=stones]').evaluate((element, type) => element.firstChild.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auch bei einem Textknoten unterdrückt`);
+      assert.equal(await page.locator('[data-read=score-a]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auf der Spielanzeige unterdrückt`);
+      assert.equal(await page.locator('[data-read=score-a]').evaluate((element, type) => element.firstChild.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), false, `${type}: auch bei einem Textknoten unterdrückt`);
       assert.equal(await page.locator('[data-setting=teamA]').evaluate((element, type) => element.dispatchEvent(new Event(type, { bubbles:true, cancelable:true })), type), true, `${type}: Eingabefelder bleiben nutzbar`);
     }
-    assert.equal(await page.locator('[data-read=stones]').evaluate(element => getComputedStyle(element).userSelect), 'none');
+    assert.equal(await page.locator('[data-read=score-a]').evaluate(element => getComputedStyle(element).userSelect), 'none');
     assert.equal(await page.locator('[data-setting=teamA]').evaluate(element => getComputedStyle(element).userSelect), 'text');
     assert.equal(await page.locator('[data-read=result]').count(), 0, 'Kein dauerhaftes Satz- oder Siegermeldungsfeld');
     assert.equal(await page.locator('meta[name=apple-mobile-web-app-title]').getAttribute('content'), 'JUGGERMASTER');
@@ -149,6 +157,8 @@ async function main() {
     await page.locator('[data-action=defaults]').click();
     await newMatch({ periods:-1 });
     await tab('sound');
+    assert.equal(await read('[data-i18n=previewBeat]'), 'Takt anhören');
+    assert.equal(await read('[data-i18n=previewSignal]'), 'Endsignal anhören');
     assert.equal(await page.locator('[data-instrument]').inputValue(), 'timpani', 'Pauke ist die frische Klangvorgabe');
     assert.equal(await page.locator('[data-sound=beatNormalize], [data-sound=signalNormalize]').count(), 0);
     for (const preset of ['stone', 'drum', 'deep']) {
@@ -189,18 +199,33 @@ async function main() {
     assert.ok((await audio()).ends[0] > (await audio()).starts[7], 'Endschläge überlagern sich');
     await click('score-a-plus'); assert.equal((await audio()).cancelled, 0); assert.equal(await read('[data-read=stones]'), '0');
     await click('undo'); await click('undo');
-    const plusBox = await page.locator('[data-action=stone-plus]').boundingBox();
-    await page.mouse.move(plusBox.x + plusBox.width / 2, plusBox.y + plusBox.height / 2); await page.mouse.down();
-    await page.waitForTimeout(1000); const slowCount = Number(await read('[data-read=stones]'));
-    await page.waitForTimeout(1000); const fastCount = Number(await read('[data-read=stones]'));
-    assert.ok(slowCount > 0 && fastCount - slowCount > slowCount, 'Gedrückthalten beschleunigt die Wiederholung');
-    await page.mouse.up(); const releasedCount = await read('[data-read=stones]');
-    await page.waitForTimeout(300); assert.equal(await read('[data-read=stones]'), releasedCount, 'Loslassen stoppt ohne Zusatzklick');
-    const minusBox = await page.locator('[data-action=stone-minus]').boundingBox();
-    await page.mouse.move(minusBox.x + minusBox.width / 2, minusBox.y + minusBox.height / 2); await page.mouse.down();
-    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0'); await page.mouse.up();
-    await page.waitForTimeout(200); assert.equal(await read('[data-read=stones]'), '0', 'Wiederholung bleibt an der Untergrenze stehen');
-    await click('stone-plus'); assert.equal(await read('[data-read=stones]'), '1', 'Kurzes Tippen bleibt ein Schritt');
+    await tab('setup');
+    const pointSound = page.locator('[data-setting=pointSoundEnabled]');
+    assert.equal(await pointSound.isChecked(), true);
+    assert.equal(await pointSound.evaluate(input => input.closest('label').previousElementSibling.querySelector('input').dataset.setting), 'beatEnabled');
+    await pointSound.uncheck(); await page.reload(); await ready();
+    assert.equal(await pointSound.isChecked(), false, 'Punktsignal-Auswahl bleibt gespeichert');
+    await tab('match'); await resetAudio(); await click('score-a-plus');
+    assert.equal((await audio()).starts.length, 0, 'Punkt bleibt ohne Signalton, wenn die Option aus ist');
+    await click('undo');
+    await tab('sound'); await resetAudio(); await click('signal-preview');
+    await page.waitForFunction(() => window.__starts.length === 21);
+    await tab('setup'); await pointSound.check(); await tab('match');
+    const counter = page.locator('[data-read=stones]');
+    assert.equal(await counter.getAttribute('type'), 'number');
+    assert.equal(await page.locator('[data-action=stone-plus], [data-action=stone-minus]').count(), 0, 'Steinzähler hat keine Plus/Minus-Buttons');
+    await counter.fill('3'); await counter.press('Enter');
+    assert.equal(await read('[data-read=stones]'), '3', 'Steinzahl direkt eingeben');
+    for (const invalid of ['', '-1', '1.5', '1000000']) {
+      await counter.fill(invalid); await counter.press('Enter');
+      assert.equal(await read('[data-read=stones]'), '3', 'Ungültige Eingabe erhält den vorigen Wert');
+    }
+    await counter.fill('9'); await counter.press('Escape');
+    assert.equal(await read('[data-read=stones]'), '3', 'Escape verwirft die Eingabe');
+    await counter.fill('1'); await counter.press('Tab');
+    assert.equal(await read('[data-read=stones]'), '1', 'Verlassen übernimmt eine gültige Eingabe');
+    await click('undo'); assert.equal(await read('[data-read=stones]'), '3', 'Rückgängig stellt den Wert vor der Eingabe wieder her');
+    await counter.fill('1'); await counter.press('Enter');
     await newMatch({ periods: 2, rounds:2, limit: 4, pace: .5 });
     await tab('sound'); await resetAudio(); await click('beat-preview');
     await page.waitForFunction(() => window.__starts.length >= 21);
@@ -222,7 +247,7 @@ async function main() {
     assert.equal(await read('[data-read=stones]'), '4');
     await tab('match'); await resetAudio(); await click('toggle');
     await page.locator('[data-read=status][data-running=true]').waitFor();
-    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').value === '0');
     assert.equal((await audio()).starts.length, 3 * 7 + 3 * 7, 'Drei normale Steine und drei Endschläge, kein vierter Endschlag');
     assert.equal(await read('[data-read=status]'), 'PAUSIERT');
     assert.ok(await page.evaluate(() => window.__wakeRequested > 0 && window.__wakeReleased > 0), 'Bildschirm wird angefordert und freigegeben');
@@ -234,9 +259,9 @@ async function main() {
     await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
     assert.equal(await read('[data-read=phase]'), 'Runde 2');
     assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'true', 'Bestätigung startet die Runde direkt');
-    await page.waitForFunction(() => Number(document.querySelector('[data-read=stones]').textContent) < 4);
+    await page.waitForFunction(() => Number(document.querySelector('[data-read=stones]').value) < 4);
     await click('score-a-plus'); await click('toggle');
-    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '0');
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').value === '0');
     await dismissWinner(/gewinnt/);
     assert.equal(await read('[data-read=start-label]'), 'Neues Spiel');
     assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Zeitspiel endet ohne Ergebnisbestätigung');
@@ -294,15 +319,18 @@ async function main() {
       await click('score-a-plus');
       const won = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
       const winner = page.locator('.dialog[aria-label="Spiel beendet"]'); await winner.waitFor({ state:'visible' });
+      assert.equal(await winner.locator('[data-dialog-action=confirm]').textContent(), 'Neues Spiel');
       await winner.locator('[data-dialog-action=confirm]').click(); await winner.waitFor({ state:'hidden' });
       const restarted = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
       assert.deepEqual(restarted.config, won.config, 'Neustart aus dem Siegerdialog behält Einstellungen');
       assert.deepEqual(restarted.sound, won.sound, 'Neustart aus dem Siegerdialog behält Klang');
       await page.waitForFunction(() => document.querySelector('[data-action=toggle]').getBoundingClientRect().bottom <= document.querySelector('.jm-nav').getBoundingClientRect().top && document.activeElement === document.querySelector('[data-action=toggle]'));
       assert.equal(await read('[data-read=phase]'), '1. Satz');
-      await page.locator('[data-read=status][data-running=true]').waitFor();
-      assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren', 'Neustart aus dem Siegerdialog läuft nach dem optionalen Countdown');
-      await click('toggle');
+      assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false');
+      assert.equal(await read('[data-read=start-label]'), 'Spiel starten');
+      await page.waitForTimeout(650);
+      assert.equal(await page.locator('.jm-countdown-dialog').count(), 0, 'Neues Spiel startet auch bei aktivem Countdown erst auf Knopfdruck');
+      assert.equal(await read('[data-read=elapsed]'), '00:00');
       assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
       assert.match(await read('[data-read=sets]'), /0 : 0/);
       assert.equal(await read('[data-read=team-a]'), 'HLU'); assert.equal(await read('[data-read=team-b]'), 'SPALTER');
@@ -316,17 +344,18 @@ async function main() {
     assert.equal(await bottomNew.textContent(), 'Neues Spiel');
     await bottomNew.click(); await page.locator('[data-dialog-action=cancel]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
     assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).game), beforeNew.game, 'Abbrechen behält den Spielstand');
-    await bottomNew.click(); await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog:not(.jm-countdown-dialog)').waitFor({ state: 'hidden' });
-    await page.locator('[data-read=status][data-running=true]').waitFor();
-    await page.locator('.jm-countdown-dialog').waitFor({ state:'hidden' });
-    assert.equal(await read('[data-read=start-label]'), 'Spiel pausieren', 'Auch der normale Neustart läuft nach dem eingestellten Countdown');
-    await click('toggle');
+    await bottomNew.click();
+    assert.equal(await page.locator('[data-dialog-action=confirm]').textContent(), 'Neues Spiel');
+    await page.locator('[data-dialog-action=confirm]').click(); await page.locator('.dialog').waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false');
+    assert.equal(await read('[data-read=start-label]'), 'Spiel starten', 'Auch der normale Neustart wird nur vorbereitet');
     const afterNew = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')));
     assert.deepEqual(afterNew.config, beforeNew.config, 'Neues Spiel im Spiel-Tab behält Teams, Farben und Einstellungen');
     assert.deepEqual(afterNew.sound, beforeNew.sound, 'Klang bleibt erhalten');
     assert.equal(await read('[data-read=score-a]'), '0'); assert.equal(await read('[data-read=score-b]'), '0');
     assert.equal(await read('[data-read=phase]'), '1. Satz'); assert.equal(await page.locator('[data-action=undo]').isDisabled(), true);
     await newMatch({ periods:-2, targetPoints:1, setsToWin:3, minutes:30, pace:3, countdown:false });
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).game.deadline), null, 'Auch die Slot-Uhr beginnt erst beim bewussten Spielstart');
     assert.equal(await read('[data-read=format]'), '30 Min. · 3 Gewinnsätze · 1 Punkte');
     assert.equal(await read('[data-read=remaining-time]'), '30:00');
     await tab('setup');
@@ -335,7 +364,7 @@ async function main() {
     assert.equal(await page.locator('[data-setting=minutes]').inputValue(), '30');
     assert.equal(await page.locator('option[data-i18n=timedSetMatch]').textContent(), 'Spiel nach Sätzen auf Zeit');
     await tab('match');
-    for (const selector of ['[data-read=stones]', '[data-action=stone-plus]', '[data-action=stone-minus]', '.jm-track']) assert.equal(await page.locator(selector).isVisible(), false, 'Keine Steinzählung im Minutenspiel');
+    assert.equal(await page.locator('[data-read=stones]').isVisible(), false, 'Keine Steinzählung im Minutenspiel');
     for (const side of ['a', 'b', 'b']) {
       const elapsed = await page.evaluate(() => JSON.parse(localStorage.getItem('juggermaster:state:v2')).game.elapsed);
       await click('score-' + side + '-plus');
@@ -532,7 +561,7 @@ async function main() {
     await tab('sound'); assert.equal(await read('[data-output=pitch]'), '204.5 %'); assert.equal(await read('[data-output=signalVolume]'), '80 %');
     await tab('match'); await click('toggle');
     await page.locator('[data-read=status][data-running=true]').waitFor();
-    await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '99');
+    await page.waitForFunction(() => document.querySelector('[data-read=stones]').value === '99');
     await click('toggle');
     assert.equal(await read('[data-read=stones]'), '99', 'Offline-Spiel läuft nach erneutem URL-Aufruf');
     await tab('info');

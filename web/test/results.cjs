@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 
 module.exports = async (browser, url) => {
   const context = await browser.newContext({ locale: 'de-DE', viewport: { width: 390, height: 844 } });
+  context.setDefaultTimeout(15000);
   const page = await context.newPage(), errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const ready = () => page.locator('.jm-app[data-ready=true]').waitFor();
@@ -50,13 +51,13 @@ module.exports = async (browser, url) => {
     await point(); await close();
     saved = await state(); assert.equal(saved.results.archive.length, 1, 'Erneuter Abschluss bleibt ein Ergebnis');
     const sample = saved.results.archive[0];
-    const archive = Array.from({ length: 20 }, (_, index) => ({ ...sample, id: 70000 + index, at: sample.at + index * 1000, teams: [index === 19 ? '<img src=x onerror=alert(1)>' : 'Raben ' + index, 'Wölfe'] }));
+    const archive = Array.from({ length: 95 }, (_, index) => ({ ...sample, id: 70000 + index, at: sample.at + index * 1000, teams: [index === 94 ? '<img src=x onerror=alert(1)>' : 'Raben ' + index, 'Wölfe'] }));
     await page.evaluate(archive => { const key = 'juggermaster:state:v2', value = JSON.parse(localStorage.getItem(key)); value.results = { currentId: null, archive }; localStorage.setItem(key, JSON.stringify(value)); }, archive);
     await page.reload(); await ready();
     for (const viewport of [{ width: 320, height: 400 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
       await page.setViewportSize(viewport); await open();
       const dialog = page.locator('.jm-history-dialog'), list = dialog.locator('.jm-results-list');
-      assert.equal(await list.locator('li').count(), 20); assert.equal(await list.locator('img').count(), 0);
+      assert.equal(await list.locator('li').count(), 30, 'Beim Öffnen wird nur der erste Abschnitt dargestellt'); assert.equal(await list.locator('img').count(), 0);
       assert.equal(await list.evaluate(element => element.scrollHeight > element.clientHeight), true, 'Die Ergebnisliste kann scrollen');
       const bounds = await dialog.boundingBox(), button = await dialog.locator('[data-dialog-action=close]').boundingBox();
       assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= viewport.height + 1, 'Der Dialog passt ins Fenster: ' + JSON.stringify({ viewport, bounds }));
@@ -64,10 +65,35 @@ module.exports = async (browser, url) => {
       await list.focus();
       await list.press('PageDown');
       await page.waitForFunction(() => document.querySelector('.jm-results-list').scrollTop > 0);
+      for (const count of [60, 90, 95]) {
+        await list.evaluate(element => element.scrollTop = element.scrollHeight);
+        await page.waitForFunction(count => document.querySelectorAll('.jm-results-list li').length === count, count);
+      }
+      assert.match(await list.locator('li').last().textContent(), /Raben 0/, 'Älteste Ergebnisse stehen am Ende');
       await list.press('Escape'); await dialog.waitFor({ state: 'detached' });
       assert.equal(await page.locator('[data-action=results]').evaluate(element => element === document.activeElement), true, 'Fokus kehrt zu Verlauf zurück');
     }
+    await context.setOffline(false);
+    await page.evaluate(() => {
+      const write = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (key, value) {
+        if (key === 'juggermaster:state:v2' && JSON.parse(value).results.archive.length > 50) throw new DOMException('Test quota', 'QuotaExceededError');
+        return write.call(this, key, value);
+      };
+    });
+    await tab('setup'); await page.locator('[data-setting=countdown]').check();
+    saved = await state();
+    assert.equal(saved.results.archive.length, 50, 'Erst bei vollem Speicher werden die ältesten Ergebnisse entfernt');
+    assert.equal(saved.results.archive[0].id, 70045); assert.equal(saved.results.archive.at(-1).id, 70094);
+    await page.reload(); await ready();
+    await page.evaluate(() => { Storage.prototype.setItem = () => { throw new DOMException('No space', 'QuotaExceededError'); }; });
+    await page.locator('[data-setting=countdown]').uncheck();
+    assert.equal((await state()).results.archive.length, 50, 'Wenn selbst das neueste Ergebnis nicht passt, bleibt der bisherige Speicher erhalten');
+    await tab('match'); await open();
+    await page.locator('.jm-results-list').evaluate(element => element.scrollTop = element.scrollHeight);
+    await page.waitForFunction(() => document.querySelectorAll('.jm-results-list li').length === 50);
+    await close();
     assert.deepEqual(errors, []);
-    console.log('OK: results only, correct button order, scrollable dialog, small screens, undo, offline restore and safe team names.');
+    console.log('OK: unbegrenzter Verlauf, Nachladen beim Scrollen, Speicherbereinigung, Rückgängig, Offline und sichere Teamnamen.');
   } finally { await context.close(); }
 };

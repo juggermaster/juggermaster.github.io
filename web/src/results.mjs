@@ -12,7 +12,7 @@ export function restoreResults(value) {
     return [summary(game, record.teams, record.id, at)];
   });
   const id = value?.currentId ?? value?.current?.id;
-  return { currentId: timestamp(id) ? id : null, archive: [...new Map(archive.map(record => [record.id, record])).values()].slice(-20) };
+  return { currentId: timestamp(id) ? id : null, archive: [...new Map(archive.map(record => [record.id, record])).values()] };
 }
 
 export function saveResult(results, before, after, teams, at = Date.now()) {
@@ -20,8 +20,23 @@ export function saveResult(results, before, after, teams, at = Date.now()) {
     if (before.ended) results.archive = results.archive.filter(record => record.id !== results.currentId);
     return;
   }
-  results.currentId ??= Math.max(at, ...results.archive.map(record => record.id + 1));
+  results.currentId ??= results.archive.reduce((id, record) => Math.max(id, record.id + 1), at);
   const previous = results.archive.find(record => record.id === results.currentId);
   const record = summary(after, teams, results.currentId, previous?.at ?? at);
-  results.archive = [...results.archive.filter(saved => saved.id !== record.id), record].slice(-20);
+  results.archive = [...results.archive.filter(saved => saved.id !== record.id), record];
+}
+
+export function resultsCsv(archive, t) {
+  const cell = value => {
+    let text = String(value);
+    if (/^[\s\uFEFF]*[=+\-@＝＋－＠]|^[ \uFEFF]*[\t\r\n]/u.test(text)) text = "'" + text;
+    return '"' + text.replaceAll('"', '""') + '"';
+  };
+  const rows = [[t('csvDate'), t('teamA'), t('teamB'), `${t('csvPoints')} A`, `${t('csvPoints')} B`, `${t('csvSets')} A`, `${t('csvSets')} B`, t('gameMode')]];
+  for (let index = archive.length - 1; index >= 0; index--) {
+    const result = archive[index];
+    const mode = result.periods === -2 ? 'timedSetMatch' : result.periods === -1 ? 'setMatch' : result.periods === 0 ? 'freeDrumming' : 'timeMatch';
+    rows.push([new Date(result.at).toISOString(), ...result.teams, result.a, result.b, result.setsA, result.setsB, t(mode)]);
+  }
+  return '\uFEFF' + rows.map(row => row.map(cell).join(',')).join('\r\n') + '\r\n';
 }

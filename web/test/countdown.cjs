@@ -26,6 +26,9 @@ module.exports = async (browser, url) => {
       await page.locator('[data-view=setup] [data-action=new]').click();
       await page.evaluate(() => { window.__countdownEvents = []; });
       await page.locator('[data-dialog-action=confirm]').click();
+      await page.locator('.dialog').waitFor({ state: 'hidden' });
+      assert.equal(await page.locator('[data-read=status]').getAttribute('data-running'), 'false', 'Neues Spiel wartet auf einen bewussten Start');
+      await page.locator('[data-action=toggle]').click();
       const dialog = page.locator('.jm-countdown-dialog');
       await dialog.waitFor({ state: 'visible' });
       assert.equal(await dialog.getAttribute('role'), 'dialog');
@@ -37,8 +40,8 @@ module.exports = async (browser, url) => {
       const duration = events.at(-1).at - events[0].at;
       assert.ok(duration >= 950 && duration <= 1150, `${pace}-Sekunden-Takt: Countdown dauert ${duration} ms`);
       assert.equal(await page.locator('[data-read=start-label]').textContent(), 'Spiel pausieren');
-      assert.equal(await page.locator('[data-read=stones]').textContent(), '20', 'Countdown verbraucht keine Steine');
-      await page.waitForFunction(() => document.querySelector('[data-read=stones]').textContent === '19', null, { timeout: pace * 1000 + 1000 });
+      assert.equal(await page.locator('[data-read=stones]').inputValue(), '20', 'Countdown verbraucht keine Steine');
+      await page.waitForFunction(() => document.querySelector('[data-read=stones]').value === '19', null, { timeout: pace * 1000 + 1000 });
       const firstStone = await page.evaluate(() => performance.now()) - events.at(-1).at;
       assert.ok(firstStone >= pace * 1000 - 100, 'Der normale Steintakt beginnt erst nach dem Countdown');
       await page.locator('[data-action=toggle]').click();
@@ -51,7 +54,7 @@ module.exports = async (browser, url) => {
     await page.locator('.jm-countdown-dialog').waitFor({ state: 'detached' });
     await page.waitForTimeout(1100);
     assert.equal(await page.locator('[data-read=status]').textContent(), 'PAUSIERT', 'Abbrechen verhindert den späteren Spielstart');
-    assert.equal(await page.locator('[data-read=stones]').textContent(), '19');
+    assert.equal(await page.locator('[data-read=stones]').inputValue(), '19');
     assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'toggle');
     assert.deepEqual(errors, []);
     console.log('OK: 3, 2, 1, JUGGER als Ein-Sekunden-Dialog, unabhängig vom Steintakt, mit Fokus und Abbruch.');

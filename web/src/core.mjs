@@ -1,11 +1,12 @@
 import { locales } from './locale.mjs';
 import { instruments } from './instruments.mjs';
+import { cleanTeamLogo } from './team-logos.mjs';
 
 export const defaults = Object.freeze({
   teamA: 'Raben', teamB: 'Wölfe', colorA: '#c9724f', colorB: '#76a38b',
   teamADefault: 'defaultTeamA', teamBDefault: 'defaultTeamB',
   periods: -1, rounds: 2, limit: 100, direction: 'down', pace: 1.5,
-  pausePoint: true, beatEnabled: true, signalCount: 1, countdown: false,
+  pausePoint: true, beatEnabled: true, pointSoundEnabled: true, signalCount: 1, countdown: false, hapticStones: false, hapticPoints: false,
   targetPoints: 5, setsToWin: 2, minutes: 20
 });
 export const presets = Object.freeze({
@@ -30,13 +31,13 @@ export function cleanConfig(raw = {}) {
   if (!raw || typeof raw !== 'object') raw = {};
   const result = { ...defaults };
   for (const key of ['teamA', 'teamB']) if (typeof raw[key] === 'string') result[key] = raw[key].trim().slice(0, 255);
-  for (const key of ['colorA', 'colorB']) if (/^#[0-9a-f]{6}$/i.test(raw[key])) result[key] = raw[key];
+  for (const key of ['colorA', 'colorB']) if (raw[key] === '' || /^#[0-9a-f]{6}$/i.test(raw[key])) result[key] = raw[key];
   for (const side of ['teamA', 'teamB']) result[`${side}Default`] = teamDefault(result[side], raw[`${side}Default`] ?? defaults[`${side}Default`]);
   if ([-2, -1, 0, 2].includes(raw.periods)) result.periods = raw.periods;
   for (const [key, min, max] of [['rounds', 1, 99], ['limit', 1, 9999], ['signalCount', 1, 10], ['targetPoints', 1, 99], ['setsToWin', 1, 5], ['minutes', 1, 999]]) if (integer(raw[key], min, max)) result[key] = raw[key];
   if (['up', 'down'].includes(raw.direction)) result.direction = raw.direction;
   if (number(raw.pace, .5, 3)) result.pace = raw.pace;
-  for (const key of ['pausePoint', 'beatEnabled', 'countdown']) if (typeof raw[key] === 'boolean') result[key] = raw[key];
+  for (const key of ['pausePoint', 'beatEnabled', 'pointSoundEnabled', 'countdown', 'hapticStones', 'hapticPoints']) if (typeof raw[key] === 'boolean') result[key] = raw[key];
   return result;
 }
 
@@ -85,9 +86,10 @@ export function restoreSnapshot(value) {
   if (!value || value.version !== 2 || !validGame(value.game)) return null;
   const teams = new Map();
   for (const team of Array.isArray(value.teams) ? value.teams : []) {
-    if (typeof team?.name !== 'string' || !team.name.trim() || team.name.trim().length > 255 || !/^#[0-9a-f]{6}$/i.test(team.color)) continue;
+    if (typeof team?.name !== 'string' || !team.name.trim() || team.name.trim().length > 255 || (team.color !== '' && !/^#[0-9a-f]{6}$/i.test(team.color))) continue;
     const name = team.name.trim();
-    teams.set(name.toLowerCase(), { name, color: team.color, defaultName: teamDefault(name, team.defaultName) });
+    const logo = cleanTeamLogo(team.logo);
+    teams.set(name.toLowerCase(), { name, color: team.color, defaultName: teamDefault(name, team.defaultName), ...(logo || team.logo === '' ? { logo } : {}) });
   }
   return { version: 2, language: Object.hasOwn(locales, value.language) ? value.language : 'de',
     theme: ['light', 'dark'].includes(value.theme) ? value.theme : 'dark',
