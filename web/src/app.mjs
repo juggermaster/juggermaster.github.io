@@ -337,7 +337,7 @@ function render() {
   $$('.jm-wave span').forEach((bar, index) => { bar.style.height = `${6 + Math.abs(Math.sin(index * 1.9 + sound.pitch / 60)) * 40 * Math.exp(-index / (sound.decay * 7 + 4))}px`; });
   const notice = $('[data-read=notice]'); notice.hidden = !noticeKey; if (noticeKey) notice.textContent = t(noticeKey);
   $('[data-read=offline]').textContent = t(offlineState.status === 'ready' ? navigator.onLine ? 'offlineReady' : 'offlineUsing' : offlineState.status === 'unsupported' ? 'offlineUnsupported' : offlineState.status === 'error' ? 'offlineFailed' : 'offlineLoading');
-  $('.jm-offline').hidden = offlineState.status === 'ready';
+  $('.jm-offline').hidden = ['loading', 'ready'].includes(offlineState.status);
   $('[data-action=offline-retry]').hidden = offlineState.status !== 'error';
   $('[data-read=update]').hidden = !offlineState.waiting;
   $('[data-action=update]').disabled = running || previewing || countdown >= 0 || starting;

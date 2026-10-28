@@ -38,6 +38,8 @@
 #jm-arena .jm-stripe { height:4px; background:repeating-linear-gradient(120deg,var(--jm-accent),var(--jm-accent) 10px,var(--jm-bg) 10px,var(--jm-bg) 14px); }
 /* Keep responsive sizing outside the scaled match content. */
 #jm-arena .jm-body { container-type:inline-size; padding:22px 20px 18px; min-height:594px; }
+/* Hide placeholder values until saved settings and translations are ready. */
+#jm-arena .jm-app[aria-busy=true] .jm-body, #jm-arena .jm-app[aria-busy=true] .jm-nav { visibility:hidden; }
 #jm-arena .jm-topline { display:flex; gap:8px; align-items:center; justify-content:space-between; }
 #jm-arena .jm-eyebrow { font-size:10px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:var(--jm-soft); }
 #jm-arena .jm-phase { font:700 25px/1 var(--jm-title); letter-spacing:.8px; text-transform:uppercase; margin:7px 0 0; }
