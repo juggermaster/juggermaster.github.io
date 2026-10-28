@@ -90,6 +90,8 @@ module.exports = async (browser, url) => {
     await counter.fill('9'); await counter.press('Escape');
     assert.equal(await counter.inputValue(), '2', 'Escape verwirft Änderungen am Eingabefeld');
     await counter.fill('102'); await counter.press('Enter');
+    // CI and devices without condensed fonts use the wider sans-serif fallback.
+    await page.addStyleTag({ content: '#jm-arena .jm-app { --jm-title:Verdana,sans-serif; }' });
     for (const [width, height] of [[320, 568], [375, 500], [654, 886], [736, 1000], [1024, 768]]) {
       await page.setViewportSize({ width, height });
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -106,7 +108,7 @@ module.exports = async (browser, url) => {
       }));
       assert.ok(Math.abs(left.x + left.width / 2 - a.x - a.width / 2) < 2 && Math.abs(right.x + right.width / 2 - b.x - b.width / 2) < 2, 'Jedes Logo steht mittig über seiner Team-Box');
       assert.ok(left.y + left.height <= a.y + 1 && right.y + right.height <= b.y + 1, 'Logos stehen oberhalb der Punkteboxen');
-      assert.ok(left.x + left.width <= counter.x + 1 && right.x >= counter.x + counter.width - 1, 'Dreistelliger Zähler und Logos überlappen sich nicht');
+      assert.ok(left.x + left.width <= counter.x + 1 && right.x >= counter.x + counter.width - 1, `${width}×${height}: Dreistelliger Zähler und Logos überlappen sich nicht (${JSON.stringify({ left, right, counter })})`);
       await page.locator('[data-action=score-a-plus]').click({ trial: true });
       await page.locator('[data-action=toggle]').focus();
       const actions = await page.locator('[data-view=match]>.jm-actions').boundingBox(), toggle = await page.locator('[data-action=toggle]').boundingBox();

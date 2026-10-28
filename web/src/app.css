@@ -45,7 +45,7 @@
 #jm-arena .jm-state[data-running=true] { background:var(--jm-green); border-color:var(--jm-green); color:var(--jm-bg); }
 #jm-arena .jm-stones { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:center; column-gap:12px; position:relative; padding:16px 0 12px; text-align:center; }
 #jm-arena .jm-counter { display:flex; align-items:center; justify-content:center; height:110px; }
-#jm-arena .jm-stone-number { font:700 clamp(24px,calc(48cqw / var(--jm-stone-digits,1)),110px)/1 var(--jm-title); letter-spacing:-3px; font-variant-numeric:tabular-nums; }
+#jm-arena .jm-stone-number { font:700 clamp(24px,calc(44cqw / var(--jm-stone-digits,1)),110px)/1 var(--jm-title); letter-spacing:-3px; font-variant-numeric:tabular-nums; }
 #jm-arena .jm-stones .jm-clock-number { font-size:clamp(24px,9.6cqw,110px); white-space:nowrap; direction:ltr; }
 #jm-arena .jm-stone-caption { margin-top:2px; font-size:10px; font-weight:800; letter-spacing:2.6px; color:var(--jm-soft); }
 #jm-arena .jm-teams { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:17px; }
@@ -79,7 +79,7 @@
 #jm-arena .jm-primary svg { width:18px; height:18px; }
 #jm-arena [data-action=toggle] { margin-top:14px; }
 #jm-arena [data-view=setup]>.jm-primary { margin-top:14px; }
-#jm-arena [data-read=stones] { width:calc(var(--jm-stone-digits,1)*1ch + 12px); max-width:45%; min-width:56px; height:100%; min-height:56px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--jm-ink); text-align:center; appearance:textfield; }
+#jm-arena [data-read=stones] { width:calc(var(--jm-stone-digits,1)*1ch + 12px); max-width:30%; min-width:56px; height:100%; min-height:56px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--jm-ink); text-align:center; appearance:textfield; }
 #jm-arena [data-read=stones]::-webkit-inner-spin-button, #jm-arena [data-read=stones]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
 #jm-arena [data-read=stones]:focus-visible { outline:3px solid var(--jm-green); outline-offset:3px; border-radius:6px; }
 #jm-arena .jm-secondary { border:1px solid var(--jm-line); border-radius:var(--jm-radius); background:transparent; min-height:44px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:7px; padding:8px 12px; }
@@ -271,7 +271,7 @@ body { margin:0; font-family:system-ui,-apple-system,sans-serif; }
   #jm-arena [data-view=match] .jm-secondary { padding:4px; gap:4px; font-size:10px; }
   #jm-arena .jm-phase { font-size:21px; margin-top:3px; }
   #jm-arena .jm-stones { padding:0; column-gap:8px; }
-  #jm-arena .jm-stone-number { font-size:min(clamp(24px,calc(48cqw / var(--jm-stone-digits,1)),110px),clamp(48px,10vh,74px)); }
+  #jm-arena .jm-stone-number { font-size:min(clamp(24px,calc(44cqw / var(--jm-stone-digits,1)),110px),clamp(48px,10vh,74px)); }
   #jm-arena .jm-counter { height:clamp(48px,10vh,74px); }
   #jm-arena .jm-teams { margin:0; gap:8px; }
   #jm-arena .jm-team { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:3px; padding:5px 8px; }
